@@ -1,0 +1,48 @@
+.file_gallery{
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(auto-fit, clamp(200px, 5vw, 4rem));
+    .file_box{
+        background-color: var(--clr-neutral-200);
+        border-radius: 1rem;
+        position: relative;
+        .file_toolbar{ 
+            position: absolute;
+            transform: translate(50%, -50%);
+            right: 0%;
+        }
+        &.normal{
+            padding: 0.5rem;
+            display: flex;
+            
+            div{ 
+                display: flex;
+                flex-direction: column;
+                gap:0.5rem;
+                .upload__type{
+                    width: fit-content;
+                    padding: 0.25rem;
+                    height: min-content;
+                    border-radius: 0.5rem;
+                    background-color: var(--clr-primary-100);
+                }
+            }
+        }
+        
+        &.complex{
+            display: grid;
+            grid-template-rows: 100px 2rem;
+            img, audio, video{
+                grid-row: 1;
+                justify-self: center;
+                align-self: center;
+            }
+            input{
+                border-radius: 0 0 0.5rem 0.5rem;
+                border: none;
+                padding-inline: 0.5rem;
+                background-color: var(--clr-primary-100);
+            }
+        }
+    }
+}
