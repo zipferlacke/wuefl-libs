@@ -17,15 +17,12 @@
 @import "./components/_img.css"                 layer(components);
 @import "./components/_inputs.css"              layer(components);
 @import "./components/_container.css"           layer(components);
-@import "./components/_slideshow.css"           layer(components);
 @import "./components/_card.css"                layer(components);
 @import "./components/_dialog.css"              layer(components);
-@import "./components/_banner.css"              layer(components);
 @import "./components/_audio_video.css"         layer(components);
 @import "./components/_details.css"             layer(components);
 @import "./components/_progress.css"            layer(components);
 @import "./components/_swipe.css"               layer(components);
-@import "./components/_upload_preview.css"      layer(components);
 
 /* @import "./layout/_dialog_nesting_support.css"; */
 

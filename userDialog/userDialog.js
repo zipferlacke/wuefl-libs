@@ -34,6 +34,7 @@ export function userDialog({
      * Dialog ID
      */
     const id = Date.now();
+    injectCss();
 
 
     // ===
@@ -225,4 +226,10 @@ function isVisible(element) {
         element = element.parentElement;
     }
     return true;
+}
+
+function injectCss(){
+    if(document.querySelector(`[id="wuefl_userDialog"]`)) return;
+    const cssLink = `<link id="wuefl_userDialog" rel="stylesheet" href="./userDialog.css">`;
+    document.head.insertAdjacentHTML("beforeend", cssLink);
 }

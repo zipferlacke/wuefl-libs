@@ -13,16 +13,17 @@ let dialogInput;
  * Erstellt eine UploadDialog und gibt die Daten dann als Formdata-Promis zurück.
  * @param {string[]} typesExtensions 
  * @param {string[]} typesMime 
+ * @param {boolean} multiple 
  * @returns {Promise<FormData>}
  */
-export async function uploadMultiple(typesExtensionsP, typesMime){
+export async function userDialogUpload(typesExtensionsP, typesMime, multiple){
     typesExtensions=typesExtensionsP;
     return (await userDialog({
         id:"dialog_upload", 
         title:`<h2>Datein hochladen</h2> <p>(${typesExtensions.map(e=>"."+e).join(", ")})</p>`,
         content:`
              <p class="upload_files__description">Wählen Sie Dateien aus, die hochgeladen werden sollen ...</p>
-            <input type="file" name="files[]" multiple class="upload_files__input" accept="${typesExtensions.map(e=>"."+e).join(",")+","+typesMime.join(",")}" required>
+            <input type="file" name="files[]" ${multiple?"multiple":""} class="upload_files__input" accept="${typesExtensions.map(e=>"."+e).join(",")+","+typesMime.join(",")}" required>
             <div class="file_gallery upload_files__preview"></div>
         `,
         confirmText:"Hochladen",
