@@ -1,0 +1,165 @@
+/* 
+Slideshow CSS
+Copyright: Florian Wüllner 2023
+
+Inspieriet von: https://www.youtube.com/watch?v=uo91S2tdHHY
+*/
+@layer components {
+    .slideshow{
+        aspect-ratio: var(--slideshow-ratio);
+        width: 100%;
+        display: grid;
+        grid-template-rows: 
+            [dots-start arrow_right-start arrow_left-start slide-start] 3em
+            [dots-end] 1fr 
+            2em
+            [arrow_right-end arrow_left-end slide-end];
+
+        grid-template-columns: [dots-start arrow_left-start slide-start] minmax(2em, 10%) [arrow_left-end] 1fr [arrow_right-start] minmax(2em, 10%) [arrow_right-end dots-end slide-end];
+        background-color: var(--clr-primary-200);
+
+        & .slideshow_arrow{
+            place-self: center;
+            cursor: pointer;
+            text-align: center;
+            font-size: max(2.75vw, 2rem);
+            background-color: color-mix(in srgb, var(--clr-neutral-50) 50%, rgba(0,0,0,0) 50%);
+            border-radius: 50%;
+            padding: 5%;
+            z-index: 1;
+            &:hover{
+                transition: color 2ms ease-in-out;
+                color: var(--clr-primary-500)
+            }
+            &.left{
+                grid-area: arrow_left;
+            }
+            &.right{
+                grid-area: arrow_right;
+            }
+        }
+
+        & .slideshow_dots{
+            grid-area: dots;
+            place-self: center;
+            z-index: 1;
+            display: flex;
+            justify-content: center;
+            height: 2rem;
+            min-width: 10rem;
+            font-weight: 900;
+            background-color: color-mix(in srgb, var(--clr-neutral-50) 70%, rgba(0,0,0,0) 30%);
+            gap:1rem;
+            border-radius: var(--br-default);
+
+            & .dot{
+                cursor: pointer;
+                font-size: 1rem;
+                color: var(--text-color);
+                align-self: center;
+                padding: 0 0.5rem;
+                background: none;
+                opacity: 0.7;
+                animation: opacity 2ms ease-in-out, font-size 2ms ease-in-out, color 2ms ease-in-out;
+                &[active]{
+                    color: var(--clr-primary-500);
+                    font-size: var(--fs-600);
+                    opacity: 1;
+                }
+
+                &:hover{
+                    color: var(--clr-primary-500);
+                }
+            }
+        }
+
+        & .slide{
+            grid-area: slide;
+            opacity: 0;
+            visibility: hidden;
+            animation: opacity 2ms ease-in-out;
+            &[active]{
+                opacity: 1;
+                visibility: visible;
+            }
+        }
+
+        &[fullscreen]{
+            width: 100vw;
+            height: 100dvh;
+            --slideshow-ratio: none;
+
+            font-size: max(1.75vw, 1em);        
+        }
+
+        &[images] .slide{
+            display: grid;
+            grid-template-columns:1fr;
+            grid-template-rows: 1fr;
+            gap:1rem;
+
+            .slide_img{
+                grid-column: 1;
+                grid-row: 1;
+                height: 100%;
+                width: 100%;
+                object-fit: cover;
+            }
+
+            .slide_content{
+                grid-column: 1;
+                grid-row: 1;
+                align-self: end;
+                display: flex;
+                flex-direction: column;
+                background-color: color-mix(in srgb, var(--clr-neutral-50) 70%, rgba(0,0,0,0) 30%);
+                height: max-content;
+                margin: 1rem;
+
+                padding: 0.5rem;
+                border-radius: 1rem;
+
+                .slide_copyright{
+                    margin-top: 0.5rem;
+                    font-size: max(0.75vw, 0.75em);
+                }
+            }
+        }
+
+        &[qrcode] .slide{
+            grid-template-columns: 1fr 15%;
+            grid-template-rows: 1fr;
+            gap: 1rem;
+            .slide_content{
+                grid-column: 1;
+            }
+            .slide_qrcode{
+                grid-column: 2;
+                grid-row: 1;
+
+                width:100%;
+                align-self: end;
+                background-color: color-mix(in srgb, var(--clr-neutral-50) 80%, rgba(0,0,0,0) 20%);
+                padding: 0.5rem;
+                border-radius: 1rem;
+
+                & *{
+                    max-width: 100%;
+                    max-height: 100%;
+                    object-fit: contain;
+                }
+            }
+        }
+    }
+
+    /*---
+    Handy 
+    ---*/
+
+    @media screen and (max-width:700px) {
+        .slideshow{
+            /* aspect-ratio: 1/1; */
+            font-size: 0.9rem;
+        }
+    }
+}

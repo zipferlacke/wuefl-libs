@@ -1,4 +1,4 @@
-import Gestures from './gestures.js';
+import Gestures from '../js/gestures.js';
 /*
 Slideshow JS
 Copyright: Florian Wüllner 2023
@@ -120,4 +120,11 @@ export default function Slideshows(document, durationPerSlide=4000){
         dots[currentSlide].removeAttribute("close");
         console.log(dots[currentSlide].scrollWidth > dots[currentSlide].offsetWidth);
     }
+}
+
+function injectCss(){
+    const cssUrl = new URL('./slideshow.css', import.meta.url);
+    if (document.querySelector(`link[href="${cssUrl.href}"]`)) return; 
+    const cssLink = `<link rel="stylesheet" href="${cssUrl.href}">`;
+    document.head.insertAdjacentHTML("beforeend", cssLink);
 }

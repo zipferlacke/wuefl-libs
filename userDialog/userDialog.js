@@ -34,6 +34,7 @@ export function userDialog({
      * Dialog ID
      */
     const id = Date.now();
+    injectCss();
 
 
     // ===
@@ -225,4 +226,11 @@ function isVisible(element) {
         element = element.parentElement;
     }
     return true;
+}
+
+function injectCss(){
+    const cssUrl = new URL('./userDialog.css', import.meta.url);
+    if (document.querySelector(`link[href="${cssUrl.href}"]`)) return; 
+    const cssLink = `<link rel="stylesheet" href="${cssUrl.href}">`;
+    document.head.insertAdjacentHTML("beforeend", cssLink);
 }

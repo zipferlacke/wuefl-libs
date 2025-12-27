@@ -38,6 +38,10 @@ ol,ul{
     margin-block: 0.5rem;
 }
 
+dialog:not([open]){
+    display:none;
+}
+
 [data-hidden=""], [data-hidden="true"]{
     display: none!important;
 }

@@ -1,0 +1,146 @@
+@layer components {
+    :root{
+        color-scheme: light dark;
+        --bg-picker:light-dark(hsl(0, 0%, 90%), hsl(0, 0%, 10%));
+        --bg-picker-trigger:light-dark(hsl(0, 0%, 90%), hsl(0, 0%, 10%));
+        --clr-picker:light-dark(hsl(0, 0%, 10%),hsl(0, 0%, 90%));
+        --fs-picker-header:1rem;
+        --fs-input-picker:0.9rem;
+        --br-picker:0.5rem;
+        --height-input-picker:2rem;
+        --bg-input-picker: light-dark(hsl(219, 100%, 50%), hsl(219, 100%, 30%));
+        --bg-hover-input-picker: light-dark(hsl(219, 100%, 60%), hsl(219, 100%, 20%));
+        --bg-option-picker: light-dark(hsl(0, 0%, 80%), hsl(0, 0%, 20%));
+        --bg-hover-option-picker: light-dark(hsl(0, 0%, 85%), hsl(0, 0%, 15%));
+        --bg-selected-option-picker: light-dark(hsl(219, 100%, 50%), hsl(219, 100%, 30%));
+        --bg-selected-hover-option-picker:light-dark(hsl(219, 100%, 55%), hsl(219, 100%, 25%));
+    }
+
+    .picker_trigger_elm {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+        background-color: var(--bg-picker-trigger);
+        color: var(--clr-picker);
+        padding: 0.5rem;
+        border-radius: var(--br-picker);
+        font-size: var(--fs-input-picker);
+        align-items: center;
+        cursor: pointer;
+        &:before{
+            content: "";
+            margin-top:0.5rem;
+            border: 0.5rem solid;
+            height: 0.25rem;
+            border-left-color: transparent;
+            border-right-color: transparent;
+            border-bottom: none;
+            align-self: center;
+        }
+        &:hover{
+            background-color: var(--bg-hover-input-picker);
+        }
+    }
+    .custom_picker_popover{
+        position:absolute;
+        display: grid;
+        grid-template-rows: min-content min-content  min-content;
+        gap:0.25rem;
+        background-color: var(--bg-picker);
+        box-shadow: 0rem 0.5rem 0.75rem hsl(from var(--clr-picker) h s calc(l - 5) );
+        color: var(--clr-picker, var(--d-clr-picker));
+        font-size: var(--fs-picker-header);
+        border-radius: var(--br-picker);
+        border: none;
+        padding: 1rem;
+
+        *{
+            box-sizing: border-box;
+        }
+
+        .picker_header{
+            display: flex;
+            gap:1rem;
+            justify-content: space-between;
+            align-items: center;
+            .picker_title{
+                margin: 0;
+                font-size: var(--fs-picker-header);
+            }
+            .picker_actions{
+                display: flex;
+                gap:0.5rem;
+                .picker_btn{
+                aspect-ratio: 1/1;
+                }
+            }
+        }
+
+        .picker_content{
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            .picker_option{
+                display: grid;
+                grid-template-columns: 1fr auto;
+                
+                padding: 0.5rem;
+                background-color: var(--bg-option-picker);
+                cursor: pointer;
+                &:hover{
+                    background-color: var(--bg-hover-option-picker);
+                }
+
+                &.selected{
+                    background-color: var(--bg-selected-option-picker);
+                    &:hover{
+                        background-color: var(--bg-selected-hover-option-picker)
+                    }
+                }
+
+                &[data-nodata]{
+                    border-radius: var(--br-picker);
+                }
+
+                &:first-child{
+                    border-radius: var(--br-picker) var(--br-picker) 0 0; 
+                }
+                &:nth-last-child(2){
+                    border-radius:  0 0 var(--br-picker) var(--br-picker); 
+                }
+            }
+        }
+        
+        .picker-footer button{
+            width: 100%;
+        }
+
+        .picker_search{
+            height: var(--height-input-picker);
+            width: 100%;
+            padding: 0.25rem;
+            border-radius: var(--br-picker);
+            cursor: pointer;
+            border: 1.5px solid;
+            border-color:  var(--bg-input-picker);
+            &:focus{
+                outline:none;
+                border-width: 2.5px;
+            }
+        }
+
+        .picker_btn{
+            display: grid;
+            place-items: center;
+            border-radius: var(--br-picker);
+            border: none;
+            height: var(--height-input-picker);
+            background-color: var(--bg-input-picker); 
+            cursor: pointer;
+            
+            &:hover{
+                background-color: var(--bg-hover-input-picker);
+            }
+        }
+    }
+}
