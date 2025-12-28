@@ -23,6 +23,7 @@
 @import "./components/_details.css"             layer(components);
 @import "./components/_progress.css"            layer(components);
 @import "./components/_swipe.css"               layer(components);
+@import "./components/_loadingscreen.css"       layer(components);
 
 /* @import "./layout/_dialog_nesting_support.css"; */
 
