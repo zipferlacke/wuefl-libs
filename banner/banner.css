@@ -1,23 +1,32 @@
 @layer components {
     #notification_wrapper{
+        display: none;
+    }
+    #notification_wrapper:popover-open{
         position: fixed;
-        display: grid;
-        justify-items:center;
-        gap: 1rem;
-        top: 1.5rem;
+
+        margin: 0 auto;
+
+        width: fit-content!important;
         max-width: 1000px;
-        width: 80%;
-        z-index: 20000;
-        left: 50%;
-        transform: translate(-50%);
-        background-color: transparent;
+        max-height: 40dvh;
+
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap:0.5rem;
+        padding: 1rem;
+
         border:none;
-        overflow:visible;
+        outline: none;
+        overflow: auto; 
+        scrollbar-width: none;
+        background-color: transparent;
     }
 
     .notification {
+        pointer-events: auto;
         display: grid;
-        height:min-content;
         grid-template-columns: min-content auto min-content;
         padding: 0rem;
         border-radius: 0.5rem;
@@ -25,6 +34,8 @@
         align-content: center;
         gap: 1rem;
         color: var(--clr-neutral-900);
+        background-color: var(--bg-banner);
+        box-shadow: 0rem 0rem 0.5rem hsl(from var(--bg-banner) h s l / 0.5);
         .notification_msg{
             display:flex;
             width:fit-content;
@@ -48,26 +59,23 @@
             display:flex;
             background-color: transparent;
             border:none;
-            svg{height:1.5rem; width:100%;align-self:center; }
+            svg{height:1.5rem; width:100%;align-self:center;}
         }
+
         &[data-type="info"]{
-            background-color: var(--clr-info-500);
-            box-shadow: 0rem 0rem 1.5rem var(--clr-info-600);
+            --bg-banner: var(--clr-info-500);
         }
         
         &[data-type="error"]{
-            background-color: var(--clr-danger-600);
-            box-shadow: 0rem 0rem 1.5rem var(--clr-danger-600);
+            --bg-banner: var(--clr-danger-500);
         }
 
         &[data-type="warning"]{
-            background-color: var(--clr-warning-500);
-            box-shadow: 0rem 0rem 1.5rem var(--clr-warning-500);
+            --bg-banner: var(--clr-warning-500);
         }
 
         &[data-type="success"]{
-            background-color: var(--clr-success-600);
-            box-shadow: 0rem 0rem 1.5rem var(--clr-success-600);
+            --bg-banner: var(--clr-success-500);
         }
     }
 }
