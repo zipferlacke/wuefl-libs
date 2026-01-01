@@ -135,9 +135,13 @@ function tryToSubmit(dialog){
         form.querySelector(`:valid`).removeAttribute("active");
         return null;
     }
+    const formData = new FormData(form);
+    
+    form.querySelectorAll('input[type="checkbox"][data-shape="toggle"]').forEach(cb => {
+        formData.set(cb.name, cb.checked ? "true" : "false");
+    });
 
     //Form Daten werden als Object extrahiert
-    const formData = new FormData(form);
     const data = {};
     const processedKeys = new Set();
 
@@ -146,14 +150,25 @@ function tryToSubmit(dialog){
         processedKeys.add(key);
 
         const rawValues = formData.getAll(key);
-        const allAreNumbers = rawValues.every(v => v !== "" && !isNaN(v));
-        const allValues = allAreNumbers ? rawValues.map(Number) : rawValues;
+        const allConvertible = rawValues.every(v => {
+            if (v === "true" || v === "false") return true; // Booleans sind okay
+            if (v !== "" && !isNaN(v)) return true;         // Zahlen sind okay
+            return false;                                   // Alles andere (Strings) nicht
+        });
+
+        const allValues = allConvertible 
+            ? rawValues.map(v => {
+                if (v === "true") return true;
+                if (v === "false") return false;
+                return Number(v);
+            }) 
+            : rawValues;
 
         const rootKey = key.split('[')[0];
         const matches = [...key.matchAll(/\[(.*?)\]/g)].map(m => m[1]);
 
         const element = dialog.querySelector(`[name="${key}"]`);
-        const isMultiple = element && (element.multiple || element.type === 'checkbox');
+        const isMultiple = element && (element.multiple || (element.type === 'checkbox' && !element.dataset.shape == "toggle")) ;
         if (matches.length === 0) {
             if (isMultiple) {
                 // Bei Multiple-Select oder Checkboxen IMMER ein Array, auch wenn leer oder nur 1 Wert
@@ -195,7 +210,6 @@ function tryToSubmit(dialog){
             }
         });
     }
-
     return data;
 }
 
