@@ -13,6 +13,7 @@
         width: max-content;
         max-height: 90dvh;
         padding: 1rem;
+        padding-right: 0.5rem;
         border-radius: 1rem;
         position: fixed;
         
@@ -39,6 +40,7 @@
                 grid-template-areas: "header" "main";
                 gap: var(--dialog-gap);
                 overflow-y: auto;
+                padding-right: 0.5rem;
 
                 & header{
                     grid-area: header;
@@ -60,7 +62,7 @@
                 display: flex;
                 gap: 1rem;
                 justify-content: space-around;
-                
+                margin-right: 0.5rem;
                 & .button{
                     max-width: max-content;
                     width: 100%;
