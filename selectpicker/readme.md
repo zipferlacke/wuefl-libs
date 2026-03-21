@@ -8,11 +8,11 @@ Leichtgewichtiger, barrierefreier Custom-Select-Picker ohne externe Abhängigkei
 
 ```html
 <script type="module">
-  import { SelectPicker } from './selectpicker.js';
+  import { SelectPicker } from './selectpicker_v1_0_0.js';
 </script>
 ```
 
-Das CSS wird automatisch nachgeladen — `selectpicker.css` muss im selben Verzeichnis liegen.
+Das CSS wird automatisch nachgeladen — `selectpicker_v1_0_0.css` muss im selben Verzeichnis liegen.
 
 ---
 
@@ -25,7 +25,7 @@ Das CSS wird automatisch nachgeladen — `selectpicker.css` muss im selben Verze
 </select>
 
 <script type="module">
-  import { SelectPicker } from './selectpicker.js';
+  import { SelectPicker } from './selectpicker_v1_0_0.js';
 
   const selectpicker = new SelectPicker({});
   selectpicker.create(document.getElementById('meinSelect'), {
@@ -54,20 +54,20 @@ const selectpicker = new SelectPicker({
   lang: 'de',
   translations: {
     de: {
-      save: "Speichern",
-      cancel: "Abbrechen",
-      search: "Suche...",
+      save:        "Speichern",
+      cancel:      "Abbrechen",
+      search:      "Suche...",
       search_nodata: "Keine Daten...",
-      reset: "Zurücksetzen",
-      empty: "Nichts gewählt..."
+      reset:       "Zurücksetzen",
+      empty:       "Nichts gewählt..."
     },
     en: {
-      save: "Save",
-      cancel: "Cancel",
-      search: "Search...",
+      save:        "Save",
+      cancel:      "Cancel",
+      search:      "Search...",
       search_nodata: "Nothing found...",
-      reset: "Reset",
-      empty: "Nothing selected..."
+      reset:       "Reset",
+      empty:       "Nothing selected..."
     }
   }
 });
@@ -88,23 +88,20 @@ const selectpicker = new SelectPicker({
 
 ## CSS-Variablen
 
-Alle visuellen Aspekte sind über CSS Custom Properties steuerbar:
+Alle visuellen Aspekte sind über CSS Custom Properties steuerbar. Die internen Abstufungen (`--_clr-*`) werden automatisch aus den drei Basisfarben berechnet:
 
 ```css
 :root {
-  --bg-picker: ...; /* Hintergrund des Popovers */
-  --bg-picker-trigger: ...; /* Hintergrund des Triggers */
-  --clr-picker: ...; /* Textfarbe */
-  --fs-picker-header: 1rem; /* Schriftgröße Titel */
-  --fs-input-picker: 0.9rem; /* Schriftgröße Optionen/Input */
-  --br-picker: 0.5rem; /* Border-Radius */
-  --height-input-picker: 2rem; /* Höhe Buttons & Suchfeld */
-  --bg-input-picker: ...; /* Farbe Buttons & Suchfeld-Border */
-  --bg-hover-input-picker: ...; /* Hover-Farbe Buttons */
-  --bg-option-picker: ...; /* Hintergrund einer Option */
-  --bg-hover-option-picker: ...; /* Hover-Hintergrund Option */
-  --bg-selected-option-picker: ...; /* Selektierte Option */
-  --bg-selected-hover-option-picker: ...; /* Selektierte Option Hover */
+  /* Basisfarben — diese überschreiben */
+  --clr-picker:          hsl(0,0%,90%);    /* Hintergrund Popover */
+  --clr-picker-trigger:  hsl(0,0%,90%);    /* Hintergrund Trigger */
+  --clr-picker-input:    hsl(219,100%,50%); /* Akzentfarbe Buttons & Auswahl */
+
+  /* Größen */
+  --fs-picker-header:    1rem;   /* Schriftgröße Titel */
+  --fs-input-picker:     0.9rem; /* Schriftgröße Optionen & Input */
+  --br-picker:           0.5rem; /* Border-Radius überall */
+  --height-input-picker: 2rem;   /* Höhe Buttons & Suchfeld */
 }
 ```
 
@@ -121,7 +118,7 @@ Jede `<option>` kann über `data-icon` ein Icon erhalten. Unterstützt werden Ma
 <option value="home" data-icon="home">Startseite</option>
 
 <!-- Eigenes SVG -->
-<option value="custom" data-icon='<svg viewBox="0 0 24 24">...</svg>'>Eigenes Icon</option>
+<option value="x" data-icon='<svg viewBox="0 0 24 24">...</svg>'>Eigenes Icon</option>
 ```
 
 ---
@@ -157,7 +154,7 @@ selectpicker.create(selectElement, {
 | Methode / Eigenschaft | Beschreibung |
 |---|---|
 | `instance.open()` | Öffnet das Popover programmatisch. |
-| `instance.close()` | Schließt und speichert. |
+| `instance.close()` | Schließt den Picker (ohne Speichern). |
 | `instance.saveAndClose()` | Speichert die Auswahl und schließt. |
 | `instance.reset()` | Setzt auf Standardwerte zurück. |
 | `instance.isOpen` | `true` wenn das Popover geöffnet ist. |
@@ -173,6 +170,24 @@ document.getElementById('meinSelect').addEventListener('change', (e) => {
   console.log('Ausgewählt:', selected);
 });
 ```
+
+---
+
+## CSS-Klassen (intern)
+
+Alle Klassen des SelectPickers tragen das Präfix `sp_` und sind vollständig von anderen Bibliotheken isoliert:
+
+| Klasse | Element |
+|---|---|
+| `sp_trigger` | Trigger-Button (ersetzt das `<select>`) |
+| `sp_popover` | Das Dropdown-Popover |
+| `sp_header` / `sp_title` / `sp_actions` | Kopfzeile des Popovers |
+| `sp_btn` / `sp_btn_close` / `sp_btn_reset` / `sp_btn_save` | Aktions-Buttons |
+| `sp_search` | Suchfeld |
+| `sp_content` | Optionen-Liste |
+| `sp_option` / `sp_selected` / `sp_option_hidden` | Einzelne Option |
+| `sp_chip` / `sp_single_value` / `sp_placeholder` | Trigger-Inhalt |
+| `sp_msr` | Material Symbols Icon |
 
 ---
 

@@ -5,7 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>SelectPicker — Konfigurator</title>
   <style>
-    layer{*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }}
+    @import url('../css/fonts/google-icons-rounded.css');
+    @layer resets, components;
+    @layer resets {
+      *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    }
+
     :root {
       --paper:   #f5f4f0;
       --surface: #ffffff;
@@ -29,41 +34,20 @@
       flex-shrink: 0;
     }
     .nav-brand { font-family: var(--mono); font-size: .88rem; font-weight: 500; color: var(--ink); text-decoration: none; }
-    .nav-sub { font-family: var(--mono); font-size: .75rem; color: var(--ink-3); }
+    .nav-sub   { font-family: var(--mono); font-size: .75rem; color: var(--ink-3); }
     nav a { font-family: var(--mono); font-size: .75rem; color: var(--ink-2); text-decoration: none; }
     nav a:hover { color: var(--ink); }
 
-    /* ── MAIN LAYOUT ── */
-    .layout {
-      display: grid;
-      grid-template-columns: 280px 1fr;
-      flex: 1;
-      min-height: 0;
-    }
-    @media (max-width: 700px) {
-      .layout { grid-template-columns: 1fr; }
-      .panel-controls { max-height: 50vh; }
-    }
+    .layout { display: grid; grid-template-columns: 280px 1fr; flex: 1; min-height: 0; }
+    @media (max-width: 700px) { .layout { grid-template-columns: 1fr; } .panel-controls { max-height: 50vh; } }
 
-    /* ── LEFT: CONTROLS ── */
-    .panel-controls {
-      background: var(--surface);
-      border-right: 1px solid var(--line);
-      overflow-y: auto;
-      padding: 1.25rem 1rem;
-      display: flex; flex-direction: column; gap: 1.25rem;
-    }
+    /* ── Controls ── */
+    .panel-controls { background: var(--surface); border-right: 1px solid var(--line); overflow-y: auto; padding: 1.25rem 1rem; display: flex; flex-direction: column; gap: 1.25rem; }
 
     .ctrl-group { display: flex; flex-direction: column; gap: .5rem; }
-    .ctrl-group-title {
-      font-family: var(--mono); font-size: .68rem; letter-spacing: .1em;
-      text-transform: uppercase; color: var(--ink-3);
-      padding-bottom: .4rem; border-bottom: 1px solid var(--line);
-    }
+    .ctrl-group-title { font-family: var(--mono); font-size: .68rem; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-3); padding-bottom: .4rem; border-bottom: 1px solid var(--line); }
 
-    .ctrl-row {
-      display: flex; align-items: center; justify-content: space-between; gap: .5rem;
-    }
+    .ctrl-row { display: flex; align-items: center; justify-content: space-between; gap: .5rem; }
     .ctrl-label { font-size: .82rem; color: var(--ink-2); flex: 1; white-space: nowrap; }
 
     input[type="text"], input[type="color"], select.ctrl-select {
@@ -71,83 +55,41 @@
       border: 1px solid var(--line); border-radius: 4px;
       padding: .25rem .4rem; background: var(--paper); color: var(--ink);
     }
-    input[type="text"] { width: 130px; }
+    input[type="text"]  { width: 130px; }
     input[type="color"] { width: 36px; height: 28px; padding: 2px; cursor: pointer; border-radius: 4px; }
-    select.ctrl-select { padding: .25rem .4rem; }
+    select.ctrl-select  { padding: .25rem .4rem; }
 
-    .toggle-row { display: flex; align-items: center; gap: .6rem; }
-    .toggle {
-      position: relative; width: 36px; height: 20px; cursor: pointer;
-    }
+    .toggle { position: relative; width: 36px; height: 20px; cursor: pointer; }
     .toggle input { opacity: 0; width: 0; height: 0; }
-    .toggle-slider {
-      position: absolute; inset: 0;
-      background: var(--line); border-radius: 20px;
-      transition: background .2s;
-    }
-    .toggle-slider::before {
-      content: ''; position: absolute;
-      width: 14px; height: 14px; left: 3px; top: 3px;
-      background: white; border-radius: 50%;
-      transition: transform .2s;
-    }
+    .toggle-slider { position: absolute; inset: 0; background: var(--line); border-radius: 20px; transition: background .2s; }
+    .toggle-slider::before { content: ''; position: absolute; width: 14px; height: 14px; left: 3px; top: 3px; background: white; border-radius: 50%; transition: transform .2s; }
     .toggle input:checked + .toggle-slider { background: var(--accent); }
     .toggle input:checked + .toggle-slider::before { transform: translateX(16px); }
 
     input[type="range"] { width: 100px; accent-color: var(--accent); }
     .range-val { font-family: var(--mono); font-size: .75rem; color: var(--ink-3); width: 3rem; text-align: right; }
-
     .ctrl-full input[type="text"] { width: 100%; }
 
-    /* ── RIGHT: PREVIEW + CODE ── */
-    .panel-right {
-      display: flex; flex-direction: column; min-height: 0;
-    }
-
-    .preview-area {
-      flex: 1; display: flex; align-items: flex-start; justify-content: center;
-      padding: 3rem 2rem 2rem;
-      background: var(--paper);
-      position: relative;
-    }
-    .preview-label {
-      position: absolute; top: .75rem; left: 1rem;
-      font-family: var(--mono); font-size: .68rem; letter-spacing: .1em;
-      text-transform: uppercase; color: var(--ink-3);
-    }
+    /* ── Preview + Code ── */
+    .panel-right { display: flex; flex-direction: column; min-height: 0; }
+    .preview-area { flex: 1; display: flex; align-items: flex-start; justify-content: center; padding: 3rem 2rem 2rem; background: var(--paper); position: relative; }
+    .preview-label { position: absolute; top: .75rem; left: 1rem; font-family: var(--mono); font-size: .68rem; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-3); }
     .preview-inner { min-width: 200px; }
 
-    /* ── CODE OUTPUT ── */
-    .code-area {
-      border-top: 1px solid var(--line);
-      background: var(--ink);
-      flex-shrink: 0;
-    }
-    .code-header {
-      display: flex; align-items: center; justify-content: space-between;
-      padding: .5rem 1rem;
-      border-bottom: 1px solid #3f3f46;
-    }
+    .code-area { border-top: 1px solid var(--line); background: var(--ink); flex-shrink: 0; }
+    .code-header { display: flex; align-items: center; justify-content: space-between; padding: .5rem 1rem; border-bottom: 1px solid #3f3f46; }
     .code-header span { font-family: var(--mono); font-size: .7rem; color: #71717a; }
-    .copy-btn {
-      display: flex; align-items: center; gap: .3rem;
-      padding: .25rem .6rem; background: #3f3f46; border: none;
-      border-radius: 4px; color: #d4d4d8; font-family: var(--mono); font-size: .72rem;
-      cursor: pointer; transition: background .15s;
-    }
+    .copy-btn { display: flex; align-items: center; gap: .3rem; padding: .25rem .6rem; background: #3f3f46; border: none; border-radius: 4px; color: #d4d4d8; font-family: var(--mono); font-size: .72rem; cursor: pointer; transition: background .15s; }
     .copy-btn:hover { background: #52525b; }
     .copy-btn.copied { background: #166534; color: #bbf7d0; }
-    pre#codeOutput {
-      margin: 0; padding: 1rem 1.25rem;
-      overflow-x: auto; max-height: 260px; overflow-y: auto;
-      font-family: var(--mono); font-size: .78rem; line-height: 1.8;
-      color: #e4e4e7; background: transparent; border-radius: 0;
-    }
-    .kw  { color: #f87171; } .str { color: #86efac; }
-    .cmt { color: #52525b; font-style: italic; }
-    .fn  { color: #c084fc; } .num { color: #60a5fa; }
+
+    pre#codeOutput { margin: 0; padding: 1rem 1.25rem; overflow-x: auto; max-height: 260px; overflow-y: auto; font-family: var(--mono); font-size: .78rem; line-height: 1.8; color: #e4e4e7; background: transparent; border-radius: 0; }
+    .kw   { color: #f87171; } .str  { color: #86efac; }
+    .cmt  { color: #52525b; font-style: italic; }
+    .fn   { color: #c084fc; } .num  { color: #60a5fa; }
     .prop { color: #fbbf24; }
 
+    /* Seiten-Icons */
     .msr {
       font-family: 'Material Symbols Rounded'; font-weight: normal; font-style: normal;
       font-size: 16px; line-height: 1; letter-spacing: normal; text-transform: none;
@@ -175,12 +117,10 @@
     <!-- Allgemein -->
     <div class="ctrl-group">
       <div class="ctrl-group-title">Allgemein</div>
-
       <div class="ctrl-row ctrl-full">
         <label class="ctrl-label">Titel</label>
         <input type="text" id="cfg-title" value="Option wählen">
       </div>
-
       <div class="ctrl-row">
         <label class="ctrl-label">Sprache</label>
         <select class="ctrl-select" id="cfg-lang">
@@ -188,74 +128,35 @@
           <option value="en">English</option>
         </select>
       </div>
-
       <div class="ctrl-row">
         <label class="ctrl-label">Multiselect</label>
-        <label class="toggle">
-          <input type="checkbox" id="cfg-multi">
-          <span class="toggle-slider"></span>
-        </label>
+        <label class="toggle"><input type="checkbox" id="cfg-multi"><span class="toggle-slider"></span></label>
       </div>
-
       <div class="ctrl-row">
         <label class="ctrl-label">Suchfeld</label>
-        <label class="toggle">
-          <input type="checkbox" id="cfg-search" checked>
-          <span class="toggle-slider"></span>
-        </label>
+        <label class="toggle"><input type="checkbox" id="cfg-search" checked><span class="toggle-slider"></span></label>
       </div>
-
       <div class="ctrl-row">
         <label class="ctrl-label">Speichern-Button</label>
-        <label class="toggle">
-          <input type="checkbox" id="cfg-save">
-          <span class="toggle-slider"></span>
-        </label>
+        <label class="toggle"><input type="checkbox" id="cfg-save"><span class="toggle-slider"></span></label>
       </div>
-
       <div class="ctrl-row">
         <label class="ctrl-label">Reset-Button</label>
-        <label class="toggle">
-          <input type="checkbox" id="cfg-reset">
-          <span class="toggle-slider"></span>
-        </label>
+        <label class="toggle"><input type="checkbox" id="cfg-reset"><span class="toggle-slider"></span></label>
       </div>
     </div>
 
     <!-- Farben -->
     <div class="ctrl-group">
       <div class="ctrl-group-title">Farben</div>
-
-      <div class="ctrl-row">
-        <label class="ctrl-label">Trigger Hintergrund</label>
-        <input type="color" id="col-trigger" value="#e5e5e5">
-      </div>
-      <div class="ctrl-row">
-        <label class="ctrl-label">Picker Hintergrund</label>
-        <input type="color" id="col-picker" value="#e5e5e5">
-      </div>
-      <div class="ctrl-row">
-        <label class="ctrl-label">Textfarbe</label>
-        <input type="color" id="col-text" value="#1a1a1a">
-      </div>
-      <div class="ctrl-row">
-        <label class="ctrl-label">Akzentfarbe</label>
-        <input type="color" id="col-accent" value="#1d50ff">
-      </div>
-      <div class="ctrl-row">
-        <label class="ctrl-label">Option Hintergrund</label>
-        <input type="color" id="col-option" value="#cccccc">
-      </div>
-      <div class="ctrl-row">
-        <label class="ctrl-label">Option selektiert</label>
-        <input type="color" id="col-selected" value="#1d50ff">
-      </div>
+      <div class="ctrl-row"><label class="ctrl-label">Trigger Hintergrund</label><input type="color" id="col-trigger" value="#e5e5e5"></div>
+      <div class="ctrl-row"><label class="ctrl-label">Picker Hintergrund</label><input type="color" id="col-picker"  value="#e5e5e5"></div>
+      <div class="ctrl-row"><label class="ctrl-label">Akzentfarbe</label>        <input type="color" id="col-accent"  value="#1d50ff"></div>
     </div>
 
     <!-- Größen -->
     <div class="ctrl-group">
       <div class="ctrl-group-title">Größen</div>
-
       <div class="ctrl-row">
         <label class="ctrl-label">Border-Radius</label>
         <input type="range" id="rng-br" min="0" max="1.5" step="0.05" value="0.5">
@@ -281,10 +182,10 @@
     <!-- Übersetzungen -->
     <div class="ctrl-group">
       <div class="ctrl-group-title">Übersetzungen (DE)</div>
-      <div class="ctrl-row ctrl-full"><label class="ctrl-label">Leer</label><input type="text" id="t-empty" value="Nichts gewählt..."></div>
-      <div class="ctrl-row ctrl-full"><label class="ctrl-label">Suche</label><input type="text" id="t-search" value="Suche..."></div>
+      <div class="ctrl-row ctrl-full"><label class="ctrl-label">Leer</label>      <input type="text" id="t-empty"  value="Nichts gewählt..."></div>
+      <div class="ctrl-row ctrl-full"><label class="ctrl-label">Suche</label>     <input type="text" id="t-search" value="Suche..."></div>
       <div class="ctrl-row ctrl-full"><label class="ctrl-label">Keine Daten</label><input type="text" id="t-nodata" value="Keine Daten..."></div>
-      <div class="ctrl-row ctrl-full"><label class="ctrl-label">Speichern</label><input type="text" id="t-save" value="Speichern"></div>
+      <div class="ctrl-row ctrl-full"><label class="ctrl-label">Speichern</label> <input type="text" id="t-save"   value="Speichern"></div>
       <div class="ctrl-row ctrl-full"><label class="ctrl-label">Zurücksetzen</label><input type="text" id="t-reset" value="Zurücksetzen"></div>
     </div>
 
@@ -295,7 +196,6 @@
     <div class="preview-area">
       <span class="preview-label">Live-Vorschau</span>
       <div class="preview-inner" id="previewMount">
-        <!-- picker wird hier eingebunden -->
         <select id="previewSelect">
           <option value="">— bitte wählen —</option>
           <option value="a" data-icon="home">Startseite</option>
@@ -321,23 +221,20 @@
 </div>
 
 <script type="module">
-import { SelectPicker } from './selectpicker_v1.0.0.js';
+import { SelectPicker } from './selectpicker_v1_0_0.js';
 
-// ── State ──────────────────────────────────────
+// ── State ──────────────────────────────────────────────────────────────────────
 const cfg = {
-  title: 'Option wählen',
-  lang: 'de',
-  multi: false,
-  search: true,
+  title:      'Option wählen',
+  lang:       'de',
+  multi:      false,
+  search:     true,
   saveButton: false,
-  reset: false,
+  reset:      false,
   colors: {
-    trigger:  '#e5e5e5',
-    picker:   '#e5e5e5',
-    text:     '#1a1a1a',
-    accent:   '#1d50ff',
-    option:   '#cccccc',
-    selected: '#1d50ff',
+    trigger: '#e5e5e5',
+    picker:  '#e5e5e5',
+    accent:  '#1d50ff',
   },
   sizes: { br: '0.5', h: '2', fsh: '1', fso: '0.9' },
   translations: {
@@ -346,206 +243,141 @@ const cfg = {
   }
 };
 
-// ── Picker instance management ─────────────────
+// ── Picker-Management ──────────────────────────────────────────────────────────
 let pickerInstance = null;
-let selectpicker = null;
+let selectpicker   = null;
 
 function hexToHsl(hex) {
   let r = parseInt(hex.slice(1,3),16)/255;
   let g = parseInt(hex.slice(3,5),16)/255;
   let b = parseInt(hex.slice(5,7),16)/255;
   const max = Math.max(r,g,b), min = Math.min(r,g,b);
-  let h,s,l = (max+min)/2;
-  if(max===min){ h=s=0; } else {
-    const d=max-min; s=l>.5?d/(2-max-min):d/(max+min);
-    switch(max){ case r:h=(g-b)/d+(g<b?6:0);break; case g:h=(b-r)/d+2;break; case b:h=(r-g)/d+4;break; }
-    h/=6;
+  let h, s, l = (max+min)/2;
+  if (max === min) { h = s = 0; } else {
+    const d = max-min; s = l > .5 ? d/(2-max-min) : d/(max+min);
+    switch(max){ case r: h=(g-b)/d+(g<b?6:0); break; case g: h=(b-r)/d+2; break; case b: h=(r-g)/d+4; break; }
+    h /= 6;
   }
   return `hsl(${Math.round(h*360)},${Math.round(s*100)}%,${Math.round(l*100)}%)`;
 }
 
 function applyPickerVars() {
   const el = document.getElementById('previewMount');
-  const c = cfg.colors;
-  const s = cfg.sizes;
-  const hAccent = hexToHsl(c.accent);
-  const hAccentHov = hexToHsl(c.accent); // simplified
-  el.style.setProperty('--bg-picker-trigger', hexToHsl(c.trigger));
-  el.style.setProperty('--bg-picker', hexToHsl(c.picker));
-  el.style.setProperty('--clr-picker', hexToHsl(c.text));
-  el.style.setProperty('--bg-input-picker', hAccent);
-  el.style.setProperty('--bg-hover-input-picker', hAccent);
-  el.style.setProperty('--bg-option-picker', hexToHsl(c.option));
-  el.style.setProperty('--bg-hover-option-picker', hexToHsl(c.option));
-  el.style.setProperty('--bg-selected-option-picker', hexToHsl(c.selected));
-  el.style.setProperty('--bg-selected-hover-option-picker', hexToHsl(c.selected));
-  el.style.setProperty('--br-picker', s.br + 'rem');
-  el.style.setProperty('--height-input-picker', s.h + 'rem');
-  el.style.setProperty('--fs-picker-header', s.fsh + 'rem');
-  el.style.setProperty('--fs-input-picker', s.fso + 'rem');
+  const { colors: c, sizes: s } = cfg;
+  el.style.setProperty('--clr-picker-trigger', hexToHsl(c.trigger));
+  el.style.setProperty('--clr-picker',         hexToHsl(c.picker));
+  el.style.setProperty('--clr-picker-input',   hexToHsl(c.accent));
+  el.style.setProperty('--br-picker',           s.br  + 'rem');
+  el.style.setProperty('--height-input-picker', s.h   + 'rem');
+  el.style.setProperty('--fs-picker-header',    s.fsh + 'rem');
+  el.style.setProperty('--fs-input-picker',     s.fso + 'rem');
 }
 
 function rebuildPicker() {
-  // destroy old
-  if (pickerInstance) {
-    pickerInstance.close();
-  }
-  if (selectpicker) {
-    // remove trigger if exists
-    const oldTrigger = document.querySelector('#previewMount .picker_trigger_elm');
-    if (oldTrigger) oldTrigger.remove();
-  }
+  if (pickerInstance) pickerInstance.close();
 
-  // rebuild select element (for multi toggle)
-  const mount = document.getElementById('previewMount');
-  let sel = document.getElementById('previewSelect');
+  const oldTrigger = document.querySelector('#previewMount .sp_trigger');
+  if (oldTrigger) oldTrigger.remove();
+
+  const sel = document.getElementById('previewSelect');
   sel.multiple = cfg.multi;
-
-  // reset selections
-  Array.from(sel.options).forEach((o,i) => o.selected = i === 0 && !cfg.multi ? false : false);
+  sel.style.display = '';
+  Array.from(sel.options).forEach(o => o.selected = false);
   if (cfg.reset) sel.dataset.default = '["a"]';
-  else delete sel.dataset.default;
+  else           delete sel.dataset.default;
 
-  // apply vars
   applyPickerVars();
 
-  selectpicker = new SelectPicker({
-    lang: cfg.lang,
-    translations: cfg.translations
-  });
-
+  selectpicker   = new SelectPicker({ lang: cfg.lang, translations: cfg.translations });
   pickerInstance = selectpicker.create(sel, {
-    title: cfg.title,
-    search: cfg.search,
+    title:      cfg.title,
+    search:     cfg.search,
     saveButton: cfg.saveButton,
   });
 
-  // hide reset btn if not configured
   setTimeout(() => {
-    const rb = document.querySelector('#previewMount .reset_btn');
+    const rb = document.querySelector('#previewMount .sp_btn_reset');
     if (rb) rb.hidden = !cfg.reset;
   }, 50);
 
   generateCode();
 }
 
-// ── Code Generator ─────────────────────────────
+// ── Code-Generator ─────────────────────────────────────────────────────────────
 function generateCode() {
-  const c = cfg.colors;
-  const s = cfg.sizes;
-  const t = cfg.translations;
-  const hAccent = hexToHsl(c.accent);
+  const { colors: c, sizes: s, translations: t } = cfg;
 
-  const hasCustomColors = true; // always show for clarity
-  const hasCustomSizes = s.br !== '0.5' || s.h !== '2' || s.fsh !== '1' || s.fso !== '0.9';
-
-  let css = '';
-  css += `<span class="cmt">/* CSS Custom Properties anpassen */</span>\n`;
-  css += `:root {\n`;
-  css += `  <span class="prop">--bg-picker-trigger</span>: <span class="str">${hexToHsl(c.trigger)}</span>;\n`;
-  css += `  <span class="prop">--bg-picker</span>: <span class="str">${hexToHsl(c.picker)}</span>;\n`;
-  css += `  <span class="prop">--clr-picker</span>: <span class="str">${hexToHsl(c.text)}</span>;\n`;
-  css += `  <span class="prop">--bg-input-picker</span>: <span class="str">${hAccent}</span>;\n`;
-  css += `  <span class="prop">--bg-option-picker</span>: <span class="str">${hexToHsl(c.option)}</span>;\n`;
-  css += `  <span class="prop">--bg-selected-option-picker</span>: <span class="str">${hexToHsl(c.selected)}</span>;\n`;
-  if (s.br !== '0.5')  css += `  <span class="prop">--br-picker</span>: <span class="str">${s.br}rem</span>;\n`;
-  if (s.h !== '2')     css += `  <span class="prop">--height-input-picker</span>: <span class="str">${s.h}rem</span>;\n`;
-  if (s.fsh !== '1')   css += `  <span class="prop">--fs-picker-header</span>: <span class="str">${s.fsh}rem</span>;\n`;
-  if (s.fso !== '0.9') css += `  <span class="prop">--fs-input-picker</span>: <span class="str">${s.fso}rem</span>;\n`;
+  let css = `<span class="cmt">/* CSS Custom Properties */</span>\n:root {\n`;
+  css += `  <span class="prop">--clr-picker-trigger</span>: <span class="str">${hexToHsl(c.trigger)}</span>;\n`;
+  css += `  <span class="prop">--clr-picker</span>:         <span class="str">${hexToHsl(c.picker)}</span>;\n`;
+  css += `  <span class="prop">--clr-picker-input</span>:   <span class="str">${hexToHsl(c.accent)}</span>;\n`;
+  if (s.br  !== '0.5') css += `  <span class="prop">--br-picker</span>:           <span class="str">${s.br}rem</span>;\n`;
+  if (s.h   !== '2')   css += `  <span class="prop">--height-input-picker</span>: <span class="str">${s.h}rem</span>;\n`;
+  if (s.fsh !== '1')   css += `  <span class="prop">--fs-picker-header</span>:    <span class="str">${s.fsh}rem</span>;\n`;
+  if (s.fso !== '0.9') css += `  <span class="prop">--fs-input-picker</span>:     <span class="str">${s.fso}rem</span>;\n`;
   css += `}\n`;
 
-  const titleVal = cfg.title.includes(' ') ? `<span class="str">'${cfg.title}'</span>` : `<span class="str">'${cfg.title}'</span>`;
-  const langLine = cfg.lang !== 'de' ? `,\n  lang: <span class="str">'${cfg.lang}'</span>` : '';
-
   const deT = t.de;
-  const enT = t.en;
   const hasCustomT = deT.empty !== 'Nichts gewählt...' || deT.search !== 'Suche...' ||
     deT.search_nodata !== 'Keine Daten...' || deT.save !== 'Speichern' || deT.reset !== 'Zurücksetzen';
 
   let transBlock = '';
   if (hasCustomT) {
-    transBlock = `,\n  translations: {\n    de: {\n`;
-    transBlock += `      empty: <span class="str">'${deT.empty}'</span>,\n`;
-    transBlock += `      search: <span class="str">'${deT.search}'</span>,\n`;
-    transBlock += `      search_nodata: <span class="str">'${deT.search_nodata}'</span>,\n`;
-    transBlock += `      save: <span class="str">'${deT.save}'</span>,\n`;
-    transBlock += `      reset: <span class="str">'${deT.reset}'</span>\n`;
+    transBlock = `,\n  <span class="prop">translations</span>: {\n    <span class="prop">de</span>: {\n`;
+    transBlock += `      <span class="prop">empty</span>:        <span class="str">'${deT.empty}'</span>,\n`;
+    transBlock += `      <span class="prop">search</span>:       <span class="str">'${deT.search}'</span>,\n`;
+    transBlock += `      <span class="prop">search_nodata</span>:<span class="str">'${deT.search_nodata}'</span>,\n`;
+    transBlock += `      <span class="prop">save</span>:         <span class="str">'${deT.save}'</span>,\n`;
+    transBlock += `      <span class="prop">reset</span>:        <span class="str">'${deT.reset}'</span>\n`;
     transBlock += `    }\n  }`;
   }
 
-  let js = '';
-  js += `<span class="kw">import</span> { SelectPicker } <span class="kw">from</span> <span class="str">'./selectpicker.js'</span>;\n\n`;
-  js += `<span class="kw">const</span> selectpicker = <span class="kw">new</span> <span class="fn">SelectPicker</span>({`;
-  js += langLine || transBlock ? `\n  lang: <span class="str">'${cfg.lang}'</span>${transBlock}\n})` : `})`;
-  js += `;\n\n`;
+  let js = `<span class="kw">import</span> { SelectPicker } <span class="kw">from</span> <span class="str">'./selectpicker_v1_0_0.js'</span>;\n\n`;
+  js += `<span class="kw">const</span> selectpicker = <span class="kw">new</span> <span class="fn">SelectPicker</span>({\n`;
+  js += `  <span class="prop">lang</span>: <span class="str">'${cfg.lang}'</span>${transBlock}\n});\n\n`;
   js += `selectpicker.<span class="fn">create</span>(\n`;
-  js += `  document.<span class="fn">getElementById</span>(<span class="str">'meinSelect'</span>),\n`;
-  js += `  {\n`;
-  js += `    title: ${titleVal}`;
-  if (cfg.search !== true)      js += `,\n    search: <span class="num">${cfg.search}</span>`;
-  if (cfg.saveButton !== false) js += `,\n    saveButton: <span class="num">${cfg.saveButton}</span>`;
+  js += `  document.<span class="fn">getElementById</span>(<span class="str">'meinSelect'</span>),\n  {\n`;
+  js += `    <span class="prop">title</span>: <span class="str">'${cfg.title}'</span>`;
+  if (!cfg.search)     js += `,\n    <span class="prop">search</span>: <span class="num">false</span>`;
+  if (cfg.saveButton)  js += `,\n    <span class="prop">saveButton</span>: <span class="num">true</span>`;
   js += `\n  }\n);\n`;
 
   if (cfg.multi || cfg.reset) {
     js += `\n<span class="cmt">/* HTML */</span>\n`;
-    js += `<span class="cmt">&lt;select id="meinSelect"${cfg.multi ? ' multiple' : ''}${cfg.reset ? ' data-default=\'["a"]\'' : ''}&gt;</span>\n`;
-    js += `<span class="cmt">  &lt;option value="a"&gt;Option A&lt;/option&gt;\n&lt;/select&gt;</span>`;
+    js += `<span class="cmt">&lt;select id="meinSelect"`;
+    if (cfg.multi) js += ` multiple`;
+    if (cfg.reset) js += ` data-default='["a"]'`;
+    js += `&gt;\n  &lt;option value="a"&gt;Option A&lt;/option&gt;\n&lt;/select&gt;</span>`;
   }
 
   document.getElementById('codeOutput').innerHTML = css + '\n' + js;
 }
 
-// ── Wire up controls ───────────────────────────
-function bind(id, key, sub, transform) {
-  const el = document.getElementById(id);
-  el.addEventListener('input', () => {
-    const val = transform ? transform(el.value) : el.value;
-    if (sub) cfg[sub][key] = val;
-    else cfg[key] = val;
-    rebuildPicker();
-  });
-  if (el.type === 'checkbox') {
-    el.addEventListener('change', () => {
-      const val = el.checked;
-      if (sub) cfg[sub][key] = val;
-      else cfg[key] = val;
-      rebuildPicker();
-    });
-  }
-}
-
-bind('cfg-title', 'title');
-bind('cfg-lang', 'lang');
+// ── Controls verdrahten ────────────────────────────────────────────────────────
+document.getElementById('cfg-title').addEventListener('input',  e => { cfg.title = e.target.value; rebuildPicker(); });
+document.getElementById('cfg-lang').addEventListener('change',  e => { cfg.lang  = e.target.value; rebuildPicker(); });
 document.getElementById('cfg-multi').addEventListener('change', e => { cfg.multi = e.target.checked; rebuildPicker(); });
-document.getElementById('cfg-search').addEventListener('change', e => { cfg.search = e.target.checked; rebuildPicker(); });
-document.getElementById('cfg-save').addEventListener('change', e => { cfg.saveButton = e.target.checked; rebuildPicker(); });
+document.getElementById('cfg-search').addEventListener('change',e => { cfg.search = e.target.checked; rebuildPicker(); });
+document.getElementById('cfg-save').addEventListener('change',  e => { cfg.saveButton = e.target.checked; rebuildPicker(); });
 document.getElementById('cfg-reset').addEventListener('change', e => { cfg.reset = e.target.checked; rebuildPicker(); });
 
-['trigger','picker','text','accent','option','selected'].forEach(k => {
-  const map = { trigger:'col-trigger', picker:'col-picker', text:'col-text', accent:'col-accent', option:'col-option', selected:'col-selected' };
-  document.getElementById(map[k]).addEventListener('input', e => {
-    cfg.colors[k] = e.target.value; applyPickerVars(); generateCode();
-  });
-});
+document.getElementById('col-trigger').addEventListener('input', e => { cfg.colors.trigger = e.target.value; applyPickerVars(); generateCode(); });
+document.getElementById('col-picker').addEventListener('input',  e => { cfg.colors.picker  = e.target.value; applyPickerVars(); generateCode(); });
+document.getElementById('col-accent').addEventListener('input',  e => { cfg.colors.accent  = e.target.value; applyPickerVars(); generateCode(); });
 
 [
-  ['rng-br','br','lbl-br','rem'],
-  ['rng-h','h','lbl-h','rem'],
-  ['rng-fsh','fsh','lbl-fsh','rem'],
-  ['rng-fso','fso','lbl-fso','rem'],
-].forEach(([rid,key,lid,unit]) => {
+  ['rng-br','br','lbl-br'],
+  ['rng-h','h','lbl-h'],
+  ['rng-fsh','fsh','lbl-fsh'],
+  ['rng-fso','fso','lbl-fso'],
+].forEach(([rid, key, lid]) => {
   document.getElementById(rid).addEventListener('input', e => {
     cfg.sizes[key] = e.target.value;
-    document.getElementById(lid).textContent = e.target.value + unit;
+    document.getElementById(lid).textContent = e.target.value + 'rem';
     applyPickerVars(); generateCode();
   });
 });
 
-['empty','search','search_nodata','save','reset'].forEach(key => {
-  const el = document.getElementById('t-' + key.replace('_nodata','nodata').replace('search_nodata','t-nodata'));
-  // map correct IDs
-});
-// Manual translation binds
 ['empty','search','save','reset'].forEach(key => {
   const el = document.getElementById('t-' + key);
   if (el) el.addEventListener('input', e => { cfg.translations.de[key] = e.target.value; generateCode(); });
@@ -554,7 +386,6 @@ document.getElementById('t-nodata').addEventListener('input', e => {
   cfg.translations.de.search_nodata = e.target.value; generateCode();
 });
 
-// Copy button
 document.getElementById('copyBtn').addEventListener('click', () => {
   const text = document.getElementById('codeOutput').innerText;
   navigator.clipboard.writeText(text).then(() => {
@@ -568,7 +399,7 @@ document.getElementById('copyBtn').addEventListener('click', () => {
   });
 });
 
-// ── Init ───────────────────────────────────────
+// ── Init ───────────────────────────────────────────────────────────────────────
 rebuildPicker();
 </script>
 </body>

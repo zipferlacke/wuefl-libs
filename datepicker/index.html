@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DatePicker — Demo</title>
+  <style>
+    @import url('../css/fonts/google-icons-rounded.css');
+    layer{*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }}
+    :root {
+      --paper:   #f5f4f0; --surface: #fff; --ink: #18181b; --ink-2: #52525b;
+      --line:    #e4e4e7; --accent: #1d4ed8; --mono: 'IBM Plex Mono', monospace;
+    }
+    body { font-family: 'IBM Plex Sans', sans-serif; background: var(--paper); color: var(--ink); font-size: 15px; }
+    nav {
+      position: sticky; top: 0; z-index: 100;
+      background: var(--paper); border-bottom: 1px solid var(--line);
+      padding: .65rem 1.5rem; display: flex; align-items: center; justify-content: space-between;
+    }
+    .nav-brand { font-family: var(--mono); font-size: .9rem; font-weight: 500; color: var(--ink); text-decoration: none; }
+    nav a { font-family: var(--mono); font-size: .75rem; color: var(--ink-2); text-decoration: none; }
+    nav a:hover { color: var(--ink); }
+    .wrap { max-width: 820px; margin: 0 auto; padding: 2.5rem 1.5rem 5rem; }
+    .hero { margin-bottom: 2.5rem; }
+    .hero-tag { font-family: var(--mono); font-size: .72rem; color: var(--accent); letter-spacing: .1em; text-transform: uppercase; margin-bottom: .5rem; }
+    h1 { font-size: 2rem; font-weight: 600; letter-spacing: -.03em; margin-bottom: .5rem; }
+    .hero p { color: var(--ink-2); font-size: .93rem; line-height: 1.7; }
+    .demo-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; margin-bottom: 3rem; }
+    @media (max-width: 580px) { .demo-grid { grid-template-columns: 1fr; } }
+    .card { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+    .card-head { display: flex; align-items: center; justify-content: space-between; padding: .55rem 1rem; background: var(--ink); font-family: var(--mono); font-size: .7rem; color: #71717a; }
+    .dots { display: flex; gap: .3rem; }
+    .dots span { width: 9px; height: 9px; border-radius: 50%; }
+    .dots span:nth-child(1){background:#ef4444;} .dots span:nth-child(2){background:#f59e0b;} .dots span:nth-child(3){background:#22c55e;}
+    .card-body { padding: 1.5rem 1.25rem; min-height: 100px; }
+    .card-body label { display: block; font-family: var(--mono); font-size: .7rem; color: #a1a1aa; letter-spacing: .06em; text-transform: uppercase; margin-bottom: .5rem; }
+    .log { margin-top: .85rem; padding: .5rem .75rem; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 6px; font-family: var(--mono); font-size: .73rem; color: #166534; }
+    .section-label { font-family: var(--mono); font-size: .7rem; letter-spacing: .12em; text-transform: uppercase; color: #a1a1aa; margin-bottom: 1rem; display: flex; align-items: center; gap: .5rem; }
+    .section-label::after { content: ''; flex: 1; height: 1px; background: var(--line); }
+    h2 { font-size: 1.25rem; font-weight: 600; letter-spacing: -.02em; margin-bottom: .5rem; }
+    h3 { font-family: var(--mono); font-size: .82rem; font-weight: 500; margin: 1.5rem 0 .4rem; }
+    p { color: var(--ink-2); margin-bottom: .8rem; font-size: .9rem; line-height: 1.75; }
+    code { font-family: var(--mono); font-size: .79em; background: #eff6ff; color: var(--accent); padding: .1em .35em; border-radius: 3px; }
+    pre { background: #18181b; color: #e4e4e7; border-radius: 8px; padding: 1.1rem 1.3rem; overflow-x: auto; margin: .6rem 0 1.2rem; font-family: var(--mono); font-size: .78rem; line-height: 1.8; }
+    pre code { background: none; color: inherit; padding: 0; }
+    .kw{color:#f87171;} .str{color:#86efac;} .cmt{color:#52525b;font-style:italic;} .fn{color:#c084fc;} .num{color:#60a5fa;}
+    table { width: 100%; border-collapse: collapse; margin: .6rem 0 1.2rem; font-size: .84rem; }
+    th { text-align: left; padding: .4rem .75rem; background: #18181b; color: #fff; font-family: var(--mono); font-size: .7rem; letter-spacing: .05em; }
+    th:first-child{border-radius:5px 0 0 0;} th:last-child{border-radius:0 5px 0 0;}
+    td { padding: .5rem .75rem; border-bottom: 1px solid var(--line); color: var(--ink-2); vertical-align: top; }
+    tr:last-child td{border-bottom:none;} tr:nth-child(even) td{background:#fafafa;}
+    td code{font-size:.77rem;}
+    .section { margin-bottom: 3rem; }
+    footer { border-top: 1px solid var(--line); padding-top: 1.5rem; margin-top: 3rem; font-family: var(--mono); font-size: .73rem; color: #a1a1aa; display: flex; justify-content: space-between; flex-wrap: wrap; gap: .5rem; }
+    .download-bar {
+      display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;
+      padding: 1.25rem 1.5rem;
+      background: var(--surface); border: 1px solid var(--line); border-radius: 10px;
+      margin-bottom: 3rem;
+    }
+    .btn-dl {
+      display: inline-flex; align-items: center; gap: .4rem;
+      padding: .55rem 1.1rem;
+      background: var(--ink); color: white;
+      border-radius: 6px; font-family: var(--mono); font-size: .8rem;
+      text-decoration: none; font-weight: 500;
+      transition: background .15s;
+    }
+    .btn-dl:hover { background: #27272a; }
+    .btn-dl.outline {
+      background: none; color: var(--ink); border: 1px solid var(--line);
+    }
+    .btn-dl.outline:hover { background: var(--paper); }
+    .dl-info { font-family: var(--mono); font-size: .75rem; color: var(--ink-3); }
+    
+  </style>
+</head>
+<body>
+<nav>
+  <a class="nav-brand" href="../index.html">← wuefl-libs</a>
+  <a href="#">DatePicker v1_0_0</a>
+</nav>
+
+<div class="wrap">
+  <div class="hero">
+    <div class="hero-tag">Vanilla JS · ES-Modul · Kein Framework</div>
+    <h1>DatePicker</h1>
+    <p>Datum- und Zeitpicker als Ergänzung zum SelectPicker. Unterstützt Single-Datum, Zeitspannen, optionale Uhrzeitauswahl und direkten Input-Ersatz.</p>
+  </div>
+
+  <div class="demo-grid">
+    <div class="card">
+      <div class="card-head"><div class="dots"><span></span><span></span><span></span></div><span>Single · Datum</span></div>
+      <div class="card-body">
+        <label>Einzelnes Datum</label>
+        <input id="d1" type="hidden">
+        <div class="log" id="log1">— Noch kein Datum gewählt —</div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-head"><div class="dots"><span></span><span></span><span></span></div><span>Single · Datum + Uhrzeit</span></div>
+      <div class="card-body">
+        <label>Datum mit Uhrzeit</label>
+        <input id="d2" type="hidden">
+        <div class="log" id="log2">— Noch kein Datum gewählt —</div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-head"><div class="dots"><span></span><span></span><span></span></div><span>Range · Von–Bis</span></div>
+      <div class="card-body">
+        <label>Zeitspanne wählen</label>
+        <input id="d3from" type="hidden">
+        <input id="d3to"   type="hidden">
+        <div class="log" id="log3">— Noch kein Zeitraum gewählt —</div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-head"><div class="dots"><span></span><span></span><span></span></div><span>Range · Datum + Zeit</span></div>
+      <div class="card-body">
+        <label>Zeitspanne mit Uhrzeit</label>
+        <input id="d4from" type="hidden">
+        <input id="d4to"   type="hidden">
+        <div class="log" id="log4">— Noch kein Zeitraum gewählt —</div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- DOWNLOAD -->
+  <div class="download-bar">
+    <a class="btn-dl" href="datepicker_v1_0_0.js" download>
+      <span class="msr" style="font-size:15px;">download</span> datepicker.js
+    </a>
+    <a class="btn-dl outline" href="datepicker_v1_0_0.css" download>
+      <span class="msr" style="font-size:15px;">download</span> datepicker.css
+    </a>
+    <span class="dl-info">Vanilla JS · kein Build-Schritt nötig</span>
+  </div>
+
+  <div class="section" id="installation">
+    <div class="section-label">01 — Installation</div>
+    <h2>Einbinden</h2>
+    <p>Als ES-Modul importieren. <code>datepicker.css</code> muss im selben Verzeichnis liegen und wird automatisch injiziert.</p>
+<pre><code><span class="kw">import</span> { DatePicker } <span class="kw">from</span> <span class="str">'./datepicker.js'</span>;</code></pre>
+
+    <h3>Single-Datum</h3>
+<pre><code><span class="kw">const</span> dp = <span class="kw">new</span> <span class="fn">DatePicker</span>({ lang: <span class="str">'de'</span> });
+dp.<span class="fn">create</span>(document.<span class="fn">getElementById</span>(<span class="str">'meinInput'</span>));
+
+document.<span class="fn">getElementById</span>(<span class="str">'meinInput'</span>)
+  .<span class="fn">addEventListener</span>(<span class="str">'change'</span>, e => console.<span class="fn">log</span>(e.target.value));</code></pre>
+
+    <h3>Zeitspanne (Range)</h3>
+<pre><code><span class="cmt">// Zwei Inputs als Array → automatisch Range-Modus</span>
+dp.<span class="fn">create</span>([
+  document.<span class="fn">getElementById</span>(<span class="str">'von'</span>),
+  document.<span class="fn">getElementById</span>(<span class="str">'bis'</span>),
+]);</code></pre>
+
+    <h3>Datum + Uhrzeit</h3>
+<pre><code>dp.<span class="fn">create</span>(inputEl, { showTime: <span class="num">true</span> });</code></pre>
+
+    <h3>Nur Zeit</h3>
+<pre><code>dp.<span class="fn">create</span>(inputEl, { showDate: <span class="num">false</span>, showTime: <span class="num">true</span> });</code></pre>
+
+    <h3>Ausgabeformat wählen</h3>
+<pre><code><span class="cmt">// 'locale' (default) → "13.03.2026" / "13.03.2026, 14:30"</span>
+<span class="cmt">// 'ms'               → Unix-Millisekunden: "1742169600000"</span>
+<span class="cmt">// 'iso'              → "2026-03-13" / "2026-03-13T14:30"</span>
+dp.<span class="fn">create</span>(inputEl, { outputFormat: <span class="str">'ms'</span> });</code></pre>
+  </div>
+
+  <div class="section" id="api">
+    <div class="section-label">02 — API</div>
+    <h2>Konfiguration</h2>
+
+    <h3>new DatePicker(config)</h3>
+    <table>
+      <tr><th>Parameter</th><th>Typ</th><th>Beschreibung</th></tr>
+      <tr><td><code>config.lang</code></td><td><code>string</code></td><td>Sprache der UI: <code>'de'</code> oder <code>'en'</code>. Standard: Browser-Sprache.</td></tr>
+      <tr><td><code>config.locale</code></td><td><code>string</code></td><td>Locale für Datumsformatierung, z.B. <code>'de-DE'</code>. Standard: <code>navigator.language</code>.</td></tr>
+      <tr><td><code>config.translations</code></td><td><code>Object</code></td><td>Eigene Texte für Buttons und Labels.</td></tr>
+      <tr><td><code>config.options</code></td><td><code>Object</code></td><td>Globale Standardoptionen für alle Picker dieser Instanz.</td></tr>
+    </table>
+
+    <h3>dp.create(inputConfig, options)</h3>
+    <table>
+      <tr><th>inputConfig</th><th>Ergebnis</th></tr>
+      <tr><td><code>element</code></td><td>Single-Modus</td></tr>
+      <tr><td><code>[element]</code></td><td>Single-Modus</td></tr>
+      <tr><td><code>[start, end]</code></td><td>Range-Modus — automatisch erkannt</td></tr>
+    </table>
+
+    <table>
+      <tr><th>Option</th><th>Typ</th><th>Standard</th><th>Beschreibung</th></tr>
+      <tr><td><code>showDate</code></td><td><code>boolean</code></td><td><code>true</code></td><td>Kalender anzeigen.</td></tr>
+      <tr><td><code>showTime</code></td><td><code>boolean</code></td><td><code>true</code></td><td>Zeitpicker anzeigen.</td></tr>
+      <tr><td><code>outputFormat</code></td><td><code>'locale'|'ms'|'iso'</code></td><td><code>'ms'</code></td><td>Format des gespeicherten Werts. Trigger-Anzeige ist immer Regionalformat.</td></tr>
+    </table>
+
+    <h3>Instanz-API</h3>
+    <table>
+      <tr><th>Methode</th><th>Beschreibung</th></tr>
+      <tr><td><code>instance.open()</code></td><td>Picker programmatisch öffnen.</td></tr>
+      <tr><td><code>instance.close()</code></td><td>Schließen ohne Speichern.</td></tr>
+      <tr><td><code>instance.save()</code></td><td>Speichern und schließen.</td></tr>
+      <tr><td><code>instance.reset()</code></td><td>Auswahl zurücksetzen.</td></tr>
+    </table>
+
+    <h3>Verhalten</h3>
+    <p><strong>Single ohne Zeit:</strong> Klick auf Tag → sofort speichern &amp; schließen.</p>
+    <p><strong>Single mit Zeit:</strong> Speichern-Button erscheint — erst nach Klick wird geschlossen.</p>
+    <p><strong>Range:</strong> Erster Klick = Von, zweiter Klick = Bis. Hover zeigt Vorschau. Speichern-Button immer vorhanden.</p>
+    <p><strong>Range-Konvention:</strong> Nach dem ersten Klick ist Von = Bis. Der zweite Klick weitet den Bereich aus.</p>
+  </div>
+
+  <div class="section" id="css">
+    <div class="section-label">03 — CSS-Variablen</div>
+    <h2>Anpassen</h2>
+    <p>Alle Variablen einmal in <code>:root</code> setzen. Lightness-Abstufungen werden automatisch berechnet — nur der Farbton (h + s) der Basis-Farbe ist relevant.</p>
+    <table>
+      <tr><th>Variable</th><th>Beschreibung</th></tr>
+      <tr><td><code>--clr-picker</code></td><td>Farbton des Popovers (h + s)</td></tr>
+      <tr><td><code>--clr-picker-trigger</code></td><td>Farbton des Trigger-Elements</td></tr>
+      <tr><td><code>--clr-picker-input</code></td><td>Akzentfarbe: Buttons, Auswahl, Range-Balken</td></tr>
+      <tr><td><code>--clr-picker-today</code></td><td>Farbe des Heute-Kreises (Standard: Orange)</td></tr>
+      <tr><td><code>--fs-picker-header</code></td><td>Schriftgröße Header/Monat</td></tr>
+      <tr><td><code>--fs-input-picker</code></td><td>Schriftgröße Tage & Inputs</td></tr>
+      <tr><td><code>--br-picker</code></td><td>Border-Radius</td></tr>
+      <tr><td><code>--height-input-picker</code></td><td>Höhe Buttons & Zeit-Inputs</td></tr>
+      <tr><td><code>--picker-cal-width</code></td><td>Breite des Kalenders (Standard: <code>290px</code>)</td></tr>
+      <tr><td><code>--picker-sel-size</code></td><td>Durchmesser des Auswahl-/Heute-Kreises</td></tr>
+    </table>
+
+    <h3>Versionierung</h3>
+    <p>Die Dateien <code>datepicker.js</code> und <code>datepicker.css</code> sind Loader-Wrapper, die immer auf die aktuelle Version zeigen. Beim Release nur eine Zeile im Loader ändern — alle HTML-Dateien bleiben unberührt.</p>
+<pre><code><span class="cmt">// datepicker.js — beim Release nur diese Zeile ändern:</span>
+<span class="kw">export</span> { DatePicker } <span class="kw">from</span> <span class="str">'./datepicker_v1.0.1.js'</span>;</code></pre>
+  </div>
+
+  <footer>
+    <span>DatePicker v1_0_0 — Vanilla JS</span>
+    <a href="../index.html">wuefl-libs</a>
+  </footer>
+</div>
+
+<script type="module">
+import { DatePicker } from './datepicker_v1_0_0.js';
+
+const dp = new DatePicker({ lang: 'de' });
+
+// Demo 1: Single Datum
+dp.create(document.getElementById('d1'));
+document.getElementById('d1').addEventListener('change', e => {
+  document.getElementById('log1').textContent =
+    e.target.value ? `Gewählt: ${e.target.value}` : '— Noch kein Datum gewählt —';
+});
+
+// Demo 2: Single + Zeit
+dp.create(document.getElementById('d2'), { showTime: true });
+document.getElementById('d2').addEventListener('change', e => {
+  document.getElementById('log2').textContent =
+    e.target.value ? `Gewählt: ${e.target.value}` : '— Noch kein Datum gewählt —';
+});
+
+// Demo 3: Range — Array → automatisch Range
+dp.create([
+  document.getElementById('d3from'),
+  document.getElementById('d3to'),
+]);
+const logRange = () => {
+  const from = document.getElementById('d3from').value;
+  const to   = document.getElementById('d3to').value;
+  document.getElementById('log3').textContent =
+    from ? `Von: ${from}  –  Bis: ${to || '?'}` : '— Noch kein Zeitraum gewählt —';
+};
+document.getElementById('d3from').addEventListener('change', logRange);
+document.getElementById('d3to').addEventListener('change', logRange);
+
+// Demo 4: Range + Zeit
+dp.create(
+  [document.getElementById('d4from'), document.getElementById('d4to')],
+  { showTime: true }
+);
+const logRange4 = () => {
+  const from = document.getElementById('d4from').value;
+  const to   = document.getElementById('d4to').value;
+  document.getElementById('log4').textContent =
+    from ? `Von: ${from}  –  Bis: ${to || '?'}` : '— Noch kein Zeitraum gewählt —';
+};
+document.getElementById('d4from').addEventListener('change', logRange4);
+document.getElementById('d4to').addEventListener('change', logRange4);
+</script>
+</body>
+</html>
