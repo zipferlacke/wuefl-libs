@@ -1,67 +1,60 @@
 #notification_wrapper{
     position: fixed;
-    display: grid;
-    justify-items:center;
+    display: flex;
+    position: fixed;
+    display: flex;
+    flex-direction: column;
     gap: 1rem;
-    top: 1.5rem;
+    top: 2rem;
     max-width: 1000px;
     width: 80%;
     z-index: 20000;
     left: 50%;
     transform: translate(-50%);
     background-color: transparent;
-    border:none;
-    overflow:visible;
 }
 
 .notification {
     display: grid;
-    height:min-content;
-    grid-template-columns: min-content auto min-content;
-    padding: 0rem;
+    grid-template-columns: min-content 1fr min-content;
+    padding: 0.5rem;
     border-radius: 0.5rem;
     align-items: center;
     align-content: center;
     gap: 1rem;
-    color: var(--clr-neutral-900);
+    color: var(--clr-neutral-100);
     .notification_msg{
-        display:flex;
-        width:fit-content;
-        padding: 0.25em 0;
-        
+      display:flex;
     }
-    .notification_icon{
-        display:grid;
-        align-self:center;
-        padding-left: 0.25rem;   
-    }
-    .notification_close{
-        height:100%;
-        width:2.25rem;
-        padding-right: 0.25rem;
-        cursor:pointer;
-        display:flex;
-        background-color: transparent;
-        border:none;
-        svg{height:1.5rem; width:100%;align-self:center; }
-    }
-    &[data-type="info"]{
-        background-color: var(--clr-info-500);
-        box-shadow: 0rem 0rem 2rem var(--clr-info-700);
+    &[type="info"]{
+        background-color: var(--clr-neutral-200);
+        box-shadow: 0rem 0rem 2rem var(--clr-danger-600);
     }
     
-    &[data-type="error"]{
+    &[type="error"]{
         background-color: var(--clr-danger-600);
         box-shadow: 0rem 0rem 2rem var(--clr-danger-600);
     }
 
-    &[data-type="warning"]{
+    &[type="warning"]{
         background-color: var(--clr-warning-500);
         box-shadow: 0rem 0rem 2rem var(--clr-warning-500);
     }
 
-    &[data-type="success"]{
+    &[type="success"]{
         background-color: var(--clr-success-600);
         box-shadow: 0rem 0rem 2rem var(--clr-success-600);
+    }
+    
+    & > *:nth-child(1){
+        font-size: 2rem;
+        padding: 0 0.5rem;
+    }
+}
+    
+@media screen and (max-width:700px){
+    .notification > *:nth-child(1){
+        padding: 0rem;
+        padding-right: 0.5rem; 
     }
 }

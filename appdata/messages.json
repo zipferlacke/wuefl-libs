@@ -1,0 +1,22 @@
+{
+    "welcome":[
+        "WueflLib",
+        "SelectPicker, ..."
+    ],
+
+
+    "changelog":[
+        {
+            "version":"1.0.1",
+            "changes":[
+                "1. Update des SelectPickers, inklusiver Erstellung einer Dokumentation und DemoSeite (https://open.wuefl.de/wuefl-libs/selectpicker/)"
+            ]
+        },
+        {
+            "version":"1.0.0",
+            "changes":[
+                "Version 1.0.0"
+            ]
+        }
+    ]
+}

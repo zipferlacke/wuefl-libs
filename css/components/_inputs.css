@@ -109,7 +109,7 @@ input[type="checkbox"][data-shape="toggle"]{
     position: relative;
     -webkit-appearance: none;
     appearance: none;
-    background-color: var(--clr-neutral-200);
+    background-color: var(--clr-neutral-300);
     margin: 0;
     width: 3.25rem !important;
     height: 1.5rem;

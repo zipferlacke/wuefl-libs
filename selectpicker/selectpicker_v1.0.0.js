@@ -1,0 +1,448 @@
+/**
+ * @typedef {Object} TranslationSet
+ * @property {string} [de] - Deutscher Text
+ * @property {string} [en] - Englischer Text
+ */
+
+/**
+ * @typedef {Object} BaseConfig
+ * @property {string} [lang='de'] - Die Initial-Sprache (z.B. 'de', 'en'). Default: Auto-Detect.
+ * @property {Object.<string, TranslationSet>} [translations] - Eigene Übersetzungen für Buttons etc.
+ */
+
+/**
+ * BASIS KLASSE
+ * Verwaltet Styles, Sprachen und allgemeine Popover-Mechaniken.
+ */
+class PickerBase {
+    /**
+     * Erstellt die Basis-Instanz.
+     * @param {BaseConfig} config 
+     */
+    constructor(config = {}) {
+
+        this.translations = config.translations || {
+            de: { save: "Speichern", cancel: "Abbrechen", search: "Suche...", search_nodata:"Keine Daten ...", reset: "Zurücksetzen", empty: "Nichts gewählt..."},
+            en: { save: "Save", cancel: "Cancel", search: "Search...", search_nodata:"Nothing found ...", reset: "Reset", empty: "Nothing selected..."}
+        };
+        
+        const browserLang = navigator.language.split('-')[0];
+        this.lang = config.lang || (this.translations[browserLang] ? browserLang : 'en');
+        this.txt = this.translations[this.lang];
+        this.groups = {};
+        this.injectCss();
+    }
+
+    /**
+     * Definiert eine Styling-Gruppe.
+     * @param {string} groupName - Der Name der Gruppe (wird bei create() verwendet).
+     * @param {string} customClass - CSS Klasse, die dem Popover hinzugefügt wird.
+     */
+    createGroup(groupName, customClass) {
+        this.groups[groupName] = customClass;
+    }
+
+    /**
+     * Helfer: Holt Text basierend auf Sprache.
+     * Akzeptiert String oder Objekt {de: "...", en: "..."}
+     * @param {string|TranslationSet} input 
+     */
+    resolveLangString(input) {
+        if (typeof input === 'string') return input;
+        if (typeof input === 'object') {
+            return input[this.lang] || input['en'] || Object.values(input)[0] || '';
+        }
+        return '';
+    }
+
+    t(key) { return this.txt[key] || key; }
+    injectCss(){
+        const cssUrl = new URL('./selectpicker.css', import.meta.url);
+        if (document.querySelector(`link[href="${cssUrl.href}"]`)) return; 
+        const cssLink = `<link rel="stylesheet" href="${cssUrl.href}">`;
+        document.head.insertAdjacentHTML("beforeend", cssLink);
+    }
+}
+
+/**
+ * @typedef {Object} SelectPickerOptions
+ * @property {string|TranslationSet} [title] - Überschrift des Pickers (String oder {de:'..', en:'..'}).
+ * @property {string} [group='default'] - Name der Style-Gruppe (siehe createGroup).
+ * @property {boolean} [search=true] - Soll das Suchfeld angezeigt werden?
+ * @property {boolean} [saveButton=false] - Soll ein Speicherknopf angezeigt werden?
+ */
+
+/**
+ * @typedef {Object} SelectInstance
+ * @property {string} id - für den picker
+ * @property {HTMLSelectElement} originalSelect - Das Normale Select
+ * @property {HTMLElement} triggerElm - Das neue Preview Element
+ * @property {HTMLElement} popover - Das Popoverelement 
+ * @property {boolean} isOpen - Wahrheitswert ob der Picker angezeigt wird
+ * @property {boolean} existDefaultData - Wahrheitswert ob es Standartwerte gibt
+ * @property {boolean} isMulti - Wahrheitswert ob ein Multiselect vorliegt
+ * @property {string} group - Name der zugehörigen Gruppe
+ * @property {string[]} tempValue - Die aktuell ausgewählten Werte
+ * @property {string[]} defaultValues - Liste mit den Standardwerten
+ * @property {Function} open - Öffnet den picker
+ * @property {Function} close - Schließt den picker
+ * @property {Function} save - Schließt und Speichert den picker
+ * @property {Function} reset - Setzt den Picker zurück
+ */
+
+/**
+ * SPEZIALISIERTE KLASSE
+ * Für Select und Multiselect Inputs.
+ */
+export class SelectPicker extends PickerBase {
+    /**
+     * @type {SelectInstance[]}
+     */
+    activePickers;
+    globalConfig={
+        search:true,
+        saveButton:false,
+        group: "default",
+    };
+
+    /**
+     * Erstellt ein Selectpicker Objekt
+     * @param {{options:Object, translations:}} config 
+     */
+    constructor(config) {
+        super(config);
+        this.activePickers = [];
+        this.globalConfig = {  
+            ...this.globalConfig,
+            ...(config?.options || {})
+        }
+        document.addEventListener('click', (e) => this.#handleGlobalClick(e));
+    }
+
+
+    #handleGlobalClick(e) {
+        for(const instance of this.activePickers){
+            const clickedInside = e.composedPath().includes(instance.popover);
+            const clickedTrigger = instance.triggerElm.contains(e.target);
+            const clickedHiddenInput = instance.originalSelect.contains(e.target); //z.B durch Label oder Js vom Nutzer
+            if (!clickedInside && !clickedTrigger && !clickedHiddenInput) {
+                if(instance.isOpen) { instance.saveAndClose(); }
+                continue;
+            }
+
+            if(clickedTrigger || clickedHiddenInput){ instance.open(instance); continue;}
+
+            if(clickedInside){
+                if(e.target.closest(`.close_btn`)) {instance.close();continue;}
+                if(e.target.closest(`.reset_btn`)) {instance.reset();continue;}
+                if(e.target.closest(`.save-btn`)) {instance.saveAndClose();continue;}
+            }
+            
+        };
+    }
+
+    /**
+     * Erstellt einen Picker für ein existierendes HTML Select Element.
+     * @param {HTMLSelectElement} selectElement - Das originale <select> Element.
+     * @param {SelectPickerOptions} options - Konfiguration für diesen Picker.
+     * @returns {Object} Das Picker-Instanz-Objekt (mit open(), close() etc.).
+     */
+    create(selectElement, options = {}) {
+        if (!selectElement) return null;
+
+        options = {
+            ...this.globalConfig,
+            ...(options||{})
+        }
+
+        const groupName = options.group;
+        const showSearch = options.search;
+        const showSaveButton = options.saveButton;
+
+        // Hier nutzen wir die neue resolve Methode für den Titel
+        const title = this.resolveLangString(options.title || "Option wählen");
+
+        /**
+         * @type {SelectInstance}
+         */
+        const instance = {
+            id: 'picker-' + Date.now() + '-' + Math.floor(Math.random() * 1000),
+            originalSelect: selectElement,
+            isMulti: selectElement.multiple,
+            group: groupName,
+            isOpen: false,
+            existDefaultData: false,
+            tempValue: [],
+            triggerElm: null,
+            popover: null,
+            defaultValues: [],
+            
+            open: () => this.openPicker(instance),
+            close: () => this.closePicker(instance),
+            saveAndClose: () => this.savePicker(instance),
+            reset: () => this.resetPicker(instance)
+        };
+        const observer = new MutationObserver(() => {
+            // if (instance._isInternalChange) return; // Ignorieren, wenn wir selbst die Änderung waren
+            this.#updateTriggerRender(instance);
+        });
+        observer.observe(instance.originalSelect, {subtree:true, childList:true})
+
+        selectElement.style.display = 'none';
+        this.#readInitialValues(instance);
+
+        // Trigger Elemnt erstellen
+        instance.triggerElm = document.createElement('div');
+        instance.triggerElm.className = 'picker_trigger_elm';
+        instance.triggerElm.tabIndex = 0; // Damit man mit Tab drauf kommt
+        instance.triggerElm.style.anchorName = `--${instance.id}`;
+        
+        // Initialen Text rendern
+        this.#updateTriggerRender(instance);
+        
+        // Keydown für Barrierefreiheit (Enter/Space öffnet)
+        instance.triggerElm.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                instance.open();
+            }
+        });
+
+        selectElement.insertAdjacentElement("afterend", instance.triggerElm)
+        this.#buildPopover(instance, showSearch, showSaveButton, title);
+        this.activePickers.push(instance);
+        return instance;
+    }
+
+    /**
+     * Ließt die definierten Startwerte ein 
+     * @param {SelectInstance} instance 
+     */
+    #readInitialValues(instance) {
+        const defaultAttr = instance.originalSelect.dataset.default;
+        if (defaultAttr) {
+            instance.defaultValues = JSON.parse(defaultAttr);
+            instance.existDefaultData = true;
+        } else {
+            instance.existDefaultData = false;
+            instance.defaultValues = Array.from(instance.originalSelect.options)
+                .filter(opt => opt.selected)
+                .map(opt => opt.value);
+        }
+    }
+
+    /**
+     * Baut ein Popover und schreibt es in die instance
+     * @param {SelectInstance} instance 
+     * @param {*} showSearch 
+     * @param {*} showSaveButton 
+     * @param {*} title 
+     */
+    #buildPopover(instance, showSearch, showSaveButton, title) {
+        const popover = document.createElement('dialog');
+        popover.className = `custom_picker_popover ${this.groups[instance.group] || ''}`;
+        popover.popover = "manual"
+        popover.style.positionAnchor = `--${instance.id}`;
+
+        
+        let html = `
+            <div class="picker_header">
+                <h2 class="picker_title">${title}</h2>
+                <div class="picker_actions">
+                    <button class="reset_btn picker_btn" title="${this.t('reset')}" type="button"><span class="msr">refresh</span></button>
+                    <button class="close_btn picker_btn"><span class="msr" type="button">close</span></button>
+                </div>
+            </div>
+        `;
+
+        if (showSearch) {
+            html += `<div class="picker_search_container"><input type="text" class="picker_search" placeholder="${this.t('search')}"></div>`;
+        }
+
+        html += `<ul class="picker_content"></ul>`;
+
+        if(showSaveButton) {
+            html += `
+                <div class="picker-footer">
+                    <button class="picker_btn save-btn" type="button">${this.t('save')}</button>
+                </div>
+            `;
+        }
+
+        popover.innerHTML = html;
+        instance.popover = popover;
+
+        if (showSearch) {
+            popover.querySelector('.picker_search').addEventListener('input', (e) => this.#filterOptions(instance, e.target.value));
+        }
+    }
+
+    /**
+     * Rendert die Options im Picker
+     * @param {SelectInstance} instance 
+     */
+    #renderOptions(instance) {
+        const list = instance.popover.querySelector('.picker_content');
+        list.innerHTML = '';
+        
+        Array.from(instance.originalSelect.options).forEach(opt => {
+            const icon = opt.dataset.icon;
+            const html = `
+                <li class="picker_option ${instance.tempValue.includes(opt.value)?"selected":""}" data-value="${opt.value}" data-label="${opt.text.toLocaleLowerCase()}">
+                    ${icon ? (icon.trim().startsWith('<') ? icon : `<span class="msr" style="font-size:20px;">${icon}</span>`) : ''}
+                    <span>${opt.text}</span>
+                    ${instance.tempValue.includes(opt.value) ? '<span class="msr checkmark">check</span>' : ''}
+                </li>            
+            `;
+            const li = document.createRange().createContextualFragment(html).firstElementChild;
+            
+            li.addEventListener('click', () => {
+                if (instance.isMulti) {
+                    if (instance.tempValue.includes(opt.value)) {
+                        instance.tempValue = instance.tempValue.filter(v => v !== opt.value);
+                    } else {
+                        instance.tempValue.push(opt.value);
+                    }
+                    this.#renderOptions(instance);
+                } else {
+                    instance.tempValue = [opt.value];
+                    this.#renderOptions(instance);
+                    setTimeout(() => instance.saveAndClose(), 100);
+                }
+            });
+
+            list.appendChild(li);
+        });
+
+        list.insertAdjacentHTML("beforeend", `
+            <li class="picker_option option-hidden" data-nodata>
+                <span class="msr" style="font-size:20px;">apps_outage</span>
+                <span>${this.t("search_nodata")}</span>
+            </li>       
+        `);
+    }
+    /**
+     * 
+     * @param {SelectInstance} instance 
+     * @param {string} query 
+     */
+    #filterOptions(instance, query) {
+        const listItems = instance.popover.querySelectorAll('.picker_option');
+        const lowerQuery = query.toLowerCase();
+        let flagNoData= true;
+        for(const li of listItems) {
+            if(li.hasAttribute("data-nodata")) {li.classList.add("option-hidden"); continue;}
+            const text = li.dataset.label;
+            const match = text.includes(lowerQuery);
+            li.style.visibility =  match? li.classList.remove('option-hidden'): li.classList.add('option-hidden');
+            if(match) flagNoData = false;
+        };
+        if(flagNoData) instance.popover.querySelector(`.picker_option[data-nodata]`).classList.remove("option-hidden");
+    }
+
+    /**
+     * Öffnet den Picker
+     * @param {SelectInstance} instance 
+     */
+    openPicker(instance) {
+        if (!CSS.supports('anchor-name', '--test')) {
+            const rect = instance.triggerElm.getBoundingClientRect();
+            const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+            instance.popover.style.top      = (rect.bottom + scrollTop + 5) + 'px';
+            instance.popover.style.left     = rect.left + 'px';
+            instance.popover.style.minWidth = rect.width + 'px';
+        }
+
+        instance.tempValue = Array.from(instance.originalSelect.options)
+            .filter(o => o.selected)
+            .map(o => o.value);
+
+        this.#renderOptions(instance);
+        if(instance.triggerElm.closest("label")) instance.triggerElm.closest("label").insertAdjacentElement("afterend", instance.popover);
+        else instance.triggerElm.insertAdjacentElement("afterend", instance.popover);
+        
+        instance.popover.showPopover();
+        instance.popover.classList.add('open');
+        instance.isOpen = true;
+
+        const search = instance.popover.querySelector('.picker_search');
+        if (search) setTimeout(() => search.focus(), 50);
+        document.querySelectorAll(`.reset_btn`).forEach(e=>e.hidden = !instance.existDefaultData);
+    }
+
+    /**
+     * Schließt den Picker
+     * @param {SelectInstance} instance
+     */
+    closePicker(instance) {
+        instance.popover.remove();
+        instance.popover.classList.remove('open');
+        instance.isOpen = false;
+        const search = instance.popover.querySelector('.picker_search');
+        if (search) search.value = '';
+    }
+
+    /**
+     * Speicher den Picker
+     * @param {SelectInstance} instance 
+     */
+    savePicker(instance) {
+        Array.from(instance.originalSelect.options).forEach(opt => {
+            opt.selected = instance.tempValue.includes(opt.value);
+        });
+        instance.originalSelect.dispatchEvent(new Event('change'));
+        this.#updateTriggerRender(instance);
+        this.closePicker(instance);
+    }
+
+    /**
+     * Setzt den Picker zurück
+     * @param {SelectInstance} instance 
+     */
+    resetPicker(instance) {
+        instance.tempValue = [...instance.defaultValues];
+        this.#renderOptions(instance);
+    }
+
+    /**
+     * Neue Render Methode für die "Nette Aufbereitung" im Trigger
+     * @param {SelectInstance} instance
+     */
+    #updateTriggerRender(instance) {
+        instance.triggerElm.innerHTML = ''; // Leeren
+
+        const selectedOptions = Array.from(instance.originalSelect.options)
+            .filter(o => o.selected);
+
+        if (selectedOptions.length === 0) {
+            instance.triggerElm.innerHTML = `<span class="picker_placeholder">${this.t('empty')}</span>`;
+            return;
+        }
+
+        // Multiselect Darstellung: Chips
+        if (instance.isMulti) {
+            selectedOptions.forEach(opt => {
+                const icon = opt.dataset.icon;
+                let html = `
+                <div class="picker_chip">
+                    ${icon ? `<span class="msr" style="font-size:20px;">${icon}</span>` : ''}
+                    <span>${opt.text}</span>
+                </div>`;
+
+                instance.triggerElm.insertAdjacentHTML("beforeend", html);
+            });
+        } 
+        // Single Select Darstellung: Icon + Text Groß
+        else {
+            const opt = selectedOptions[0];
+            const icon = opt.dataset.icon;
+            let html = `
+            <div class="picker_single_value">
+                ${icon ? `<span class="msr" style="font-size:20px;">${icon}</span>` : ''}
+                <span>${opt.text}</span>
+            </div>`;
+
+            instance.triggerElm.insertAdjacentHTML("beforeend", html);
+        }
+    }
+}
