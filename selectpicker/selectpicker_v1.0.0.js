@@ -61,7 +61,7 @@ class PickerBase {
         if (document.querySelector(`link[href="${cssUrl.href}"]`)) return; 
         const cssLink = `<link rel="stylesheet" href="${cssUrl.href}">`;
         document.head.insertAdjacentHTML("beforeend", cssLink);
-    }   
+    }
 }
 
 /**
@@ -195,6 +195,7 @@ export class SelectPicker extends PickerBase {
         instance.triggerElm = document.createElement('div');
         instance.triggerElm.className = 'picker_trigger_elm';
         instance.triggerElm.tabIndex = 0; // Damit man mit Tab drauf kommt
+        instance.triggerElm.style.anchorName = `--${instance.id}`;
         
         // Initialen Text rendern
         this.#updateTriggerRender(instance);
@@ -240,7 +241,9 @@ export class SelectPicker extends PickerBase {
     #buildPopover(instance, showSearch, showSaveButton, title) {
         const popover = document.createElement('dialog');
         popover.className = `custom_picker_popover ${this.groups[instance.group] || ''}`;
-        popover.popover = "manual";
+        popover.popover = "manual"
+        popover.style.positionAnchor = `--${instance.id}`;
+
         
         let html = `
             <div class="picker_header">
@@ -286,7 +289,7 @@ export class SelectPicker extends PickerBase {
             const icon = opt.dataset.icon;
             const html = `
                 <li class="picker_option ${instance.tempValue.includes(opt.value)?"selected":""}" data-value="${opt.value}" data-label="${opt.text.toLocaleLowerCase()}">
-                    ${icon ? `<span class="msr" style="font-size:20px;">${icon}</span>` : ''}
+                    ${icon ? (icon.trim().startsWith('<') ? icon : `<span class="msr" style="font-size:20px;">${icon}</span>`) : ''}
                     <span>${opt.text}</span>
                     ${instance.tempValue.includes(opt.value) ? '<span class="msr checkmark">check</span>' : ''}
                 </li>            
@@ -312,7 +315,7 @@ export class SelectPicker extends PickerBase {
         });
 
         list.insertAdjacentHTML("beforeend", `
-            <li class="picker_option" data-nodata style="display:none;">
+            <li class="picker_option option-hidden" data-nodata>
                 <span class="msr" style="font-size:20px;">apps_outage</span>
                 <span>${this.t("search_nodata")}</span>
             </li>       
@@ -328,13 +331,13 @@ export class SelectPicker extends PickerBase {
         const lowerQuery = query.toLowerCase();
         let flagNoData= true;
         for(const li of listItems) {
-            if(li.hasAttribute("data-nodata")) {li.style.display="none"; continue;}
+            if(li.hasAttribute("data-nodata")) {li.classList.add("option-hidden"); continue;}
             const text = li.dataset.label;
             const match = text.includes(lowerQuery);
-            li.style.display =  match? 'flex' : 'none';
+            li.style.visibility =  match? li.classList.remove('option-hidden'): li.classList.add('option-hidden');
             if(match) flagNoData = false;
         };
-        if(flagNoData) instance.popover.querySelector(`.picker_option[data-nodata]`).style.display="flex";
+        if(flagNoData) instance.popover.querySelector(`.picker_option[data-nodata]`).classList.remove("option-hidden");
     }
 
     /**
@@ -342,14 +345,13 @@ export class SelectPicker extends PickerBase {
      * @param {SelectInstance} instance 
      */
     openPicker(instance) {
-        const rect = instance.triggerElm.getBoundingClientRect();
-        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-        
-        instance.popover.style.top = (rect.bottom + scrollTop + 5) + 'px';
-        instance.popover.style.left = rect.left + 'px';
-        
-        // Min-Width auf Button Breite setzen
-        instance.popover.style.minWidth = rect.width + 'px';
+        if (!CSS.supports('anchor-name', '--test')) {
+            const rect = instance.triggerElm.getBoundingClientRect();
+            const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+            instance.popover.style.top      = (rect.bottom + scrollTop + 5) + 'px';
+            instance.popover.style.left     = rect.left + 'px';
+            instance.popover.style.minWidth = rect.width + 'px';
+        }
 
         instance.tempValue = Array.from(instance.originalSelect.options)
             .filter(o => o.selected)

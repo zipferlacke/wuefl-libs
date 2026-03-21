@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SelectPicker</title>
+  <link rel="stylesheet" href="../css/fonts/google-icons-rounded.css">
+  <style>
+    
+    layer{*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }}
+
+    :root {
+      --paper:   #f5f4f0;
+      --surface: #ffffff;
+      --ink:     #18181b;
+      --ink-2:   #52525b;
+      --ink-3:   #a1a1aa;
+      --line:    #e4e4e7;
+      --accent:  #1d4ed8;
+      --mono:    'IBM Plex Mono', monospace;
+      --sans:    'IBM Plex Sans', sans-serif;
+    }
+
+    html { scroll-behavior: smooth; }
+    body { font-family: var(--sans); background: var(--paper); color: var(--ink); font-size: 15px; line-height: 1.6; }
+
+    /* ── LAYOUT ── */
+    .wrap { max-width: 860px; margin: 0 auto; padding: 0 1.5rem 5rem; }
+
+    /* ── NAV ── */
+    nav {
+      position: sticky; top: 0; z-index: 100;
+      background: var(--paper); border-bottom: 1px solid var(--line);
+      padding: .75rem 1.5rem;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .nav-brand { font-family: var(--mono); font-weight: 500; font-size: .95rem; color: var(--ink); text-decoration: none; }
+    .nav-links { display: flex; gap: 1.5rem; list-style: none; }
+    .nav-links a { font-size: .82rem; color: var(--ink-2); text-decoration: none; font-family: var(--mono); }
+    .nav-links a:hover { color: var(--ink); }
+
+    /* ── HERO ── */
+    .hero { padding: 3.5rem 0 2rem; }
+    .hero-tag { font-family: var(--mono); font-size: .75rem; color: var(--accent); letter-spacing: .1em; text-transform: uppercase; margin-bottom: .75rem; }
+    .hero h1 { font-size: clamp(2rem, 5vw, 3rem); font-weight: 600; letter-spacing: -.03em; line-height: 1.1; margin-bottom: .75rem; }
+    .hero p { color: var(--ink-2); max-width: 50ch; font-size: .95rem; line-height: 1.7; }
+
+    /* ── DEMO GRID ── */
+    .demo-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      margin: 2rem 0 1.5rem;
+    }
+    @media (max-width: 600px) { .demo-grid { grid-template-columns: 1fr; } }
+
+    .demo-card {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    .demo-card-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: .6rem 1rem;
+      background: var(--ink);
+      font-family: var(--mono); font-size: .72rem; color: #71717a;
+    }
+    .demo-dots { display: flex; gap: .35rem; }
+    .demo-dots span { width: 9px; height: 9px; border-radius: 50%; }
+    .demo-dots span:nth-child(1) { background: #ef4444; }
+    .demo-dots span:nth-child(2) { background: #f59e0b; }
+    .demo-dots span:nth-child(3) { background: #22c55e; }
+    .demo-body { padding: 1.5rem 1.25rem; min-height: 140px; }
+    .demo-body label {
+      display: block; font-family: var(--mono); font-size: .72rem;
+      color: var(--ink-3); letter-spacing: .06em; text-transform: uppercase;
+      margin-bottom: .5rem;
+    }
+    .demo-log {
+      margin-top: 1rem; padding: .6rem .8rem;
+      background: #f0fdf4; border: 1px solid #bbf7d0;
+      border-radius: 6px; font-family: var(--mono); font-size: .75rem; color: #166534;
+    }
+
+    /* ── DOWNLOAD ── */
+    .download-bar {
+      display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;
+      padding: 1.25rem 1.5rem;
+      background: var(--surface); border: 1px solid var(--line); border-radius: 10px;
+      margin-bottom: 3rem;
+    }
+    .btn-dl {
+      display: inline-flex; align-items: center; gap: .4rem;
+      padding: .55rem 1.1rem;
+      background: var(--ink); color: white;
+      border-radius: 6px; font-family: var(--mono); font-size: .8rem;
+      text-decoration: none; font-weight: 500;
+      transition: background .15s;
+    }
+    .btn-dl:hover { background: #27272a; }
+    .btn-dl.outline {
+      background: none; color: var(--ink); border: 1px solid var(--line);
+    }
+    .btn-dl.outline:hover { background: var(--paper); }
+    .dl-info { font-family: var(--mono); font-size: .75rem; color: var(--ink-3); }
+
+    /* ── SECTIONS ── */
+    .section { margin-bottom: 3rem; }
+    .section-label {
+      font-family: var(--mono); font-size: .7rem; letter-spacing: .12em;
+      text-transform: uppercase; color: var(--ink-3); margin-bottom: 1rem;
+      display: flex; align-items: center; gap: .5rem;
+    }
+    .section-label::after { content: ''; flex: 1; height: 1px; background: var(--line); }
+
+    h2 { font-size: 1.3rem; font-weight: 600; letter-spacing: -.02em; margin-bottom: .5rem; }
+    h3 { font-family: var(--mono); font-size: .85rem; font-weight: 500; margin: 1.5rem 0 .4rem; color: var(--ink); }
+    p { color: var(--ink-2); margin-bottom: .8rem; line-height: 1.75; font-size: .93rem; }
+
+    code {
+      font-family: var(--mono); font-size: .8em;
+      background: #eff6ff; color: var(--accent);
+      padding: .1em .35em; border-radius: 3px;
+    }
+    pre {
+      background: var(--ink); color: #e4e4e7; border-radius: 8px;
+      padding: 1.2rem 1.4rem; overflow-x: auto;
+      margin: .75rem 0 1.25rem;
+      font-family: var(--mono); font-size: .8rem; line-height: 1.8;
+    }
+    pre code { background: none; color: inherit; padding: 0; font-size: inherit; }
+    .kw { color: #f87171; } .str { color: #86efac; } .cmt { color: #52525b; font-style: italic; }
+    .fn { color: #c084fc; } .num { color: #60a5fa; }
+
+    table { width: 100%; border-collapse: collapse; margin: .75rem 0 1.25rem; font-size: .85rem; }
+    th { text-align: left; padding: .45rem .8rem; background: var(--ink); color: white; font-family: var(--mono); font-size: .72rem; letter-spacing: .05em; }
+    th:first-child { border-radius: 5px 0 0 0; } th:last-child { border-radius: 0 5px 0 0; }
+    td { padding: .5rem .8rem; border-bottom: 1px solid var(--line); color: var(--ink-2); vertical-align: top; line-height: 1.5; }
+    tr:last-child td { border-bottom: none; }
+    tr:nth-child(even) td { background: #fafafa; }
+    td code { font-size: .78rem; }
+
+    .callout {
+      display: flex; gap: .7rem; align-items: flex-start;
+      background: #eff6ff; border-left: 3px solid var(--accent);
+      border-radius: 0 6px 6px 0; padding: .8rem 1rem; margin: .75rem 0;
+    }
+    .callout .msr { color: var(--accent); font-size: 17px; flex-shrink: 0; margin-top: .1rem; }
+    .callout p { color: #1e40af; margin: 0; font-size: .85rem; }
+
+    footer {
+      border-top: 1px solid var(--line); padding-top: 1.5rem; margin-top: 3rem;
+      font-family: var(--mono); font-size: .75rem; color: var(--ink-3);
+      display: flex; justify-content: space-between; flex-wrap: wrap; gap: .5rem;
+    }
+    footer a { color: var(--ink-3); text-decoration: none; }
+    footer a:hover { color: var(--ink); }
+
+    .msr {
+      font-family: 'Material Symbols Rounded'; font-weight: normal; font-style: normal;
+      font-size: 18px; line-height: 1; letter-spacing: normal; text-transform: none;
+      display: inline-block; white-space: nowrap; direction: ltr;
+      -webkit-font-smoothing: antialiased;
+      font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a class="nav-brand" href="#">SelectPicker</a>
+  <ul class="nav-links">
+    <li><a href="#installation">Installation</a></li>
+    <li><a href="#api">API</a></li>
+    <li><a href="#css">CSS</a></li>
+    <li><a href="configurator.html">Konfigurator →</a></li>
+  </ul>
+</nav>
+
+<div class="wrap">
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="hero-tag">Vanilla JS · Kein Framework · ES-Modul</div>
+    <h1>SelectPicker</h1>
+    <p>Custom-Select-Picker ohne externe Abhängigkeiten. Single- und Multiselect, Suchfunktion, Icons, i18n und vollständige CSS-Kontrolle über Custom Properties.</p>
+  </div>
+
+  <!-- DEMOS -->
+  <div class="demo-grid">
+    <!-- Demo 1 -->
+    <div class="demo-card">
+      <div class="demo-card-header">
+        <div class="demo-dots"><span></span><span></span><span></span></div>
+        <span>Single Select · Icons</span>
+      </div>
+      <div class="demo-body">
+        <label>Navigationspunkt wählen</label>
+        <select id="demo1">
+          <option value="">— bitte wählen —</option>
+          <option value="dashboard" data-icon="dashboard">Dashboard</option>
+          <option value="inbox"     data-icon="inbox">Posteingang</option>
+          <option value="calendar"  data-icon="calendar_month">Kalender</option>
+          <option value="contacts"  data-icon="contacts">Kontakte</option>
+          <option value="settings"  data-icon="settings">Einstellungen</option>
+        </select>
+        <div class="demo-log" id="log1">— Noch keine Auswahl —</div>
+      </div>
+    </div>
+    <!-- Demo 2 -->
+    <div class="demo-card">
+      <div class="demo-card-header">
+        <div class="demo-dots"><span></span><span></span><span></span></div>
+        <span>Multiselect · Save &amp; Reset</span>
+      </div>
+      <div class="demo-body">
+        <label>Sprachen wählen</label>
+        <select id="demo2" multiple data-default='["js","python"]'>
+          <option value="js"     selected data-icon="javascript">JavaScript</option>
+          <option value="python" selected data-icon="code">Python</option>
+          <option value="rust"   data-icon="memory">Rust</option>
+          <option value="go"     data-icon="directions_run">Go</option>
+          <option value="ts"     data-icon="edit_note">TypeScript</option>
+          <option value="swift"  data-icon="smartphone">Swift</option>
+        </select>
+        <div class="demo-log" id="log2">Aktuell: JavaScript, Python</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DOWNLOAD -->
+  <div class="download-bar">
+    <a class="btn-dl" href="selectpicker_v1.0.0.js" download>
+      <span class="msr" style="font-size:15px;">download</span> selectpicker.js
+    </a>
+    <a class="btn-dl outline" href="selectpicker_v1.0.0.css" download>
+      <span class="msr" style="font-size:15px;">download</span> selectpicker.css
+    </a>
+    <a class="btn-dl outline" href="configurator.html">
+      <span class="msr" style="font-size:15px;">tune</span> Konfigurator
+    </a>
+    <span class="dl-info">Vanilla JS · kein Build-Schritt nötig</span>
+  </div>
+
+  <!-- INSTALLATION -->
+  <div class="section" id="installation">
+    <div class="section-label">01 — Installation</div>
+    <h2>Einbinden</h2>
+    <p>Einfach als ES-Modul importieren. Das CSS wird automatisch nachgeladen — <code>selectpicker.css</code> muss im selben Verzeichnis liegen.</p>
+<pre><code><span class="kw">import</span> { SelectPicker } <span class="kw">from</span> <span class="str">'./selectpicker.js'</span>;</code></pre>
+
+    <h3>Schnellstart</h3>
+<pre><code><span class="cmt">&lt;!-- HTML --&gt;</span>
+&lt;<span class="kw">select</span> id=<span class="str">"meinSelect"</span>&gt;
+  &lt;<span class="kw">option</span> value=<span class="str">"a"</span>&gt;Option A&lt;/<span class="kw">option</span>&gt;
+  &lt;<span class="kw">option</span> value=<span class="str">"b"</span>&gt;Option B&lt;/<span class="kw">option</span>&gt;
+&lt;/<span class="kw">select</span>&gt;
+
+<span class="cmt">// JavaScript</span>
+<span class="kw">const</span> selectpicker = <span class="kw">new</span> <span class="fn">SelectPicker</span>({});
+selectpicker.<span class="fn">create</span>(document.<span class="fn">getElementById</span>(<span class="str">'meinSelect'</span>), {
+  title: <span class="str">'Option wählen'</span>
+});
+
+<span class="cmt">// Auf Änderungen reagieren</span>
+document.<span class="fn">getElementById</span>(<span class="str">'meinSelect'</span>)
+  .<span class="fn">addEventListener</span>(<span class="str">'change'</span>, (e) => {
+    <span class="kw">const</span> vals = Array.<span class="fn">from</span>(e.target.selectedOptions).<span class="fn">map</span>(o => o.value);
+    console.<span class="fn">log</span>(vals);
+  });</code></pre>
+  </div>
+
+  <!-- API -->
+  <div class="section" id="api">
+    <div class="section-label">02 — API</div>
+    <h2>Konfiguration</h2>
+
+    <h3>new SelectPicker(config)</h3>
+    <table>
+      <tr><th>Parameter</th><th>Typ</th><th>Beschreibung</th></tr>
+      <tr><td><code>config.lang</code></td><td><code>string</code></td><td>Startsprache: <code>'de'</code> oder <code>'en'</code>. Standard: Auto-Detect via Browser.</td></tr>
+      <tr><td><code>config.translations</code></td><td><code>Object</code></td><td>Eigene Übersetzungen für Buttons und Platzhalter.</td></tr>
+      <tr><td><code>config.options</code></td><td><code>Object</code></td><td>Globale Standard-Optionen für alle Picker dieser Instanz.</td></tr>
+    </table>
+
+    <h3>selectpicker.create(selectElement, options)</h3>
+    <table>
+      <tr><th>Option</th><th>Typ</th><th>Standard</th><th>Beschreibung</th></tr>
+      <tr><td><code>title</code></td><td><code>string | {de,en}</code></td><td><code>"Option wählen"</code></td><td>Titel im Popover-Header.</td></tr>
+      <tr><td><code>group</code></td><td><code>string</code></td><td><code>"default"</code></td><td>Name der Style-Gruppe (via <code>createGroup</code>).</td></tr>
+      <tr><td><code>search</code></td><td><code>boolean</code></td><td><code>true</code></td><td>Suchfeld anzeigen.</td></tr>
+      <tr><td><code>saveButton</code></td><td><code>boolean</code></td><td><code>false</code></td><td>Speichern-Button. Empfohlen bei Multiselect.</td></tr>
+    </table>
+
+    <h3>Mehrsprachige Titel</h3>
+<pre><code>selectpicker.<span class="fn">create</span>(selectElement, {
+  title: { <span class="str">de</span>: <span class="str">'Sprache wählen'</span>, <span class="str">en</span>: <span class="str">'Choose language'</span> }
+});</code></pre>
+
+    <h3>Die SelectInstance</h3>
+    <table>
+      <tr><th>Methode / Eigenschaft</th><th>Beschreibung</th></tr>
+      <tr><td><code>instance.open()</code></td><td>Öffnet das Popover programmatisch.</td></tr>
+      <tr><td><code>instance.close()</code></td><td>Schließt und speichert.</td></tr>
+      <tr><td><code>instance.saveAndClose()</code></td><td>Speichert die Auswahl und schließt.</td></tr>
+      <tr><td><code>instance.reset()</code></td><td>Setzt auf Standardwerte zurück.</td></tr>
+      <tr><td><code>instance.isOpen</code></td><td><code>true</code> wenn das Popover geöffnet ist.</td></tr>
+      <tr><td><code>instance.isMulti</code></td><td><code>true</code> bei <code>multiple</code> Select.</td></tr>
+      <tr><td><code>instance.originalSelect</code></td><td>Referenz auf das originale <code>&lt;select&gt;</code>.</td></tr>
+    </table>
+
+    <h3>Icons per data-icon</h3>
+    <p>Jede <code>&lt;option&gt;</code> kann ein Icon erhalten — entweder als Material Symbol Name oder als SVG-String:</p>
+<pre><code>&lt;<span class="kw">option</span> value=<span class="str">"home"</span> data-icon=<span class="str">"home"</span>&gt;Startseite&lt;/<span class="kw">option</span>&gt;
+&lt;<span class="kw">option</span> value=<span class="str">"x"</span> data-icon=<span class="str">'&lt;svg viewBox="0 0 24 24"&gt;...&lt;/svg&gt;'</span>&gt;Eigenes Icon&lt;/<span class="kw">option</span>&gt;</code></pre>
+
+    <h3>Standardwerte &amp; Reset</h3>
+<pre><code>&lt;<span class="kw">select</span> id=<span class="str">"multi"</span> <span class="kw">multiple</span> data-default=<span class="str">'["a","b"]'</span>&gt;
+  &lt;<span class="kw">option</span> value=<span class="str">"a"</span> <span class="kw">selected</span>&gt;Alpha&lt;/<span class="kw">option</span>&gt;
+  &lt;<span class="kw">option</span> value=<span class="str">"b"</span> <span class="kw">selected</span>&gt;Beta&lt;/<span class="kw">option</span>&gt;
+&lt;/<span class="kw">select</span>&gt;</code></pre>
+    <div class="callout">
+      <span class="msr">info</span>
+      <p>Der Reset-Button erscheint nur wenn <code>data-default</code> gesetzt ist.</p>
+    </div>
+
+    <h3>Eigene Übersetzungen</h3>
+<pre><code><span class="kw">const</span> selectpicker = <span class="kw">new</span> <span class="fn">SelectPicker</span>({
+  lang: <span class="str">'de'</span>,
+  translations: {
+    de: { save: <span class="str">"Speichern"</span>, search: <span class="str">"Suche..."</span>, reset: <span class="str">"Zurücksetzen"</span>, empty: <span class="str">"Nichts gewählt..."</span>, search_nodata: <span class="str">"Keine Daten..."</span> },
+    en: { save: <span class="str">"Save"</span>, search: <span class="str">"Search..."</span>, reset: <span class="str">"Reset"</span>, empty: <span class="str">"Nothing selected..."</span>, search_nodata: <span class="str">"Nothing found..."</span> }
+  }
+});</code></pre>
+  </div>
+
+  <!-- CSS -->
+  <div class="section" id="css">
+    <div class="section-label">03 — CSS</div>
+    <h2>Anpassen</h2>
+    <p>Alle visuellen Aspekte werden über CSS Custom Properties gesteuert. Light/Dark Mode wird automatisch via <code>light-dark()</code> unterstützt.</p>
+
+    <table>
+      <tr><th>Variable</th><th>Standard</th><th>Beschreibung</th></tr>
+      <tr><td><code>--bg-picker</code></td><td><code>light-dark(hsl(0,0%,90%), hsl(0,0%,10%))</code></td><td>Hintergrund des Popovers</td></tr>
+      <tr><td><code>--bg-picker-trigger</code></td><td><code>light-dark(...)</code></td><td>Hintergrund des Triggers</td></tr>
+      <tr><td><code>--clr-picker</code></td><td><code>light-dark(...)</code></td><td>Textfarbe</td></tr>
+      <tr><td><code>--fs-picker-header</code></td><td><code>1rem</code></td><td>Schriftgröße Titel</td></tr>
+      <tr><td><code>--fs-input-picker</code></td><td><code>0.9rem</code></td><td>Schriftgröße Optionen &amp; Input</td></tr>
+      <tr><td><code>--br-picker</code></td><td><code>0.5rem</code></td><td>Border-Radius überall</td></tr>
+      <tr><td><code>--height-input-picker</code></td><td><code>2rem</code></td><td>Höhe Buttons &amp; Suchfeld</td></tr>
+      <tr><td><code>--bg-input-picker</code></td><td><code>hsl(219,100%,50%)</code></td><td>Farbe Buttons &amp; Suchfeld-Border</td></tr>
+      <tr><td><code>--bg-hover-input-picker</code></td><td><code>hsl(219,100%,60%)</code></td><td>Hover-Farbe Buttons</td></tr>
+      <tr><td><code>--bg-option-picker</code></td><td><code>hsl(0,0%,80%)</code></td><td>Hintergrund einer Option</td></tr>
+      <tr><td><code>--bg-hover-option-picker</code></td><td><code>hsl(0,0%,85%)</code></td><td>Hover-Hintergrund Option</td></tr>
+      <tr><td><code>--bg-selected-option-picker</code></td><td><code>hsl(219,100%,50%)</code></td><td>Selektierte Option</td></tr>
+      <tr><td><code>--bg-selected-hover-option-picker</code></td><td><code>hsl(219,100%,55%)</code></td><td>Selektierte Option Hover</td></tr>
+    </table>
+
+    <h3>Globale Resets &amp; @layer</h3>
+    <p>Das Picker-CSS liegt in <code>@layer components</code>. Wenn deine Seite einen ungelayerten <code>* { padding: 0 }</code> Reset hat, pack ihn ebenfalls in einen Layer:</p>
+<pre><code><span class="kw">@layer</span> resets, components;
+<span class="kw">@layer</span> resets {
+  * { padding: <span class="num">0</span>; margin: <span class="num">0</span>; box-sizing: border-box; }
+}</code></pre>
+
+    <h3>CSS Anchor Positioning</h3>
+    <p>In Browsern mit Unterstützung (Chrome 125+, Firefox 147+) wird die Popover-Position rein per CSS gesteuert. Ältere Browser erhalten automatisch einen JS-Fallback via <code>getBoundingClientRect</code>.</p>
+  </div>
+
+  <footer>
+    <span>SelectPicker — Vanilla JS</span>
+    <a href="configurator.html">Konfigurator →</a>
+  </footer>
+
+</div>
+
+<script type="module">
+  import { SelectPicker } from './selectpicker_v1.0.0';
+
+  const selectpicker = new SelectPicker({ lang: 'de' });
+
+  selectpicker.create(document.getElementById('demo1'), { title: 'Navigation', search: true });
+  document.getElementById('demo1').addEventListener('change', (e) => {
+    const opt = e.target.options[e.target.selectedIndex];
+    document.getElementById('log1').textContent = opt.value ? `Gewählt: ${opt.text}` : '— Noch keine Auswahl —';
+  });
+
+  selectpicker.create(document.getElementById('demo2'), {
+    title: { de: 'Sprachen wählen', en: 'Choose languages' },
+    saveButton: true, search: true
+  });
+  document.getElementById('demo2').addEventListener('change', (e) => {
+    const names = Array.from(e.target.selectedOptions).map(o => o.text);
+    document.getElementById('log2').textContent = names.length ? `Aktuell: ${names.join(', ')}` : 'Nichts gewählt.';
+  });
+</script>
+</body>
+</html>
