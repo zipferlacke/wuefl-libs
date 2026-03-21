@@ -7,6 +7,15 @@
 
     "changelog":[
         {
+            "version":"1.1.0",
+            "changes":[
+                "1. Update des SelectPickers: Anpasssung des CSS und JS an allgemeine Pickerform (https://open.wuefl.de/wuefl-libs/selectpicker/)",
+                "2. DatePicker hinzugefügt (https://open.wuefl.de/wuefl-libs/datepicker/)",
+                "3 InP hinzugefügt (https://open.wuefl.de/wuefl-libs/inp/)",
+                "4. Readmes ergänst und HTML Seiten erstellt"
+            ]
+        },
+        {
             "version":"1.0.1",
             "changes":[
                 "1. Update des SelectPickers, inklusiver Erstellung einer Dokumentation und DemoSeite (https://open.wuefl.de/wuefl-libs/selectpicker/)"
