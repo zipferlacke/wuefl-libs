@@ -1,0 +1,55 @@
+
+
+
+<!DOCTYPE html>
+<html>
+<head>
+  <title>KoG Helfertool</title>
+  <meta charset="utf-8" name="Georg Kaufmann">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://kog.kawueweb.de/KoGhelfertool/css/KoG.css" rel="stylesheet">
+  <link rel="icon" href="favicon.ico" type="image/x-icon">
+  <link href="apk/manifest.json" rel="manifest" crossorigin="use-credentials">
+  <script src="js/KoG.js"></script>
+  <script type="module">
+    import {SelectPicker} from 'https://open.wuefl.de/wuefl-libs/selectpicker/selectpicker_v1_0_0.js';
+    const selectpicker = new SelectPicker({});
+    selectpicker.create(document.querySelector(`[name='selectedHelfer']`), {
+      title: 'Person wählen'
+    });
+    
+  </script>
+  
+</head>
+
+<body>
+<!-- ========================= -->
+<div class='header'>
+  <div class='headerLogo'><a href='index.php'><img src='images/logo_kulturverein_black.png'></a></div>
+  <div>
+  <span class='headerTitle'>Kultur ohne Gleichen</span><br>
+  <span class='headerSubTitle'>Helfertool </span>
+  </div>
+</div>
+<div class='navigation'>
+</div>
+<!-- ========================= -->
+<div class='main'>
+<div class='userHelferAdd'>
+<fieldset>
+<legend><b>Danke für deine Hilfe!</b></legend>
+<form method='post' action='redirect.php'>
+<p>Suche deinen Namen in der Liste und drücke ok ....</p>
+<select name='selectedHelfer'>
+<option></option><option value=Arndt-Hinrichs,Günter>Arndt-Hinrichs,Günter</option><option value=Backfisch,Andreas>Backfisch,Andreas</option><option value=Barufke,Anette>Barufke,Anette</option><option value=Beekhuizen,Nils>Beekhuizen,Nils</option><option value=Beekhuizen,Elena>Beekhuizen,Elena</option><option value=Beidinger,Christina>Beidinger,Christina</option><option value=Beidinger,Tim Bennet>Beidinger,Tim Bennet</option><option value=Beidinger,Eugen>Beidinger,Eugen</option><option value=Beulshausen,Arztpraxis>Beulshausen,Arztpraxis</option><option value=Brosenne,Heike>Brosenne,Heike</option><option value=Bruns-Kaisinger,Hans-Joachim>Bruns-Kaisinger,Hans-Joachim</option><option value=Bula,Steffen>Bula,Steffen</option><option value=Burmester,Hanne>Burmester,Hanne</option><option value=Bächle,Andreas>Bächle,Andreas</option><option value=Bächle,Sarah>Bächle,Sarah</option><option value=Böning-Schaumberg,Anja>Böning-Schaumberg,Anja</option><option value=Büttner,Christine>Büttner,Christine</option><option value=Carlson,Hanna>Carlson,Hanna</option><option value=Dorenwendt,Heiner>Dorenwendt,Heiner</option><option value=Dr. Bönitz,Dieter>Dr. Bönitz,Dieter</option><option value=Dr. Cremer,Eva>Dr. Cremer,Eva</option><option value=Dr. Recke,Guido>Dr. Recke,Guido</option><option value=Dr. Töle,Ralf>Dr. Töle,Ralf</option><option value=Dresing,Petra>Dresing,Petra</option><option value=Drewitz,Michaela>Drewitz,Michaela</option><option value=Drewitz,Heiko>Drewitz,Heiko</option><option value=Ducke,Angelika>Ducke,Angelika</option><option value=Ebker,Jona>Ebker,Jona</option><option value=Eggert,Armin>Eggert,Armin</option><option value=Eickhoff,Klaus>Eickhoff,Klaus</option><option value=Etzler,Christian>Etzler,Christian</option><option value=Evita,Schliwa>Evita,Schliwa</option><option value=Faber,Karin>Faber,Karin</option><option value=Flasbart,Birgit>Flasbart,Birgit</option><option value=Focks,Julia>Focks,Julia</option><option value=Gamroth-Günther,Gabriele>Gamroth-Günther,Gabriele</option><option value=Gebel,Matthias>Gebel,Matthias</option><option value=Geisert,Anne>Geisert,Anne</option><option value=Gethke,Lutz>Gethke,Lutz</option><option value=Giebenrath,Jürgen>Giebenrath,Jürgen</option><option value=Grosse,Verena>Grosse,Verena</option><option value=Grün,Matthias>Grün,Matthias</option><option value=Harms,Silke>Harms,Silke</option><option value=Heckeroth,Hanna>Heckeroth,Hanna</option><option value=Heinemann,Volker>Heinemann,Volker</option><option value=Heintz,Matthias>Heintz,Matthias</option><option value=Heintz,Elias>Heintz,Elias</option><option value=Heintz,Simone>Heintz,Simone</option><option value=Heinzelmann,Maribel>Heinzelmann,Maribel</option><option value=Hennig,Diana>Hennig,Diana</option><option value=Hildenbrand,Katrin & Rasmus>Hildenbrand,Katrin & Rasmus</option><option value=Hillmann,Dagmar>Hillmann,Dagmar</option><option value=Hinrichs,Frauke >Hinrichs,Frauke </option><option value=Hitzemann,Bernd>Hitzemann,Bernd</option><option value=Hoffmüller,Isabell>Hoffmüller,Isabell</option><option value=Hoffmüller,Marc>Hoffmüller,Marc</option><option value=Hoyck,Holger>Hoyck,Holger</option><option value=Hoyck,Heidi>Hoyck,Heidi</option><option value=Hubrich,Klaus>Hubrich,Klaus</option><option value=Jobst,Hans>Jobst,Hans</option><option value=Jungiger,Anette>Jungiger,Anette</option><option value=KLimaschewski,Bernd>KLimaschewski,Bernd</option><option value=Kaisinger,Ortrud>Kaisinger,Ortrud</option><option value=Kaisinger,Ortrud>Kaisinger,Ortrud</option><option value=Kalke,Lena>Kalke,Lena</option><option value=Kamper,Markus>Kamper,Markus</option><option value=Kaufmann,Georg>Kaufmann,Georg</option><option value=Kemper,Albert>Kemper,Albert</option><option value=Klemke,Burkhard>Klemke,Burkhard</option><option value=Klemke,Eli>Klemke,Eli</option><option value=Klimaschewski,Anja & Berndt>Klimaschewski,Anja & Berndt</option><option value=Klimaschewski,Anja>Klimaschewski,Anja</option><option value=Knop,Filiz>Knop,Filiz</option><option value=Knop,Dirk>Knop,Dirk</option><option value=Koch,Dirk>Koch,Dirk</option><option value=Koch,Benjamin>Koch,Benjamin</option><option value=Kossel,Mahina>Kossel,Mahina</option><option value=Kraft,Anja>Kraft,Anja</option><option value=Krause,Birgit>Krause,Birgit</option><option value=Krämer,Arno>Krämer,Arno</option><option value=Kulle,Heinrich>Kulle,Heinrich</option><option value=Kulp,Stephanie>Kulp,Stephanie</option><option value=Köhler,Saskia>Köhler,Saskia</option><option value=Köhler,Lea>Köhler,Lea</option><option value=Küneke,Ulli>Küneke,Ulli</option><option value=Labusch,Diemut>Labusch,Diemut</option><option value=Labusch,Diemuth>Labusch,Diemuth</option><option value=Lambrecht-Koch,Moni>Lambrecht-Koch,Moni</option><option value=Landgren,Nils>Landgren,Nils</option><option value=Lange,Ove >Lange,Ove </option><option value=Lather,Volker Stephan>Lather,Volker Stephan</option><option value=Lehmeier,Sonja>Lehmeier,Sonja</option><option value=Lehmeier,Christian>Lehmeier,Christian</option><option value=Lesser,Berndt>Lesser,Berndt</option><option value=Linzer,Thorsten>Linzer,Thorsten</option><option value=Lohmann,Martin>Lohmann,Martin</option><option value=Lotta Karotta GbR,Firma>Lotta Karotta GbR,Firma</option><option value=Lukat,Axel>Lukat,Axel</option><option value=Lüders,Katja>Lüders,Katja</option><option value=Maas,Frederike>Maas,Frederike</option><option value=Melzer,Harald>Melzer,Harald</option><option value=Meyer,Hans-Hermann>Meyer,Hans-Hermann</option><option value=Münz,Robert>Münz,Robert</option><option value=Nave,Martina>Nave,Martina</option><option value=Nemitz,Frauke>Nemitz,Frauke</option><option value=Nitsch,Emily>Nitsch,Emily</option><option value=Noubactep,Chicgoua>Noubactep,Chicgoua</option><option value=Noubactep,Nelly>Noubactep,Nelly</option><option value=Ohlef,Markus>Ohlef,Markus</option><option value=Ohlef,Britta>Ohlef,Britta</option><option value=Ohlef,Leon>Ohlef,Leon</option><option value=Oppen,Marianne von>Oppen,Marianne von</option><option value=Ostermann,Doris>Ostermann,Doris</option><option value=Otter,Dirk>Otter,Dirk</option><option value=Otto,Philipp>Otto,Philipp</option><option value=Pangritz,Holger>Pangritz,Holger</option><option value=Pangritz,Sabine>Pangritz,Sabine</option><option value=Pangritz,Benita>Pangritz,Benita</option><option value=Paquet,Ruth>Paquet,Ruth</option><option value=Pauer,Alexander>Pauer,Alexander</option><option value=Pinggera,Ruth>Pinggera,Ruth</option><option value=Pöhlmann,Boris>Pöhlmann,Boris</option><option value=Pöhlmann,Christina>Pöhlmann,Christina</option><option value=Raumklima,Firma>Raumklima,Firma</option><option value=Recknagel,Sandra>Recknagel,Sandra</option><option value=Reitmann,Frank>Reitmann,Frank</option><option value=Rheinfurth,Aline>Rheinfurth,Aline</option><option value=Rheinfurth ,Aline>Rheinfurth ,Aline</option><option value=Rohrbach,Gudrun>Rohrbach,Gudrun</option><option value=Rummlerd,Daniel>Rummlerd,Daniel</option><option value=Samson ,Sven von>Samson ,Sven von</option><option value=Sandra,Recknagel>Sandra,Recknagel</option><option value=Schaumberg,Frank>Schaumberg,Frank</option><option value=Schaumberg,Renate>Schaumberg,Renate</option><option value=Schlick,Katrin>Schlick,Katrin</option><option value=Schliwa,Helga>Schliwa,Helga</option><option value=Schulze,Diana>Schulze,Diana</option><option value=Schütte,Jan>Schütte,Jan</option><option value=Schütze,Monika>Schütze,Monika</option><option value=Senger,Catherina>Senger,Catherina</option><option value=Senger,Hans Heinrich>Senger,Hans Heinrich</option><option value=Senhen,Lutz>Senhen,Lutz</option><option value=Sohn,Manfred>Sohn,Manfred</option><option value=Sottong,Matthias>Sottong,Matthias</option><option value=Stieg,Siegbert>Stieg,Siegbert</option><option value=Tappe-Seufer,Gabriele>Tappe-Seufer,Gabriele</option><option value=Teichmann,Liv Nana>Teichmann,Liv Nana</option><option value=Thelen,Bettina>Thelen,Bettina</option><option value=Tilch,Hanna-Lena>Tilch,Hanna-Lena</option><option value=Traupes Milchhof,Fa.>Traupes Milchhof,Fa.</option><option value=Verstegen,Florian>Verstegen,Florian</option><option value=Voigt,Manni>Voigt,Manni</option><option value=Vollmer,Ulrike>Vollmer,Ulrike</option><option value=Walloschke,Irmtraut>Walloschke,Irmtraut</option><option value=Wemheuer,Christel>Wemheuer,Christel</option><option value=Wienecke,Heide>Wienecke,Heide</option><option value=Wiesneth,Mira>Wiesneth,Mira</option><option value=Wilhelm,Monika>Wilhelm,Monika</option><option value=Wisneth,Malou>Wisneth,Malou</option><option value=Wittekind,Franz>Wittekind,Franz</option><option value=Wolf,Otfried>Wolf,Otfried</option><option value=Wolf,Massao>Wolf,Massao</option><option value=Wolf,Jannik >Wolf,Jannik </option><option value=Wüllner,Ursula>Wüllner,Ursula</option><option value=Wüllner,Florian>Wüllner,Florian</option><option value=Wüllner,Sebastian>Wüllner,Sebastian</option><option value=Zachowski,Peter>Zachowski,Peter</option></select>
+<a href="#" return false;" data-inp-typ="close-btn">Zurück</a>
+<input type='submit' data-inp-typ="submit-btn" value='Ok'/></form>
+</fieldset>
+</div>
+<!-- ========================= -->
+<div class='footer'>
+<a href='index.php?project=impressum'>[Impressum]</a>
+<a href='index.php?project=datenschutz'>[Datensch(m)utz]</a>
+</div>
+</body>
+</html>

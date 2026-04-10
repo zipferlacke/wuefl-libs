@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>InP — Interactive Pages</title>
+  <link rel="stylesheet" href="../css/fonts/google-icons-rounded.css">
+  <style>
+    @import url('../css/fonts/google-icons-rounded.css');
+
+    @layer resets, components;
+    @layer resets {
+      *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    }
+
+    :root {
+      --paper:   #f5f4f0;
+      --surface: #ffffff;
+      --ink:     #18181b;
+      --ink-2:   #52525b;
+      --ink-3:   #a1a1aa;
+      --line:    #e4e4e7;
+      --accent:  #1d4ed8;
+      --mono:    'IBM Plex Mono', monospace;
+      --sans:    'IBM Plex Sans', sans-serif;
+    }
+
+    html { scroll-behavior: smooth; }
+    body { font-family: var(--sans); background: var(--paper); color: var(--ink); font-size: 15px; line-height: 1.6; }
+
+    .wrap { max-width: 860px; margin: 0 auto; padding: 0 1.5rem 5rem; }
+
+    /* ── NAV ── */
+    nav {
+      position: sticky; top: 0; z-index: 100;
+      background: var(--paper); border-bottom: 1px solid var(--line);
+      padding: .75rem 1.5rem;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .nav-brand { font-family: var(--mono); font-weight: 500; font-size: .95rem; color: var(--ink); text-decoration: none; }
+    .nav-links  { display: flex; gap: 1.5rem; list-style: none; }
+    .nav-links a { font-size: .82rem; color: var(--ink-2); text-decoration: none; font-family: var(--mono); }
+    .nav-links a:hover { color: var(--ink); }
+
+    /* ── HERO ── */
+    .hero { padding: 3.5rem 0 2rem; }
+    .hero-tag { font-family: var(--mono); font-size: .75rem; color: var(--accent); letter-spacing: .1em; text-transform: uppercase; margin-bottom: .75rem; }
+    .hero h1 { font-size: clamp(2rem, 5vw, 3rem); font-weight: 600; letter-spacing: -.03em; line-height: 1.1; margin-bottom: .75rem; }
+    .hero p { color: var(--ink-2); max-width: 52ch; font-size: .95rem; line-height: 1.7; }
+
+    /* ── DEMO GRID: 2 oben, 1 zentriert unten ── */
+    .demo-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      margin: 2rem 0 1.5rem;
+    }
+    .demo-grid .demo-card:last-child:nth-child(odd) {
+      grid-column: 1 / -1;
+      max-width: calc(50% - .5rem);
+      justify-self: center;
+    }
+    @media (max-width: 600px) {
+      .demo-grid { grid-template-columns: 1fr; }
+      .demo-grid .demo-card:last-child:nth-child(odd) {
+        grid-column: unset;
+        max-width: 100%;
+        justify-self: unset;
+      }
+    }
+
+    .demo-card { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; display: flex; flex-direction: column; }
+    .demo-card-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: .6rem 1rem; background: var(--ink);
+      font-family: var(--mono); font-size: .72rem; color: #71717a;
+      flex-shrink: 0;
+    }
+    .demo-dots { display: flex; gap: .35rem; }
+    .demo-dots span { width: 9px; height: 9px; border-radius: 50%; }
+    .demo-dots span:nth-child(1) { background: #ef4444; }
+    .demo-dots span:nth-child(2) { background: #f59e0b; }
+    .demo-dots span:nth-child(3) { background: #22c55e; }
+    .demo-body { padding: 1.25rem; flex: 1; display: flex; flex-direction: column; gap: .75rem; }
+    .demo-body p { font-size: .88rem; color: var(--ink-2); line-height: 1.6; margin: 0; }
+    .demo-log { padding: .5rem .75rem; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 6px; font-family: var(--mono); font-size: .75rem; color: #166534; }
+    .server-note { font-family: var(--mono); font-size: .68rem; color: var(--ink-3); }
+
+    /* Demo-Button */
+    .inp-demo-btn {
+      display: inline-flex; align-items: center; gap: .35rem; align-self: flex-start;
+      padding: .45rem .9rem; background: var(--accent); color: white;
+      border: none; border-radius: 6px; font-family: var(--mono); font-size: .78rem;
+      cursor: pointer; text-decoration: none; font-weight: 500; transition: background .15s;
+    }
+    .inp-demo-btn:hover { background: #1e40af; }
+
+    /* ── DOWNLOAD ── */
+    .download-bar {
+      display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;
+      padding: 1.25rem 1.5rem;
+      background: var(--surface); border: 1px solid var(--line); border-radius: 10px;
+      margin-bottom: 3rem;
+    }
+    .btn-dl {
+      display: inline-flex; align-items: center; gap: .4rem;
+      padding: .55rem 1.1rem; background: var(--ink); color: white;
+      border-radius: 6px; font-family: var(--mono); font-size: .8rem;
+      text-decoration: none; font-weight: 500; transition: background .15s;
+    }
+    .btn-dl:hover { background: #27272a; }
+    .dl-info { font-family: var(--mono); font-size: .75rem; color: var(--ink-3); }
+
+    /* ── SECTIONS ── */
+    .section { margin-bottom: 3rem; }
+    .section-label {
+      font-family: var(--mono); font-size: .7rem; letter-spacing: .12em;
+      text-transform: uppercase; color: var(--ink-3); margin-bottom: 1rem;
+      display: flex; align-items: center; gap: .5rem;
+    }
+    .section-label::after { content: ''; flex: 1; height: 1px; background: var(--line); }
+
+    h2 { font-size: 1.3rem; font-weight: 600; letter-spacing: -.02em; margin-bottom: .5rem; }
+    h3 { font-family: var(--mono); font-size: .85rem; font-weight: 500; margin: 1.5rem 0 .4rem; color: var(--ink); }
+    p  { color: var(--ink-2); margin-bottom: .8rem; line-height: 1.75; font-size: .93rem; }
+
+    code { font-family: var(--mono); font-size: .8em; background: #eff6ff; color: var(--accent); padding: .1em .35em; border-radius: 3px; }
+    pre  { background: var(--ink); color: #e4e4e7; border-radius: 8px; padding: 1.2rem 1.4rem; overflow-x: auto; margin: .75rem 0 1.25rem; font-family: var(--mono); font-size: .8rem; line-height: 1.8; }
+    pre code { background: none; color: inherit; padding: 0; font-size: inherit; }
+    .kw  { color: #f87171; } .str { color: #86efac; } .cmt { color: #52525b; font-style: italic; }
+    .fn  { color: #c084fc; } .attr{ color: #fbbf24; } .val { color: #60a5fa; }
+
+    /* ── TABELLE ── */
+    table { width: 100%; border-collapse: collapse; margin: .75rem 0 1.25rem; font-size: .85rem; }
+    th { text-align: left; padding: .45rem .8rem; background: var(--ink); color: white; font-family: var(--mono); font-size: .72rem; letter-spacing: .05em; }
+    th:first-child { border-radius: 5px 0 0 0; } th:last-child { border-radius: 0 5px 0 0; }
+    td { padding: .5rem .8rem; border-bottom: 1px solid var(--line); color: var(--ink-2); vertical-align: top; line-height: 1.55; }
+    tr:last-child td { border-bottom: none; }
+    tr:nth-child(even) td { background: #fafafa; }
+    td code { font-size: .78rem; }
+
+    /* ── CALLOUT ── */
+    .callout { display: flex; gap: .7rem; align-items: flex-start; background: #eff6ff; border-left: 3px solid var(--accent); border-radius: 0 6px 6px 0; padding: .8rem 1rem; margin: .75rem 0 1rem; }
+    .callout .msr { color: var(--accent); font-size: 17px; flex-shrink: 0; margin-top: .1rem; }
+    .callout p { color: #1e40af; margin: 0; font-size: .85rem; }
+
+    footer { border-top: 1px solid var(--line); padding-top: 1.5rem; margin-top: 3rem; font-family: var(--mono); font-size: .75rem; color: var(--ink-3); display: flex; justify-content: space-between; flex-wrap: wrap; gap: .5rem; }
+    footer a { color: var(--ink-3); text-decoration: none; }
+    footer a:hover { color: var(--ink); }
+
+    .msr {
+      font-family: 'Material Symbols Rounded'; font-weight: normal; font-style: normal;
+      font-size: 18px; line-height: 1; letter-spacing: normal; text-transform: none;
+      display: inline-block; white-space: nowrap; direction: ltr;
+      -webkit-font-smoothing: antialiased;
+      font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a class="nav-brand" href="../index.html">← wuefl-libs</a>
+  <ul class="nav-links">
+    <li><a href="#quickstart">Quickstart</a></li>
+    <li><a href="#attribute">Attribute</a></li>
+    <li><a href="#modal">Modal</a></li>
+  </ul>
+</nav>
+
+<div class="wrap">
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="hero-tag">Vanilla JS · Server-Side Rendering · ES-Modul</div>
+    <h1>InP</h1>
+    <p>Interactive Pages — macht Server-Side Rendering dynamisch. Links und Buttons öffnen Inhalte als Modal oder aktualisieren Teile der Seite, ohne Seiten-Reload und ohne Framework.</p>
+  </div>
+
+  <!-- DEMOS: 2 oben, 1 zentriert unten -->
+  <div class="demo-grid">
+
+    <!-- Demo 1: Einfacher Modal -->
+    <div class="demo-card">
+      <div class="demo-card-header">
+        <div class="demo-dots"><span></span><span></span><span></span></div>
+        <span>Modal · Einfach</span>
+      </div>
+      <div class="demo-body">
+        <p>Ein Link oder Button öffnet die Zielseite als Dialog — ein Attribut genügt.</p>
+        <pre style="margin:0;font-size:.75rem;">&lt;<span class="kw">a</span> <span class="attr">href</span>=<span class="str">"info.html"</span>
+   <span class="attr">data-inp-typ</span>=<span class="str">"modal"</span>&gt;
+  Öffnen
+&lt;/<span class="kw">a</span>&gt;</pre>
+        <a href="information-dialog.html" data-inp-typ="modal" class="inp-demo-btn">
+          <span class="msr" style="font-size:15px;">open_in_new</span> Demo
+        </a>
+      </div>
+    </div>
+
+    <!-- Demo 2: Extraktion -->
+    <div class="demo-card">
+      <div class="demo-card-header">
+        <div class="demo-dots"><span></span><span></span><span></span></div>
+        <span>Modal · data-extract</span>
+      </div>
+      <div class="demo-body">
+        <p>Hat die Zieldatei Header/Footer, lädt <code>data-extract</code> nur den gewünschten Bereich.</p>
+        <pre style="margin:0;font-size:.75rem;">&lt;<span class="kw">button</span>
+  <span class="attr">data-inp-typ</span>=<span class="str">"modal"</span>
+  <span class="attr">data-href</span>=<span class="str">"login.html"</span>
+  <span class="attr">data-extract</span>=<span class="str">"#form"</span>&gt;
+  Login
+&lt;/<span class="kw">button</span>&gt;</pre>
+        <button data-inp-typ="modal" data-href="login-page.html" data-extract="#form-area" class="inp-demo-btn">
+          <span class="msr" style="font-size:15px;">open_in_new</span> Demo
+        </button>
+      </div>
+    </div>
+
+    <!-- Demo 3: Partielle Updates — zentriert -->
+    <div class="demo-card">
+      <div class="demo-card-header">
+        <div class="demo-dots"><span></span><span></span><span></span></div>
+        <span>Submit · data-target</span>
+      </div>
+      <div class="demo-body">
+        <p>Nach einem Formular-Submit im Modal wird nur der per <code>data-target</code> angegebene Bereich der Hauptseite ausgetauscht.</p>
+        <pre style="margin:0;font-size:.75rem;">&lt;<span class="kw">a</span> <span class="attr">href</span>=<span class="str">"edit.php"</span>
+   <span class="attr">data-inp-typ</span>=<span class="str">"modal"</span>
+   <span class="attr">data-target</span>=<span class="str">"#list"</span>&gt;
+  Bearbeiten
+&lt;/<span class="kw">a</span>&gt;</pre>
+        <div style="display:flex;align-items:center;gap:.75rem;flex-wrap:wrap;">
+          <a href="changeData.php" data-inp-typ="modal" data-target="#demo-update-box" class="inp-demo-btn">
+            <span class="msr" style="font-size:15px;">open_in_new</span> Demo
+          </a>
+          <span class="server-note">benötigt Server</span>
+        </div>
+        <div class="demo-log" id="demo-update-box">Aktueller Wert: <strong>Hier ändern…</strong></div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- DOWNLOAD -->
+  <div class="download-bar">
+    <a class="btn-dl" href="inp_v1_0_0.js" download>
+      <span class="msr" style="font-size:15px;">download</span> inp_v1_0_0.js
+    </a>
+    <span class="dl-info">Vanilla JS · kein Build-Schritt · kein Framework</span>
+  </div>
+
+  <!-- QUICKSTART -->
+  <div class="section" id="quickstart">
+    <div class="section-label">01 — Quickstart</div>
+    <h2>Einbinden</h2>
+    <p>InP als ES-Modul im <code>&lt;head&gt;</code> einbinden. Danach reicht es, die <code>data-inp-*</code>-Attribute auf vorhandene Elemente zu setzen — keine weitere Initialisierung nötig.</p>
+<pre><code>&lt;<span class="kw">script</span> <span class="attr">src</span>=<span class="str">"inp_v1_0_0.js"</span> <span class="attr">type</span>=<span class="str">"module"</span>&gt;&lt;/<span class="kw">script</span>&gt;</code></pre>
+
+    <h3>Modal öffnen</h3>
+<pre><code><span class="cmt">&lt;!-- Link --&gt;</span>
+&lt;<span class="kw">a</span> <span class="attr">href</span>=<span class="str">"seite.html"</span> <span class="attr">data-inp-typ</span>=<span class="str">"modal"</span>&gt;Öffnen&lt;/<span class="kw">a</span>&gt;
+
+<span class="cmt">&lt;!-- Button (data-href statt href) --&gt;</span>
+&lt;<span class="kw">button</span> <span class="attr">data-inp-typ</span>=<span class="str">"modal"</span> <span class="attr">data-href</span>=<span class="str">"seite.html"</span>&gt;Öffnen&lt;/<span class="kw">button</span>&gt;</code></pre>
+
+    <h3>Modal mit Formular und Update</h3>
+<pre><code><span class="cmt">&lt;!-- Hauptseite --&gt;</span>
+&lt;<span class="kw">ul</span> <span class="attr">id</span>=<span class="str">"user-list"</span>&gt; ... &lt;/<span class="kw">ul</span>&gt;
+
+&lt;<span class="kw">a</span> <span class="attr">href</span>=<span class="str">"add-user.php"</span>
+   <span class="attr">data-inp-typ</span>=<span class="str">"modal"</span>
+   <span class="attr">data-target</span>=<span class="str">"#user-list"</span>&gt;Hinzufügen&lt;/<span class="kw">a</span>&gt;
+
+<span class="cmt">&lt;!-- add-user.php: Formular im Modal --&gt;</span>
+&lt;<span class="kw">form</span> <span class="attr">action</span>=<span class="str">"save.php"</span> <span class="attr">method</span>=<span class="str">"post"</span>&gt;
+  &lt;<span class="kw">input</span> <span class="attr">type</span>=<span class="str">"text"</span> <span class="attr">name</span>=<span class="str">"name"</span>&gt;
+  &lt;<span class="kw">a</span> <span class="attr">data-inp-typ</span>=<span class="str">"close-btn"</span>&gt;Abbrechen&lt;/<span class="kw">a</span>&gt;
+  &lt;<span class="kw">button</span> <span class="attr">data-inp-typ</span>=<span class="str">"submit-btn"</span>&gt;Speichern&lt;/<span class="kw">button</span>&gt;
+&lt;/<span class="kw">form</span>&gt;
+
+<span class="cmt">&lt;!-- save.php gibt #user-list zurück → InP tauscht es auf der Hauptseite aus --&gt;</span></code></pre>
+  </div>
+
+  <!-- ATTRIBUTE -->
+  <div class="section" id="attribute">
+    <div class="section-label">02 — Attribute</div>
+    <h2>Attribute</h2>
+
+    <h3>data-inp-typ</h3>
+    <p>Pflichtattribut auf jedem InP-Element.</p>
+    <table>
+      <tr><th>Wert</th><th>Beschreibung</th><th>Voraussetzung</th></tr>
+      <tr>
+        <td><code>modal</code></td>
+        <td>Lädt die Zielseite und öffnet sie als nativen <code>&lt;dialog&gt;</code>. CSS und JS der Zieldatei werden isoliert ausgeführt.</td>
+        <td><code>href</code> oder <code>data-href</code></td>
+      </tr>
+      <tr>
+        <td><code>update</code></td>
+        <td>Lädt die Zielseite und ersetzt das in <code>data-target</code> angegebene Element direkt auf der Seite.</td>
+        <td><code>data-target</code></td>
+      </tr>
+      <tr>
+        <td><code>submit-btn</code></td>
+        <td>Sendet das umgebende <code>&lt;form&gt;</code> per Fetch ab, aktualisiert optional <code>data-target</code> und schließt den Dialog.</td>
+        <td>muss in einem <code>&lt;form&gt;</code> liegen</td>
+      </tr>
+      <tr>
+        <td><code>close-btn</code></td>
+        <td>Schließt den umgebenden Dialog ohne weitere Aktion.</td>
+        <td>muss in einem <code>&lt;dialog&gt;</code> liegen</td>
+      </tr>
+    </table>
+
+    <h3>data-href</h3>
+    <p>Alternative zu <code>href</code> für Elemente ohne <code>&lt;a&gt;</code>-Tag. InP prüft zuerst <code>data-href</code>, dann <code>href</code>.</p>
+
+    <h3>data-extract</h3>
+    <p>CSS-Selektor, der festlegt welcher Teil der <strong>Zielseite</strong> in den Modal geladen wird. Ohne dieses Attribut wird der gesamte <code>&lt;body&gt;</code> verwendet.</p>
+
+    <h3>data-target</h3>
+    <p>CSS-Selektor, der festlegt welches Element auf der <strong>aktuellen Seite</strong> nach Submit oder Update ersetzt wird. Existiert das Element in der Server-Antwort, wird es dort herausgeschnitten und eingefügt. Ist kein Target gesetzt und ein Redirect erkannt, navigiert die Hauptseite zur Ziel-URL.</p>
+  </div>
+
+  <!-- MODAL -->
+  <div class="section" id="modal">
+    <div class="section-label">03 — Modal</div>
+    <h2>Modal-Styling</h2>
+    <p>Der erzeugte <code>&lt;dialog&gt;</code> trägt die Klasse <code>inp-modal</code> und bringt Standard-Styles mit. Überschreibbar per CSS-Variablen:</p>
+<pre><code><span class="kw">:root</span> {
+  <span class="attr">--inp-bg</span>:       <span class="val">#ffffff</span>;
+  <span class="attr">--inp-text</span>:     <span class="val">#1a1a1a</span>;
+  <span class="attr">--inp-border</span>:   <span class="val">#e0e0e0</span>;
+  <span class="attr">--inp-shadow</span>:   <span class="val">0 10px 25px rgba(0,0,0,.1)</span>;
+  <span class="attr">--inp-backdrop</span>: <span class="val">rgba(0,0,0,.3)</span>;
+}</code></pre>
+    <p>Dark Mode wird automatisch via <code>@media (prefers-color-scheme: dark)</code> unterstützt.</p>
+
+    <h3>JS-Isolation</h3>
+    <p>Inline-Skripte der Zieldatei werden so ausgeführt, dass <code>document</code>-Aufrufe wie <code>querySelector</code> und <code>getElementById</code> nur Elemente innerhalb des Modals betreffen — nicht die Hauptseite. ES-Module (<code>type="module"</code>) werden dabei über einen Proxy korrekt behandelt.</p>
+
+    <h3>Redirect-Erkennung</h3>
+    <p>Nach einem Submit erkennt InP Redirects automatisch — via PHP <code>header()</code>, Meta-Refresh oder JavaScript <code>location.href</code>. Ist ein <code>data-target</code> gesetzt, wird die Redirect-Zielseite geladen und nur das Zielelement ausgetauscht. Ohne Target: Hauptseite navigiert zur Ziel-URL.</p>
+
+    <div class="callout">
+      <span class="msr">info</span>
+      <p>InP ist für Server-Side Rendering gedacht. Die Modal- und Submit-Demos benötigen einen lokalen Webserver oder ein PHP-Backend.</p>
+    </div>
+  </div>
+
+  <footer>
+    <span>InP v1.0.0 — Vanilla JS</span>
+    <a href="../index.html">wuefl-libs</a>
+  </footer>
+
+</div>
+
+<script src="inp_v1_0_0.js" type="module"></script>
+</body>
+</html>

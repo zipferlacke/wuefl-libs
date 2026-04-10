@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="../inp_v1_0_0.js"></script>
+    <script type="module">
+        console.log(document.location.href);
+    </script>
+</head>
+<body>
+    <h1>Liste der Personen</h1>
+    <div class="personen">
+        <li>
+            <p>Florian</p>
+            <p>Darmstadt</p>
+        </li>
+        <li>
+            <p>Nathalie</p>
+            <p>Ulm</p>
+        </li>
+    </div>
+    <a href="dialog.html" data-inp-typ="modal"  data-target=".personen" data-extract=".userHelferAdd">+ neu</a>
+</body>
+</html>

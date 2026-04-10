@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Slideshow Demo</title>
+    <style>
+        /* Material Symbols Rounded — hier base64 Font einfügen */
+        
+
+        body {
+            font-family: sans-serif;
+            margin: 0;
+            padding: 2rem;
+            background: #f5f5f5;
+            display: flex;
+            flex-direction: column;
+            gap: 3rem;
+        }
+
+        h2 {
+            margin: 0 0 0.5rem 0;
+            font-size: 1rem;
+            color: #555;
+        }
+
+        .demo-block {
+            max-width: 700px;
+        }
+
+        /* Beispiel-Slide Farben */
+        .slide {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            font-weight: bold;
+            color: #fff;
+        }
+        .slide:nth-child(1) { background: #4f86c6; }
+        .slide:nth-child(2) { background: #e07b54; }
+        .slide:nth-child(3) { background: #6abf69; }
+        .slide:nth-child(4) { background: #9c6abf; }
+    </style>
+</head>
+<body>
+
+    <div class="demo-block">
+        <h2>Standard — Pfeile + Punkte + Autoplay (3s)</h2>
+        <div class="slideshow" data-autoplay="3000">
+            <div class="slide">Slide 1</div>
+            <div class="slide">Slide 2</div>
+            <div class="slide">Slide 3</div>
+        </div>
+    </div>
+
+    <div class="demo-block">
+        <h2>Nur Punkte, keine Pfeile</h2>
+        <div class="slideshow" data-arrows="false">
+            <div class="slide">Slide A</div>
+            <div class="slide">Slide B</div>
+            <div class="slide">Slide C</div>
+        </div>
+    </div>
+
+    <div class="demo-block">
+        <h2>Nur Pfeile, keine Punkte</h2>
+        <div class="slideshow" data-dots="false">
+            <div class="slide">Slide I</div>
+            <div class="slide">Slide II</div>
+            <div class="slide">Slide III</div>
+        </div>
+    </div>
+
+    <div class="demo-block">
+        <h2>Nur Gesten (keine Pfeile, keine Punkte)</h2>
+        <div class="slideshow" data-arrows="false" data-dots="false">
+            <div class="slide">Slide X</div>
+            <div class="slide">Slide Y</div>
+            <div class="slide">Slide Z</div>
+        </div>
+    </div>
+
+    <div class="demo-block">
+        <h2>Bild-Modus mit Beschriftung + Autoplay (4s)</h2>
+        <div class="slideshow" data-images data-autoplay="4000">
+            <div class="slide">
+                <img class="slide_img" src="https://picsum.photos/seed/a/700/400" alt="Bild 1">
+                <div class="slide_content">
+                    <strong>Titel Bild 1</strong>
+                    <p class="slide_copyright">© Beispiel Fotograf</p>
+                </div>
+            </div>
+            <div class="slide">
+                <img class="slide_img" src="https://picsum.photos/seed/b/700/400" alt="Bild 2">
+                <div class="slide_content">
+                    <strong>Titel Bild 2</strong>
+                </div>
+            </div>
+            <div class="slide">
+                <img class="slide_img" src="https://picsum.photos/seed/c/700/400" alt="Bild 3">
+                <div class="slide_content">
+                    <strong>Titel Bild 3</strong>
+                    <p class="slide_copyright">© Anderer Fotograf</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="./slideshow.js"></script>
+
+</body>
+</html>
