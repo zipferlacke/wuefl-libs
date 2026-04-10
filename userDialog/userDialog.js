@@ -7,6 +7,7 @@
 /**
  * Es wird ein Informationsdialog erstellt.
  * @param {Object} o - Parameterobjekt
+ * @param {String} o.id - Id des Dialogs 
  * @param {String} o.title - Titel des Dialogs 
  * @param {String} [o.content = ""] - weiterer Dialog Text (auch HTML)
  * @param {String} o.confirmText - Text der im Bestätigungsbutton steht.
@@ -16,10 +17,11 @@
  * @param {boolean} [o.detailReturn = 0] - Boolen oder UserDialog zurückgegeben wird gegeben (deafult:true)
  * @param {Function} [o.onInsert] - Funktion wird nach dem hinzufügen des Dialogs zur DOM ausgeführt (Dialog ist noch nicht sichtbar); 
  * @param {Function} [o.onSubmit] - Funktion bei erfolgreicher Abgabe ausgeführt (bevor der Dialog geschlossen ist).
- * @returns {Promise<{submit:boolean, data:FormData}>} `boolean`, wenn die `detailReturn=false`, `Object, detailReturn=true`. 
+ * @returns {Promise<{submit:boolean, data:Object}>} `boolean`, wenn die `detailReturn=false`, `Object, detailReturn=true`. 
  */
 
 export function userDialog({
+    id = Date.now(),
     title, 
     content = "", 
     confirmText, 
@@ -28,12 +30,8 @@ export function userDialog({
     onlyConfirm = false,
     detailReturn = true,
     onInsert = (dialog_id) => { }, 
-    onSubmit = (dialog_id, formData) => { }
+    onSubmit = (dialog_id, dialogData) => { }
 }) {
-    /**
-     * Dialog ID
-     */
-    const id = Date.now();
     injectCss();
 
 
@@ -79,7 +77,7 @@ export function userDialog({
     const dialog = document.querySelector(`[id="${id}"]`);
     
     // ===
-    // Vom Programierer übergebne Custom-Funktion wird ausgeführt.
+    // Vom Programierer übergebene Custom-Funktion wird ausgeführt.
     // ===
     onInsert(id);
     
@@ -99,24 +97,24 @@ export function userDialog({
 
         dialog.querySelector(`form`).addEventListener("submit", (e) => {
             e.preventDefault();
-            const formData = tryToSubmit(dialog);
-            onSubmit(id, formData);
-            if(formData !== null) {
+            const dialogData = tryToSubmit(dialog);
+            onSubmit(id, dialogData);
+            if(dialogData !== null) {
                 dialog.close();
                 dialog.remove();
-                detailReturn ? resolve({submit:true, data:formData}) : resolve(true);
+                detailReturn ? resolve({submit:true, data:dialogData}) : resolve(true);
             }
         });
 
         dialog.addEventListener("keypress", (e) => {
             if (e.key === "Enter") {
                 e.preventDefault();
-                const formData = tryToSubmit(dialog);
-                onSubmit(id, formData);
-                if(formData !== null) {
+                const dialogData = tryToSubmit(dialog);
+                onSubmit(id, dialogData);
+                if(dialogData !== null) {
                     dialog.close();
                     dialog.remove();
-                    detailReturn ? resolve({submit:true, data:formData}) : resolve(true);
+                    detailReturn ? resolve({submit:true, data:dialogData}) : resolve(true);
                 }
             }
         });        
@@ -234,6 +232,8 @@ function validateForm(form){
 function isVisible(element) {
     // Überprüfen, ob das Element oder eines seiner übergeordneten Elemente ausgeblendet ist
     while (element) {
+        if(element.hasAttribute("validate")) return true;
+
         if (window.getComputedStyle(element).display === 'none') {
         return false;
         }

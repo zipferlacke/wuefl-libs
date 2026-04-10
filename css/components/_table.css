@@ -1,0 +1,34 @@
+.table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: .875rem;
+
+    & thead tr {
+        background: var(--clr-neutral-100);
+
+        & th {
+            padding: .625rem 1.25rem;
+            text-align: left;
+            font-size: .75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: .06em;
+            color: var(--clr-neutral-600);
+            border-bottom: 1px solid var(--clr-neutral-200);
+        }
+    }
+
+    & tbody tr {
+        border-bottom: 1px solid var(--clr-neutral-200);
+        transition: background .12s;
+
+        &:last-child { border-bottom: none; }
+        &:nth-child(even) { background: var(--clr-neutral-100); }
+        &:hover { background: var(--clr-primary-100); }
+
+        & td {
+            padding: .75rem 1.25rem;
+            vertical-align: middle;
+        }
+    }
+}

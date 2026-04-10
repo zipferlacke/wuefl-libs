@@ -4,18 +4,18 @@
     }
 
     .userDialog{
+        position: absolute;
         z-index: 1000;
-        left: 50%;
-        top: 50%;
-        transform: translate(-50%, -50%);
         border: none;
-        max-width: min(800px, 80vw);
+        align-self: center;
+        justify-self: center;
+        min-width: min(600px, 90vw);
+        max-width: min(800px, 100vw);
         width: max-content;
         max-height: 90dvh;
         padding: 1rem;
         padding-right: 0.5rem;
         border-radius: 1rem;
-        position: fixed;
         
         background-color: var(--clr-neutral-50);
         box-shadow: 0 0 2rem var(--clr-neutral-800);
@@ -33,7 +33,7 @@
             grid-template-rows: 1fr min-content;
             gap: var(--dialog-gap);
             max-height:calc(90dvh - 2em);
-            
+
             & .content{
                 display: grid;
                 grid-template-rows: min-content 1fr;
@@ -129,6 +129,13 @@
                         text-align: center;
                     }
                 }
+            }
+        }
+        @media screen and (max-width:525px) {
+            &{
+                min-width: min(450px, 100vw);
+                align-self:start;
+                border-radius: 0 0 1rem 1rem;
             }
         }
     }

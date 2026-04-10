@@ -32,3 +32,4 @@
 @import "./ui/box_shadow.css"                   layer(defaults);
 @import "./ui/sizes.css"                        layer(defaults);
 @import "./ui/verticle.css"                     layer(defaults);
+@import "./ui/colors.css"                       layer(defaults);

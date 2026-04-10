@@ -1,0 +1,56 @@
+/* ========== InP Modal ========== */
+
+.inp-modal[open] {
+    padding: 0;
+    border: 0;
+    border-radius: 1rem;
+    background-color: var(--inp-bg, var(--clr-neutral-50, #ffffff));
+    color: var(--inp-text, var(--text-color, #1a1a1a));
+    box-shadow: 0 0 3rem 5px var(--clr-neutral-400);
+    align-self: center;
+    justify-self: center;
+    animation: inp-fade-in 0.2s ease-out;
+    min-width: min(600px, 90vw);
+    max-width: min(800px, 100vw);
+    width: max-content;
+    max-height: 90dvh;
+    overflow: auto;
+    
+    
+    & > *{position: relative;}
+    @media screen and (max-width:525px) {
+        &{
+            min-width: min(450px, 100vw);
+            align-self:start;
+            border-radius: 0 0 1rem 1rem;
+        }
+    }
+}
+
+.inp-modal[open]::backdrop {
+    background: rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(8px);
+}
+
+@keyframes inp-fade-in {
+    from {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/* ========== Dark Mode ========== */
+
+@media (prefers-color-scheme: dark) {
+    .inp-modal[open] {
+        box-shadow: 0 0 3rem 2px var(--clr-neutral-300);
+        &::backdrop {
+            background: rgba(0, 0, 0, 0.6);
+        }
+    }
+}
+

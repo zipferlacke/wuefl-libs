@@ -1,0 +1,27 @@
+<div class="card">
+  <div class="card-head"><div class="dots"><span></span><span></span><span></span></div><span>Banner-Typen auslösen</span></div>
+  <div class="card-body" style="display:flex; gap:.75rem; flex-wrap:wrap;">
+    <button class="btn-dl" data-banner-type="info">Info</button>
+    <button class="btn-dl" data-banner-type="success">Success</button>
+    <button class="btn-dl" data-banner-type="warning">Warning</button>
+    <button class="btn-dl" data-banner-type="error">Error</button>
+  </div>
+</div>
+
+<script type="module">
+import { showBanner } from './banner.js';
+
+const messages = {
+  info:    "Das ist ein Hinweis.",
+  success: "Gespeichert!",
+  warning: "Bitte prüfen Sie Ihre Eingabe.",
+  error:   "Etwas ist schiefgelaufen.",
+};
+
+document.querySelectorAll('[data-banner-type]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const type = btn.dataset.bannerType;
+    showBanner(messages[type], type, 4000);
+  });
+});
+</script>
