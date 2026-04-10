@@ -1,4 +1,4 @@
-.footer{
+.wFooter{
     --footer-color: var(--clr-neutral-100);
     padding: 2rem 5%;
     width: 100%;
@@ -29,23 +29,23 @@
     }
 }
 
-.footer .nav a:hover{
+.wFooter .wNav a:hover{
     color: var(--clr-neutral-200)!important;
 }
 
 @media screen and (max-width:700px){
     body:has(.bottom_navigation){
-        .footer{
+        .wFooter{
             margin-bottom: var(--nav-bottom-height);
         }    
     }
-    .footer{
+    .wFooter{
         font-size: 0.9rem;
     }
 }
 
 @media (prefers-color-scheme: dark) {
-    .footer{
+    .wFooter{
         background-color: var(--clr-neutral-200)!important;
         --footer-color: var(--clr-neutral-900)!important;
     }

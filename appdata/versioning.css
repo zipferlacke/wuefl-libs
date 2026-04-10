@@ -1,0 +1,490 @@
+/*
+ * versioning.css
+ *
+ * Geteiltes Styling für Modul-Dokumentations-Seiten (selectpicker, datepicker,
+ * banner, userDialog, slideshow, ...). Liefert:
+ *
+ *   1. Layout-Grundlagen (body, wrap, nav, footer)
+ *   2. Typo (h1/h2/h3, p, code, pre)
+ *   3. Tabellen, Sections
+ *   4. Hero-Bereich
+ *   5. Demo-Cards (.card, .card-head, .dots, .card-body, .log)
+ *   6. Download-Bar (.download-bar, .btn-dl, .dl-info)
+ *   7. Versioning-spezifisch (.versioning-version / -changelog / -download)
+ *
+ * Alle Farben, Schriftarten und Größen sind über CSS-Variablen anpassbar
+ * (siehe :root unten). Wer eine Modul-Seite anlegt, braucht im <head> nur:
+ *
+ *   <link rel="stylesheet" href="../ui/versioning.css">
+ *
+ * und kann pro Seite noch CSS-Variablen überschreiben.
+ */
+@import url('../css/fonts/google-icons-rounded.css');
+@layer components {
+  /* ── Reset ───────────────────────────────────────────────────────────────── */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  /* ── Variablen ───────────────────────────────────────────────────────────── */
+  :root {
+    --paper:        #f5f4f0;
+    --surface:      #fff;
+    --ink:          #18181b;
+    --ink-2:        #52525b;
+    --ink-3:        #a1a1aa;
+    --line:         #e4e4e7;
+    --accent:       #1d4ed8;
+    --accent-text:  #fff;
+
+    --sans:         'IBM Plex Sans', system-ui, -apple-system, sans-serif;
+    --mono:         'IBM Plex Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+
+    /* Versioning-spezifisch (separate Vars, damit man sie isoliert tauschen kann) */
+    --versioning-mono:        var(--mono);
+    --versioning-accent:      var(--accent);
+    --versioning-accent-text: var(--accent-text);
+    --versioning-card-bg:     var(--surface);
+    --versioning-line:        var(--line);
+    --versioning-text:        var(--ink-2);
+    --versioning-heading:     var(--ink);
+    --versioning-muted:       var(--ink-3);
+    --versioning-btn-bg:      var(--ink);
+    --versioning-btn-bg-hover:#27272a;
+    --versioning-btn-text:    #fff;
+  }
+
+  /* ── Body / Wrap ─────────────────────────────────────────────────────────── */
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: var(--sans);
+    background:  var(--paper);
+    color:       var(--ink);
+    font-size:   15px;
+    line-height: 1.6;
+  }
+
+  .wrap {
+    max-width: 860px;
+    margin:    0 auto;
+    padding:   0 1.5rem 5rem;
+  }
+
+  /* ── Nav (oben) ──────────────────────────────────────────────────────────── */
+  nav {
+    position:    sticky;
+    top:         0;
+    z-index:     100;
+    background:  var(--paper);
+    border-bottom: 1px solid var(--line);
+    padding:     .65rem 1.5rem;
+    display:     grid;
+    grid-template-columns: auto 1fr;
+    align-items: center;
+    flex-wrap:   wrap;
+    gap:         .5rem .75rem;
+  }
+  .nav-brand {
+    font-family:     var(--mono);
+    font-size:       0.9rem;
+    font-weight:     500;
+    color:           var(--ink);
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+  }
+  .nav-module {
+    text-align: center;
+    line-height: 1.35;
+  }
+  .nav-module-name {
+    font-family: var(--mono);
+    font-size:   1.25rem;
+    font-weight: 700;
+    color:       var(--ink);
+  }
+  .nav-module-sub {
+    font-family: var(--mono);
+    font-size:   .72rem;
+    color:       var(--ink-3);
+  }
+  nav a {
+    font-family:     var(--mono);
+    font-size:       .8rem;
+    color:           var(--ink-2);
+    text-decoration: none;
+
+    &:hover { color: var(--ink); }
+  }
+
+  /* ── Lead (Beschreibung direkt unter der Nav, Titel/Version/Tagline sitzen in der Nav) ── */
+  .lead { padding: 1.75rem 0 .5rem; margin-bottom: 1.5rem; }
+  .lead p {
+    color:       var(--ink-2);
+    max-width:   60ch;
+    font-size:   .95rem;
+    line-height: 1.7;
+  }
+
+  /* ── Typo ────────────────────────────────────────────────────────────────── */
+  h1 {
+    font-size:      2rem;
+    font-weight:    600;
+    letter-spacing: -.03em;
+    margin-bottom:  .5rem;
+  }
+  h2 {
+    font-size:      1.25rem;
+    font-weight:    600;
+    letter-spacing: -.02em;
+    margin-bottom:  .5rem;
+  }
+  h3 {
+    font-family: var(--mono);
+    font-size:   .82rem;
+    font-weight: 500;
+    margin:      1.5rem 0 .4rem;
+  }
+  p {
+    color:         var(--ink-2);
+    margin-bottom: .8rem;
+    font-size:     .9rem;
+    line-height:   1.75;
+  }
+
+  ul, ol {
+    color:         var(--ink-2);
+    margin:        0 0 .8rem 1.2rem;
+    font-size:     .9rem;
+    line-height:   1.75;
+  }
+  li { margin-bottom: .2rem; }
+
+  /* ── Callout (aus Blockquotes der readme.md) ────────────────────────────── */
+  .callout {
+    display:        flex;
+    gap:             .7rem;
+    align-items:     flex-start;
+    background:      #eff6ff;
+    border-left:     3px solid var(--accent);
+    border-radius:   0 6px 6px 0;
+    padding:         .8rem 1rem;
+    margin:          .75rem 0 1rem;
+
+    & .msr { color: var(--accent); font-size: 17px; flex-shrink: 0; margin-top: .1rem; }
+    & p    { color: #1e40af; margin: 0; font-size: .85rem; }
+  }
+
+  code {
+    font-family:   var(--mono);
+    font-size:     .79em;
+    background:    #eff6ff;
+    color:         var(--accent);
+    padding:       .1em .35em;
+    border-radius: 3px;
+  }
+  pre {
+    background:    #18181b;
+    color:         #e4e4e7;
+    border-radius: 8px;
+    padding:       1.1rem 1.3rem;
+    overflow-x:    auto;
+    margin:        .6rem 0 1.2rem;
+    font-family:   var(--mono);
+    font-size:     .78rem;
+    line-height:   1.8;
+
+    & code { background: none; color: inherit; padding: 0; }
+  }
+  /* Syntax-Highlight-Hilfsklassen */
+  .kw { color: #f87171; }
+  .str{ color: #86efac; }
+  .cmt{ color: #52525b; font-style: italic; }
+  .fn { color: #c084fc; }
+  .num{ color: #60a5fa; }
+
+  /* ── Tabellen ────────────────────────────────────────────────────────────── */
+  table {
+    width:           100%;
+    border-collapse: collapse;
+    margin:          .6rem 0 1.2rem;
+    font-size:       .84rem;
+
+    & th {
+      text-align:     left;
+      padding:        .4rem .75rem;
+      background:     #18181b;
+      color:          #fff;
+      font-family:    var(--mono);
+      font-size:      .7rem;
+      letter-spacing: .05em;
+
+      &:first-child { border-radius: 5px 0 0 0; }
+      &:last-child  { border-radius: 0 5px 0 0; }
+    }
+    & td {
+      padding:        .5rem .75rem;
+      border-bottom:  1px solid var(--line);
+      color:          var(--ink-2);
+      vertical-align: top;
+    }
+    & td code { font-size: .77rem; }
+    & tr:last-child td { border-bottom: none; }
+    & tr:nth-child(even) td { background: #fafafa; }
+  }
+
+  /* ── Section ─────────────────────────────────────────────────────────────── */
+  .section { margin-bottom: 3rem; }
+  .section-label {
+    font-family:    var(--mono);
+    font-size:      .7rem;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color:          var(--ink-3);
+    margin-bottom:  1rem;
+    display:        flex;
+    align-items:    center;
+    gap:            .5rem;
+
+    &::after {
+      content: '';
+      flex:    1;
+      height:  1px;
+      background: var(--line);
+    }
+  }
+
+  /* ── Demo-Cards ──────────────────────────────────────────────────────────── */
+  /* Vereinheitlicht .card und .demo-card → beide gleich aussehen */
+  .demo-grid {
+    display:               grid;
+    grid-template-columns: 1fr 1fr;
+    gap:                   1rem;
+    margin:                2rem 0 1.5rem;
+  }
+  @media (max-width: 580px) { .demo-grid { grid-template-columns: 1fr; } }
+
+  .card,
+  .demo-card {
+    background:    var(--surface);
+    border:        1px solid var(--line);
+    border-radius: 10px;
+    overflow:      hidden;
+  }
+
+  .card-head,
+  .demo-card-header {
+    display:         flex;
+    align-items:     center;
+    justify-content: space-between;
+    padding:         .55rem 1rem;
+    background:      var(--ink);
+    font-family:     var(--mono);
+    font-size:       .7rem;
+    color:           #71717a;
+  }
+
+  .dots,
+  .demo-dots {
+    display: flex;
+    gap:     .3rem;
+
+    & span {
+      width:         9px;
+      height:        9px;
+      border-radius: 50%;
+    }
+    & span:nth-child(1) { background: #ef4444; }
+    & span:nth-child(2) { background: #f59e0b; }
+    & span:nth-child(3) { background: #22c55e; }
+  }
+
+  .card-body,
+  .demo-body {
+    padding:    1.5rem 1.25rem;
+    min-height: 100px;
+
+    & label {
+      display:        block;
+      font-family:    var(--mono);
+      font-size:      .7rem;
+      color:          var(--ink-3);
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      margin-bottom:  .5rem;
+    }
+  }
+
+  .log,
+  .demo-log {
+    margin-top:    .85rem;
+    padding:       .5rem .75rem;
+    background:    #f0fdf4;
+    border:        1px solid #bbf7d0;
+    border-radius: 6px;
+    font-family:   var(--mono);
+    font-size:     .73rem;
+    color:         #166534;
+  }
+
+  /* ── Download-Bar ────────────────────────────────────────────────────────── */
+  .download-bar {
+    display:       flex;
+    gap:           1rem;
+    align-items:   center;
+    flex-wrap:     wrap;
+    padding:       1.25rem 1.5rem;
+    background:    var(--surface);
+    border:        1px solid var(--line);
+    border-radius: 10px;
+    margin-bottom: 3rem;
+  }
+  .btn-dl {
+    display:         inline-flex;
+    align-items:     center;
+    gap:             .4rem;
+    padding:         .55rem 1.1rem;
+    background:      var(--ink);
+    color:           white;
+    border:          none;
+    border-radius:   6px;
+    font-family:     var(--mono);
+    font-size:       .8rem;
+    font-weight:     500;
+    text-decoration: none;
+    cursor:          pointer;
+    transition:      background .15s, opacity .15s;
+
+    &:hover    { background: #27272a; }
+    &:disabled { opacity: .6; cursor: wait; }
+
+    &.outline {
+      background: none;
+      color:      var(--ink);
+      border:     1px solid var(--line);
+
+      &:hover { background: var(--paper); }
+    }
+  }
+  .dl-info {
+    font-family: var(--mono);
+    font-size:   .75rem;
+    color:       var(--ink-3);
+  }
+
+  /* ── Footer ──────────────────────────────────────────────────────────────── */
+  footer {
+    border-top:   1px solid var(--line);
+    padding-top:  1.5rem;
+    margin-top:   3rem;
+    font-family:  var(--mono);
+    font-size:    .73rem;
+    color:        var(--ink-3);
+    display:      flex;
+    justify-content: space-between;
+    flex-wrap:    wrap;
+    gap:          .5rem;
+
+    & a {
+      color: var(--ink-2);
+      text-decoration: none;
+
+      &:hover { color: var(--ink); }
+    }
+  }
+
+  /* ── Versions-Badge (von versioning.js injiziert) ───────────────────────── */
+  .versioning-version {
+    display:        inline-block;
+    font-family:    var(--versioning-mono);
+    font-size:      .7rem;
+    padding:        .15rem .5rem;
+    background:     var(--versioning-accent);
+    color:          var(--versioning-accent-text);
+    border-radius:  4px;
+    vertical-align: middle;
+    margin-left:    .25rem;
+  }
+
+  /* ── Download-Button (von versioning.js injiziert) ──────────────────────── */
+  .versioning-download {
+    display:         inline-flex;
+    align-items:     center;
+    gap:             .4rem;
+    padding:         .55rem 1.1rem;
+    background:      var(--versioning-btn-bg);
+    color:           var(--versioning-btn-text);
+    border:          none;
+    border-radius:   6px;
+    font-family:     var(--versioning-mono);
+    font-size:       .8rem;
+    font-weight:     500;
+    text-decoration: none;
+    cursor:          pointer;
+    transition:      background .15s, opacity .15s;
+
+    &:hover    { background: var(--versioning-btn-bg-hover); }
+    &:disabled { opacity: .6; cursor: wait; }
+  }
+
+  /* ── Changelog (von versioning.js injiziert) ─────────────────────────────── */
+  .versioning-changelog {
+    display:        flex;
+    flex-direction: column;
+    gap:            1.25rem;
+  }
+
+  .versioning-changelog-entry {
+    background:    var(--versioning-card-bg);
+    border:        1px solid var(--versioning-line);
+    border-radius: 8px;
+    padding:       1rem 1.25rem;
+
+    &.is-current { border-color: var(--versioning-accent); }
+
+    & ul {
+      margin:       0;
+      padding-left: 1.2rem;
+      color:        var(--versioning-text);
+      font-size:    .88rem;
+      line-height:  1.7;
+    }
+    & li { margin-bottom: .15rem; }
+  }
+
+  .versioning-changelog-head {
+    display:       flex;
+    align-items:   center;
+    gap:           .75rem;
+    margin-bottom: .6rem;
+  }
+
+  .versioning-changelog-version {
+    font-family: var(--versioning-mono);
+    font-weight: 600;
+    font-size:   .9rem;
+    color:       var(--versioning-heading);
+  }
+
+  .versioning-changelog-date {
+    font-family: var(--versioning-mono);
+    font-size:   .7rem;
+    color:       var(--versioning-muted);
+  }
+
+  .versioning-changelog-current {
+    font-family:    var(--versioning-mono);
+    font-size:      .65rem;
+    padding:        .1rem .4rem;
+    background:     var(--versioning-accent);
+    color:          var(--versioning-accent-text);
+    border-radius:  3px;
+    letter-spacing: .05em;
+  }
+
+  /* ── Fehler ──────────────────────────────────────────────────────────────── */
+  .versioning-error {
+    display:     inline-block;
+    color:       hsl(0, 70%, 50%);
+    font-family: var(--versioning-mono);
+    font-size:   .8rem;
+  }
+}

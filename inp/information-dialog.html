@@ -1,0 +1,20 @@
+<div class="inp-modal-inner">
+    <h2>👤 Ein reiner Informations Dialog</h2>
+    <p>Diese Daten kommen direkt vom Server. Und sind nur passive Informationen.</p>
+    
+    <div id="local-status" style="padding: 10px; background: rgba(255,150,50,0.1); border-radius: 5px;">
+        Warte auf Initialisierung...
+    </div>
+
+    <br>
+    <button data-inp-typ="close-btn" class="btn">Verstanden</button>
+
+    <script>
+        // Dieses Script wird von InP erkannt und im Modal-Kontext ausgeführt
+        const statusBox = document.querySelector('#local-status');
+        if(statusBox) {
+            statusBox.innerHTML = "✅ <b>Lokal-Script geladen!</b> (Zeit: " + new Date().toLocaleTimeString() + ")";
+            statusBox.style.border = "1px solid var(--colorHeaderTitle)";
+        }
+    </script>
+</div>

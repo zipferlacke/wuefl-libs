@@ -1,28 +1,196 @@
 {
     "welcome":[
-        "WueflLib",
-        "SelectPicker, ..."
+        "WueflLib"
     ],
+    
+  "modules": {
+    "selectpicker": [
+        {
+        "version": "2.0.0",
+        "date": "2026-06-25",
+        "changes": [
+          "Auto-Init per Attribut: `<select data-sp-picker>` wird automatisch zum Picker, inkl. MutationObserver für dynamisch eingefügte Selects",
+          "Neue Optionen: `showControls` (Reset/Close im Header), `forceJsPosition`, `min`/`max`-Constraints bei Multiselect",
+          "Manuelle Initialisierung per `create()` bleibt für Spezialfälle erhalten, ist aber nicht mehr der Standardweg"
+        ]
+      },
+      {
+        "version": "1.1.0",
+        "date": "2026-04-26",
+        "changes": [
+          "Verbesserung: Reihenfolge in openPicker — DOM-Insert + Render vor Positionierung für korrekte Höhenmessung",
+          "CSS: [data-jsposition]-Override + @position-try Fallbacks für sauberes Zusammenspiel CSS/JS"
+        ]
+      },
+      {
+        "version": "1.0.0",
+        "date": "2025-10-01",
+        "changes": [
+          "Initiale Veröffentlichung",
+          "Single- und Multiselect mit Suchfunktion",
+          "Material-Symbol- und SVG-Icon-Support",
+          "Mehrsprachig (de/en) mit eigenen Übersetzungen",
+          "CSS Anchor Positioning mit JS-Fallback"
+        ]
+      }
+    ],
+    "datepicker": [
+      {
+        "version": "2.0.0",
+        "date": "2026-06-25",
+        "changes": [
+          "Auto-Init per Attribut:: `data-tp-picker` (Gruppen-ID, optional mit `+`/`-`-Rolle) ist jetzt der Standardweg, `create()` nur noch für Spezialfälle nötig",
+          "showDate/showTime werden automatisch aus dem `type` des Inputs erkannt (date/time/datetime-local)",
+          "Fix: Single-Modus (ein Datum/eine Uhrzeit ohne Bereich) löste einen Absturz aus, weil intern nicht auf `toInput === null` geprüft wurde"
+        ]
+      },
+      {
+        "version": "1.1.0",
+        "date": "2026-04-26",
+        "changes": [
+          "Manuelles Bearbeiten des Datums im Trigger via Edit-Mode",
+          "CSS Anchor Positioning mit JS-Fallback",
+          "Einige Style Verbesserungen beim Range Selct für bessere Nutzung."
+        ]
+      },
+      {
+        "version": "1.0.0",
+        "date": "2026-04-26",
+        "changes": [
+          "Initiale Veröffentlichung",
+          "Single- und Range-Modus mit optionalem Zeit-Picker",
+          "CSS Anchor Positioning mit JS-Fallback",
+          "Hover-Range-Preview, Smart Active-Side beim Edit"
+        ]
+      }
+    ],
+    "banner": [
+      {
+        "version": "1.0.0",
+        "date": "2026-04-26",
+        "changes": [
+          "Initiale Veröffentlichung"
+        ]
+      }
+    ],
+    "userDialog": [
+      {
+        "version": "1.0.0",
+        "date": "2026-04-26",
+        "changes": [
+          "Initiale Veröffentlichung"
+        ]
+      }
+    ],
+    "slideshow": [
+      {
+        "version": "1.0.0",
+        "date": "2026-04-26",
+        "changes": [
+          "Initiale Veröffentlichung"
+        ]
+      }
+    ],
+    "inp": [
+      {
+        "version": "2.0.0",
+        "date": "2026-06-25",
+        "changes": [
+          "Neue Einfüge-Modi via `data-target-type`: `replace` (Standard), `outer`, `beforebegin`, `afterbegin`, `beforeend`, `afterend`",
+          "Mehrere `data-target`-Selektoren gleichzeitig aktualisierbar (komma-getrennt), je mit eigenem `data-target-type`",
+          "Expliziter `close-btn`-Typ zum Schließen eines Dialogs ohne weitere Aktion",
+          "Stabilere Submit-Erkennung in der Bubble-Phase — respektiert vorheriges `preventDefault()` anderer Validatoren"
+        ]
+      },
+      {
+        "version": "1.0.0",
+        "date": "2026-06-03",
+        "changes": [
+          "Initiale Veröffentlichung"
+        ]
+      }
+    ],
+    "tableview": [
+      {
+        "version": "1.1.0",
+        "date": "2026-08-1",
+        "changes": [
+          "Filterfunktion hinzugefügt",
+          "Icons auch lokal, verfügbar..."
+        ]
+      },
+      {
+        "version": "1.0.0",
+        "date": "2026-06-25",
+        "changes": [
+          "Initiale Veröffentlichung",
+          "Tabelle kann durchsucht, sortiert und gruppiert werden"
+        ]
+      }
+    ],
+    "qrcode": [
+      {
+        "version": "1.0.0",
+        "date": "2026-06-25",
+        "changes": [
+          "Initiale Veröffentlichung"
+        ]
+      }
+    ]
+  },
+
+
 
 
     "changelog":[
         {
+            "version":"2.1.0",
+            "date":"2026-08-1",
+            "changes":[
+                "1. Tableview aktualisiert"
+            ]
+        },
+        {
+            "version":"2.0.0",
+            "date":"2026-06-25",
+            "changes":[
+                "1. Design für .wDetails hinzugefügt",
+                "2. Viele CSS Klassen auf .w* geändert (z.B .wHeader, .wFooter, .wNav, .wSidenav, ...)",
+                "3. tabelview als Modul hinzugefügt, Tabellen automatisch sortieren, gruppieren, durchsuchen",
+                "4. INP verbessert und neue Methoden hinzugefügt (siehe InP Update)",
+                "5. SelectPicker auch mit Attributen steuerbar   (siehe SelectPicker Update)",
+                "6. DatePicker auch mit Attributen steuerbar und Bug fixes (siehe DatePicker Update)"
+            ]
+        },
+        {
+            "version":"1.2.0",
+            "date":"",
+            "changes":[
+                "1. Design für .table hinzugefügt",
+                "2. `colors.css` wieder hinzugefügt",
+                "3. Beispiel für die Verwendung für dennn css Part hinzugefügt."
+            ]
+        },
+        {
             "version":"1.1.0",
+            "date":"",
             "changes":[
                 "1. Update des SelectPickers: Anpasssung des CSS und JS an allgemeine Pickerform (https://open.wuefl.de/wuefl-libs/selectpicker/)",
                 "2. DatePicker hinzugefügt (https://open.wuefl.de/wuefl-libs/datepicker/)",
-                "3 InP hinzugefügt (https://open.wuefl.de/wuefl-libs/inp/)",
+                "3. InP hinzugefügt (https://open.wuefl.de/wuefl-libs/inp/)",
                 "4. Readmes ergänst und HTML Seiten erstellt"
             ]
         },
         {
             "version":"1.0.1",
+            "date":"",
             "changes":[
                 "1. Update des SelectPickers, inklusiver Erstellung einer Dokumentation und DemoSeite (https://open.wuefl.de/wuefl-libs/selectpicker/)"
             ]
         },
         {
             "version":"1.0.0",
+            "date":"",
             "changes":[
                 "Version 1.0.0"
             ]

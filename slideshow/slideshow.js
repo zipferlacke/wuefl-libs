@@ -1,130 +1,125 @@
-import Gestures from '../js/gestures.js';
 /*
 Slideshow JS
-Copyright: Florian Wüllner 2023
-
-Inspieriet von: https://www.youtube.com/watch?v=uo91S2tdHHY
+Copyright: Florian Wüllner 2023 / updated 2025
 */
+import Gestures from '../js/gestures.js';
 
-//---
-// Inistialisierung der HTML-Objekte
-//---
-export default function Slideshows(document, durationPerSlide=4000){
-    var slideshows = document.querySelectorAll(".slideshow");
-    //var durationPerSlide = 4000;
-    let lastChange = new Date().getTime();
-    let currentSlide=0;
+injectCss();
+initAll();
 
-    slideshows.forEach(function(slideshow){
-        const slides = slideshow.querySelectorAll(".slide");
-        if(slideshow.querySelector(".slideshow_navi_dots")) slideshow.querySelector(".slideshow_navi_dots").remove();
-        if(slideshow.querySelector(".slideshow_navi_left")) slideshow.querySelector(".slideshow_navi_left").remove();
-        if(slideshow.querySelector(".slideshow_navi_right")) slideshow.querySelector(".slideshow_navi_right").remove();
-        
+function initAll() {
+    document.querySelectorAll('.slideshow').forEach(el => initSlideshow(el));
+}
 
+function initSlideshow(slideshow) {
+    const slides = Array.from(slideshow.querySelectorAll('.slide'));
+    if (slides.length === 0) return;
 
-        if(slides.length > 0){          
-            for (let i = 0; i < slides.length; i++) {
-                slides[i].setAttribute("index", i);
-                slides[i].setAttribute("close", "");
-            }
-            slides[0].removeAttribute("close");
+    const showDots    = slideshow.dataset.dots    !== 'false';
+    const showArrows  = slideshow.dataset.arrows  !== 'false';
+    const autoplayMs  = slideshow.dataset.autoplay ? parseInt(slideshow.dataset.autoplay) : null;
 
-            //Punkte werden gesetzt
-            slideshow.innerHTML += `<div class="slideshow_navi_dots"></div>`;
-            const dotWrapper = slideshow.querySelector(".slideshow_navi_dots");
+    // State pro Slideshow
+    let current = 0;
+    let autoplayTimer = null;
 
-            for (let i = 0; i < slides.length; i++) {
-                dotWrapper.innerHTML += `<p class="slideshow_navi_dots__dot msr" index="${i}" close>remove</p>`;
-            }
-            let firstDot =  slideshow.querySelector(".slideshow_navi_dots__dot");
-            firstDot.removeAttribute("close");
+    // Alte Navi entfernen (re-init safe)
+    slideshow.querySelector('.slideshow_navi_dots')?.remove();
+    slideshow.querySelector('.slideshow_navi_left')?.remove();
+    slideshow.querySelector('.slideshow_navi_right')?.remove();
+
+    // Slides initialisieren
+    slides.forEach((slide, i) => {
+        slide.setAttribute('data-index', i);
+        if (i === 0) {
+            slide.removeAttribute('close');
+        } else {
+            slide.setAttribute('close', '');
         }
     });
-    
 
-    this.runManuell = function (){
-        slideshows.forEach(function(slideshow){
-            navigationArrows(slideshow);
-            navigationDots(slideshow);
-            navigationGestures(slideshow);
+    // Dots
+    let dots = [];
+    if (showDots) {
+        const dotWrapper = document.createElement('div');
+        dotWrapper.className = 'slideshow_navi_dots';
+        slides.forEach((_, i) => {
+            const dot = document.createElement('span');
+            dot.className = 'slideshow_navi_dots__dot sld_msr';
+            dot.setAttribute('data-index', i);
+            dot.textContent = i === 0 ? 'radio_button_checked' : 'radio_button_unchecked';
+            if (i !== 0) dot.setAttribute('close', '');
+            dot.addEventListener('click', () => goTo(i));
+            dotWrapper.appendChild(dot);
+            dots.push(dot);
         });
+        slideshow.appendChild(dotWrapper);
     }
 
-    this.runAutomatic = function(){
-        slideshows.forEach(function(slideshow){
-            if(new Date().getTime() - lastChange >durationPerSlide){
-                slideSwitch(1, slideshow, 0);
-            }
-        });
+    // Pfeile
+    if (showArrows) {
+        const left = document.createElement('span');
+        left.className = 'slideshow_navi_arrow slideshow_navi_left sld_msr';
+        left.textContent = 'chevron_left';
+        left.addEventListener('click', () => { resetTimer(); goTo(current - 1); });
+        slideshow.appendChild(left);
+
+        const right = document.createElement('span');
+        right.className = 'slideshow_navi_arrow slideshow_navi_right sld_msr';
+        right.textContent = 'chevron_right';
+        right.addEventListener('click', () => { resetTimer(); goTo(current + 1); });
+        slideshow.appendChild(right);
     }
 
-    //Punktnavigation wird erstellt
-    function navigationDots(slideshow){
-        var slideshow_navi_dots = slideshow.querySelectorAll(".slideshow_navi_dots__dot");
-        slideshow_navi_dots.forEach(function(slideshow_navi_dots__dot){
-            slideshow_navi_dots__dot.addEventListener("click", function(e){
-                let currentSlide = parseInt(slideshow.querySelector(".slideshow_navi_dots__dot:not([close])").getAttribute("index"));
+    // Gesten
+    const gestures = new Gestures(slideshow);
+    gestures.onLeft(() => { resetTimer(); goTo(current + 1); });
+    gestures.onRight(() => { resetTimer(); goTo(current - 1); });
 
-                slideSwitch((currentSlide-parseInt(e.currentTarget.getAttribute("index")))*-1, slideshow);
-            });
-        });
-    }
+    // Dot-Klick Timer reset
+    dots.forEach((dot, i) => {
+        dot.addEventListener('click', () => resetTimer());
+    });
 
-    //Gestennavigation wird erstellt
-    function navigationGestures(slideshow){
-        let gestures = new Gestures(slideshow);
-        gestures.onLeft(function(){
-            slideSwitch(-1, slideshow);
-        }); 
+    // Autoplay starten
+    if (autoplayMs) startTimer();
 
-        gestures.onRight(function(){
-            slideSwitch(1, slideshow);
-        });
-    }
+    function goTo(index) {
+        // Endlos durchlaufen
+        if (index < 0) index = slides.length - 1;
+        if (index >= slides.length) index = 0;
 
-    function navigationArrows(slideshow){
-        slideshow.innerHTML += `<p class="slideshow_navi_arrow slideshow_navi_left msr">keyboard_arrow_left</p>`;
-        slideshow.innerHTML += `<p class="slideshow_navi_arrow slideshow_navi_right msr">keyboard_arrow_right</p>`;
-        let arrowLeft = slideshow.querySelector(".slideshow_navi_left");
-        let arrowRight = slideshow.querySelector(".slideshow_navi_right");
-        arrowLeft.addEventListener("click", function(){
-            slideSwitch(-1, slideshow);
-        });
-
-        arrowRight.addEventListener("click", function(){
-            slideSwitch(1, slideshow);
-        });
-    }
-
-    function slideSwitch(change, slideshow, extraTime=2000){
-        //Für automatische weiterschaltung 
-        lastChange = new Date();
-        lastChange = lastChange.getTime() + extraTime;
-
-        const dots = slideshow.querySelectorAll(".slideshow_navi_dots__dot");
-        const slides = slideshow.querySelectorAll(".slide");
-
-        currentSlide = parseInt(slideshow.querySelector(".slideshow_navi_dots__dot:not([close])").getAttribute("index"));
-        slides[currentSlide].setAttribute("close", "");
-        dots[currentSlide].setAttribute("close", "");
-        currentSlide += change;
-
-        if(currentSlide < 0){
-            currentSlide = slides.length-1;
-        }else if(currentSlide > slides.length-1){
-            currentSlide = 0;
+        slides[current].setAttribute('close', '');
+        if (dots[current]) {
+            dots[current].setAttribute('close', '');
+            dots[current].textContent = 'radio_button_unchecked';
         }
 
-        slides[currentSlide].removeAttribute("close");
-        dots[currentSlide].removeAttribute("close");
-        console.log(dots[currentSlide].scrollWidth > dots[currentSlide].offsetWidth);
+        current = index;
+
+        slides[current].removeAttribute('close');
+        if (dots[current]) {
+            dots[current].removeAttribute('close');
+            dots[current].textContent = 'radio_button_checked';
+        }
+    }
+
+    function startTimer() {
+        autoplayTimer = setInterval(() => goTo(current + 1), autoplayMs);
+    }
+
+    function resetTimer() {
+        if (!autoplayMs) return;
+        clearInterval(autoplayTimer);
+        startTimer();
     }
 }
 
-function injectCss(){
+function injectCss() {
     const cssUrl = new URL('./slideshow.css', import.meta.url);
-    if (document.querySelector(`link[href="${cssUrl.href}"]`)) return; 
-    const cssLink = `<link rel="stylesheet" href="${cssUrl.href}">`;
-    document.head.insertAdjacentHTML("beforeend", cssLink);
+    if (document.querySelector(`link[href="${cssUrl.href}"]`)) return;
+    const link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.href = cssUrl.href;
+    document.head.appendChild(link);
 }

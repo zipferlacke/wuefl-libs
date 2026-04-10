@@ -1,4 +1,4 @@
-.button, input, textarea, .select{
+.button, input:not([type="checkbox"]), textarea, .select{
     gap: 0.5rem;
     padding: 0.25rem 1rem;
     height: clamp(min-content, var(--input-height), 100%);
@@ -263,4 +263,9 @@ label.toggle{
             background-color: var(--bg-input);
         }
     }
+}
+
+select:user-invalid, input:user-invalid, :user-invalid{
+    border: 1.5px var(--clr-danger-500) solid!important;
+    background-color: var(--clr-danger-200)!important;
 }
