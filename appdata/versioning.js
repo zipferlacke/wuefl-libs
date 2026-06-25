@@ -190,7 +190,8 @@ function renderDownloadButton(moduleName, version, opts) {
                     data-versioning-download="zip"
                     data-versioning-module="${escapeHtml(moduleName)}"
                     data-versioning-version="${escapeHtml(version)}">
-              <span class="versioning-download-label">${escapeHtml(label)}</span>
+                <span class="msr">download</span>
+                <span class="versioning-download-label">${escapeHtml(label)}</span>
             </button>`;
     }
 
@@ -202,7 +203,8 @@ function renderDownloadButton(moduleName, version, opts) {
     const targetName = `${stem}_v${v_underscore}${ext}`;
     return `
         <a class="versioning-download" href="${escapeHtml(sourceUrl)}" download="${escapeHtml(targetName)}">
-          <span class="versioning-download-label">${escapeHtml(targetName)}</span>
+            <span class="msr">download</span>
+            <span class="versioning-download-label">${escapeHtml(targetName)}</span>
         </a>`;
 }
 

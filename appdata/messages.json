@@ -6,6 +6,15 @@
   "modules": {
     "selectpicker": [
         {
+        "version": "2.0.0",
+        "date": "2026-06-25",
+        "changes": [
+          "Auto-Init per Attribut: `<select data-sp-picker>` wird automatisch zum Picker, inkl. MutationObserver für dynamisch eingefügte Selects",
+          "Neue Optionen: `showControls` (Reset/Close im Header), `forceJsPosition`, `min`/`max`-Constraints bei Multiselect",
+          "Manuelle Initialisierung per `create()` bleibt für Spezialfälle erhalten, ist aber nicht mehr der Standardweg"
+        ]
+      },
+      {
         "version": "1.1.0",
         "date": "2026-04-26",
         "changes": [
@@ -26,6 +35,15 @@
       }
     ],
     "datepicker": [
+      {
+        "version": "2.0.0",
+        "date": "2026-06-25",
+        "changes": [
+          "Auto-Init per Attribut:: `data-tp-picker` (Gruppen-ID, optional mit `+`/`-`-Rolle) ist jetzt der Standardweg, `create()` nur noch für Spezialfälle nötig",
+          "showDate/showTime werden automatisch aus dem `type` des Inputs erkannt (date/time/datetime-local)",
+          "Fix: Single-Modus (ein Datum/eine Uhrzeit ohne Bereich) löste einen Absturz aus, weil intern nicht auf `toInput === null` geprüft wurde"
+        ]
+      },
       {
         "version": "1.1.0",
         "date": "2026-04-26",
@@ -75,8 +93,37 @@
     ],
     "inp": [
       {
+        "version": "2.0.0",
+        "date": "2026-06-25",
+        "changes": [
+          "Neue Einfüge-Modi via `data-target-type`: `replace` (Standard), `outer`, `beforebegin`, `afterbegin`, `beforeend`, `afterend`",
+          "Mehrere `data-target`-Selektoren gleichzeitig aktualisierbar (komma-getrennt), je mit eigenem `data-target-type`",
+          "Expliziter `close-btn`-Typ zum Schließen eines Dialogs ohne weitere Aktion",
+          "Stabilere Submit-Erkennung in der Bubble-Phase — respektiert vorheriges `preventDefault()` anderer Validatoren"
+        ]
+      },
+      {
         "version": "1.0.0",
         "date": "2026-06-03",
+        "changes": [
+          "Initiale Veröffentlichung"
+        ]
+      }
+    ],
+    "tableview": [
+      {
+        "version": "1.0.0",
+        "date": "2026-06-25",
+        "changes": [
+          "Initiale Veröffentlichung",
+          "TTabelle kann durchsucht, sortiert und gruppiert werden"
+        ]
+      }
+    ],
+    "qrcode": [
+      {
+        "version": "1.0.0",
+        "date": "2026-06-25",
         "changes": [
           "Initiale Veröffentlichung"
         ]
@@ -88,6 +135,15 @@
 
 
     "changelog":[
+        {
+            "version":"2.0.0",
+            "date":"2026-06-25",
+            "changes":[
+                "1. Design für .table hinzugefügt",
+                "2. `colors.css` wieder hinzugefügt",
+                "3. Beispiel für die Verwendung für dennn css Part hinzugefügt."
+            ]
+        },
         {
             "version":"1.2.0",
             "date":"",

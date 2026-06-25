@@ -1,5 +1,7 @@
 # InP — Interactive Pages
 
+> Vanilla JS · Server-Side Rendering · ES-Modul
+
 Macht klassisches Server-Side Rendering dynamisch: Normale HTML-Links und Buttons laden Inhalte per Fetch im Hintergrund und öffnen sie als Modal oder aktualisieren Teile der aktuellen Seite — ohne Seiten-Reload.
 
 ---

@@ -1,0 +1,69 @@
+<div class="demo-grid">
+  <div class="card">
+    <div class="card-head"><div class="dots"><span></span><span></span><span></span></div><span>Single · Datum (Attribut)</span></div>
+    <div class="card-body">
+      <label>Einzelnes Datum</label>
+      <input type="date" data-tp-picker="d1">
+      <div class="log" id="log1">— Noch kein Datum gewählt —</div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-head"><div class="dots"><span></span><span></span><span></span></div><span>Single · Datum + Uhrzeit</span></div>
+    <div class="card-body">
+      <label>Datum mit Uhrzeit</label>
+      <input type="datetime-local" data-tp-picker="d2">
+      <div class="log" id="log2">— Noch kein Datum gewählt —</div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-head"><div class="dots"><span></span><span></span><span></span></div><span>Range · Von–Bis</span></div>
+    <div class="card-body">
+      <label>Zeitspanne wählen</label>
+      <input type="date" data-tp-picker="d3">
+      <input type="date" data-tp-picker="d3">
+      <div class="log" id="log3">— Noch kein Zeitraum gewählt —</div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-head"><div class="dots"><span></span><span></span><span></span></div><span>Range · Datum + Zeit</span></div>
+    <div class="card-body">
+      <label>Zeitspanne mit Uhrzeit</label>
+      <input type="datetime-local" data-tp-picker="d4">
+      <input type="datetime-local" data-tp-picker="d4">
+      <div class="log" id="log4">— Noch kein Zeitraum gewählt —</div>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+// Auto-Init per data-tp-picker-Attribut — kein manueller create()-Aufruf nötig.
+import './datepicker.js';
+
+const d1 = document.querySelector('[data-tp-picker="d1"]');
+d1.addEventListener('change', e => {
+  document.getElementById('log1').textContent =
+    e.target.value ? `Gewählt: ${e.target.value}` : '— Noch kein Datum gewählt —';
+});
+
+const d2 = document.querySelector('[data-tp-picker="d2"]');
+d2.addEventListener('change', e => {
+  document.getElementById('log2').textContent =
+    e.target.value ? `Gewählt: ${e.target.value}` : '— Noch kein Datum gewählt —';
+});
+
+const [d3from, d3to] = document.querySelectorAll('[data-tp-picker="d3"]');
+const logRange3 = () => {
+  document.getElementById('log3').textContent =
+    d3from.value ? `Von: ${d3from.value}  –  Bis: ${d3to.value || '?'}` : '— Noch kein Zeitraum gewählt —';
+};
+d3from.addEventListener('change', logRange3);
+d3to.addEventListener('change', logRange3);
+
+const [d4from, d4to] = document.querySelectorAll('[data-tp-picker="d4"]');
+const logRange4 = () => {
+  document.getElementById('log4').textContent =
+    d4from.value ? `Von: ${d4from.value}  –  Bis: ${d4to.value || '?'}` : '— Noch kein Zeitraum gewählt —';
+};
+d4from.addEventListener('change', logRange4);
+d4to.addEventListener('change', logRange4);
+</script>

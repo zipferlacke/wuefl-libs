@@ -1,0 +1,67 @@
+<div class="demo-grid">
+  <div class="demo-card">
+    <div class="demo-card-header">
+      <div class="demo-dots"><span></span><span></span><span></span></div>
+      <span>Single Select · Icons</span>
+    </div>
+    <div class="demo-body">
+      <label>Navigationspunkt wählen</label>
+      <select id="demo1">
+        <option value="">— bitte wählen —</option>
+        <option value="dashboard" data-icon="dashboard">Dashboard</option>
+        <option value="inbox"     data-icon="inbox">Posteingang</option>
+        <option value="calendar"  data-icon="calendar_month">Kalender</option>
+        <option value="contacts"  data-icon="contacts">Kontakte</option>
+        <option value="settings"  data-icon="settings">Einstellungen</option>
+      </select>
+      <div class="demo-log" id="log1">— Noch keine Auswahl —</div>
+    </div>
+  </div>
+
+  <div class="demo-card">
+    <div class="demo-card-header">
+      <div class="demo-dots"><span></span><span></span><span></span></div>
+      <span>Multiselect · Save &amp; Reset</span>
+    </div>
+    <div class="demo-body">
+      <label>Sprachen wählen</label>
+      <select id="demo2" multiple data-default='["js","python"]'>
+        <option value="js"     selected data-icon="javascript">JavaScript</option>
+        <option value="python" selected data-icon="code">Python</option>
+        <option value="rust"   data-icon="memory">Rust</option>
+        <option value="go"     data-icon="directions_run">Go</option>
+        <option value="ts"     data-icon="edit_note">TypeScript</option>
+        <option value="swift"  data-icon="smartphone">Swift</option>
+      </select>
+      <div class="demo-log" id="log2">Aktuell: JavaScript, Python</div>
+    </div>
+  </div>
+</div>
+
+<div style="margin: -.5rem 0 1.5rem;">
+  <a class="btn-dl outline" href="configurator.html">
+    <span class="msr" style="font-size:15px;">tune</span> Konfigurator
+  </a>
+</div>
+
+<script type="module">
+import { SelectPicker } from './selectpicker.js';
+
+const selectpicker = new SelectPicker({ lang: 'de' });
+
+selectpicker.create(document.getElementById('demo1'), { title: 'Navigation', search: true });
+document.getElementById('demo1').addEventListener('change', (e) => {
+  const opt = e.target.options[e.target.selectedIndex];
+  document.getElementById('log1').textContent = opt.value ? `Gewählt: ${opt.text}` : '— Noch keine Auswahl —';
+});
+
+selectpicker.create(document.getElementById('demo2'), {
+  title: { de: 'Sprachen wählen', en: 'Choose languages' },
+  saveButton: true,
+  search: true,
+});
+document.getElementById('demo2').addEventListener('change', (e) => {
+  const names = Array.from(e.target.selectedOptions).map(o => o.text);
+  document.getElementById('log2').textContent = names.length ? `Aktuell: ${names.join(', ')}` : 'Nichts gewählt.';
+});
+</script>

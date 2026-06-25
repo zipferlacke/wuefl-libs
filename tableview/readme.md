@@ -1,5 +1,7 @@
 # tableView — Sort, Group & Search
 
+> Vanilla JS · ES-Modul
+
 Macht klassische HTML-Tabellen interaktiv: Spalten sortieren, nach Werten gruppieren (auch verschachtelt und mit Multi-Value-Split), und die ganze Tabelle live filtern. Komplett über Attribute steuerbar, ohne Build-Schritt.
 
 ---
@@ -21,9 +23,9 @@ prepareTables(document.getElementById('container'));
 
 ---
 
-## Attribute auf `<th>`
+## Attribut-Steuerung
 
-### `t-sort`
+### Auf `<th>`: `t-sort`
 
 Macht eine Spalte sortierbar. Bei Klick auf die Spaltenüberschrift wechselt die Sortierung zwischen aufsteigend → absteigend → unsortiert.
 
@@ -37,7 +39,7 @@ Als Default-Sortierung kann `asc` oder `desc` gesetzt werden:
 <th t-sort="desc">Datum</th>
 ```
 
-### `t-type`
+### Auf `<th>`: `t-type`
 
 Bestimmt wie die Werte für die Sortierung verglichen werden. Ohne dieses Attribut wird automatisch erkannt (Datum, Zahl, Text in dieser Reihenfolge).
 
@@ -57,7 +59,7 @@ Für komplexere Werte kann pro Zelle `data-sort-value` gesetzt werden — der In
 <td data-sort-value="2025-03-12">12. März 2025</td>
 ```
 
-### `t-group`
+### Auf `<th>`: `t-group`
 
 Macht eine Spalte gruppierbar. Beim Klick auf das Gruppen-Icon werden alle Zeilen mit demselben Wert in der Spalte zu einer aufklappbaren Gruppe zusammengefasst. Mehrere Spalten können gleichzeitig gruppiert sein — sie werden dann verschachtelt.
 
@@ -81,11 +83,7 @@ Wenn eine Zelle mehrere Werte enthält (z.B. `"Sport, Musik"`), kann der Separat
 
 Eine Zelle mit `"Sport, Musik"` taucht so unter "Sport" **und** unter "Musik" auf. Beim mehrfachen Erscheinen wird die ursprüngliche Zeile geklont; die Klone bekommen die Klasse `tv-clone`.
 
----
-
-## Attribut auf `<table>`
-
-### `t-search`
+### Auf `<table>`: `t-search`
 
 Fügt automatisch ein Suchfeld in den `<thead>` ein. Die Eingabe wird in Tokens (durch Leerzeichen getrennt) zerlegt — eine Zeile bleibt sichtbar wenn **alle** Tokens irgendwo in irgendeiner Spalte vorkommen. Live-Filterung mit 150ms Debounce.
 
@@ -211,7 +209,7 @@ Die übergebenen Daten:
 
 ---
 
-## CSS-Hooks
+## CSS-Klassen
 
 Klassen die von tableView gesetzt werden — alle in `tableview.css` mit Defaults belegt:
 

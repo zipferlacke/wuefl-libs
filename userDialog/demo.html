@@ -1,0 +1,39 @@
+<div class="card">
+  <div class="card-head"><div class="dots"><span></span><span></span><span></span></div><span>Dialog-Typen auslösen</span></div>
+  <div class="card-body">
+    <div style="display:flex; gap:.75rem; flex-wrap:wrap;">
+      <button class="btn-dl" id="dlg-info">Info</button>
+      <button class="btn-dl" id="dlg-warning">Warning</button>
+      <button class="btn-dl" id="dlg-error">Error</button>
+      <button class="btn-dl outline" id="dlg-upload">Upload</button>
+    </div>
+    <div class="log" id="dlg-log" style="margin-top:1rem;">— Noch keine Aktion —</div>
+  </div>
+</div>
+
+<script type="module">
+import { userDialog } from './userDialog.js';
+import { userDialogUpload } from './userDialogUpload.js';
+
+const log = (text) => { document.getElementById('dlg-log').textContent = text; };
+
+document.getElementById('dlg-info').addEventListener('click', async () => {
+  const result = await userDialog({ title: "Information", content: "Das ist ein Hinweis-Dialog.", confirmText: "OK", type: "info", onlyConfirm: true });
+  log(result.submit ? 'Bestätigt.' : 'Abgebrochen.');
+});
+
+document.getElementById('dlg-warning').addEventListener('click', async () => {
+  const result = await userDialog({ title: "Löschen bestätigen", content: "Möchten Sie diesen Eintrag wirklich löschen?", confirmText: "Ja, löschen", type: "warning" });
+  log(result.submit ? 'Bestätigt.' : 'Abgebrochen.');
+});
+
+document.getElementById('dlg-error').addEventListener('click', async () => {
+  const result = await userDialog({ title: "Fehler", content: "Die Aktion konnte nicht ausgeführt werden.", confirmText: "OK", type: "error", onlyConfirm: true });
+  log(result.submit ? 'Bestätigt.' : 'Abgebrochen.');
+});
+
+document.getElementById('dlg-upload').addEventListener('click', async () => {
+  const data = await userDialogUpload(['jpg', 'png'], ['image/jpeg', 'image/png'], true);
+  log(`${data.getAll('files[]').length} Datei(en) ausgewählt.`);
+});
+</script>

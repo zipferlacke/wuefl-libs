@@ -1,6 +1,8 @@
 @layer components {
     #notification_wrapper{
         display: none;
+        --text-color: light-dark(black, lightgray);
+        --clr-neutral-900: light-dark(black, lightgray);
     }
     #notification_wrapper:popover-open{
         position: fixed;
@@ -63,19 +65,19 @@
         }
 
         &[data-type="info"]{
-            --bg-banner: var(--clr-info-500);
+            --bg-banner: var(--clr-info-500, lightblue);
         }
         
         &[data-type="error"]{
-            --bg-banner: var(--clr-danger-500);
+            --bg-banner: var(--clr-danger-500, red);
         }
 
         &[data-type="warning"]{
-            --bg-banner: var(--clr-warning-500);
+            --bg-banner: var(--clr-warning-500, yellow);
         }
 
         &[data-type="success"]{
-            --bg-banner: var(--clr-success-500);
+            --bg-banner: var(--clr-success-500, lightgreen);
         }
     }
 }

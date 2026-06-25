@@ -225,7 +225,7 @@ export class DatePicker extends PickerBase {
         }
         if (!fromInput) return null;
         if(fromInput.hasAttribute("data-dp-input")) return null;
-        if(toInput.hasAttribute("data-dp-input")) return null;
+        if(toInput && toInput.hasAttribute("data-dp-input")) return null;
         // Bereits initialisiert?
         if (this.activePickers.some(p => p.fromInput === fromInput)) return null;
 

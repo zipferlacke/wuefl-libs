@@ -1,90 +1,91 @@
 # DatePicker
 
-Vanilla JS Datum- und Zeitpicker als Ergänzung zum SelectPicker. Kein Framework, kein Build-Schritt.
+> Vanilla JS · Kein Framework · ES-Modul
 
+Vanilla JS Datum- und Zeitpicker als Ergänzung zum SelectPicker. Standardmäßig per Attribut gesteuert — kein Build-Schritt, keine manuelle Initialisierung nötig.
 
 ## Installation
 
 ```html
-<!-- CSS wird automatisch injiziert, kein Link-Tag nötig -->
-<script type="module">
-  import { DatePicker } from './datepicker.js';
+<script type="module" src="./datepicker.js"></script>
+```
+
+Beim Import wird automatisch eine globale `DatePicker`-Instanz erzeugt, das CSS (`datepicker.css`) nachgeladen, alle Inputs mit `[data-tp-picker]` initialisiert und ein `MutationObserver` registriert, der neue Inputs automatisch übernimmt.
+
+## Attribut-Steuerung
+
+Jedes `<input>` mit `data-tp-picker` wird automatisch zum DatePicker. Der Wert ist eine **Gruppen-ID** — zwei Inputs mit derselben ID bilden zusammen einen Range-Picker.
+
+```html
+<!-- Single-Datum -->
+<input type="date" data-tp-picker="1">
+
+<!-- Range: gleiche Gruppen-ID, DOM-Reihenfolge entscheidet von/bis -->
+<input type="date" data-tp-picker="2">
+<input type="date" data-tp-picker="2">
+```
+
+### Explizite Rollen
+
+Wenn die DOM-Reihenfolge nicht eindeutig ist, kann die Rolle explizit mit `+` (von) oder `-` (bis) angehängt werden:
+
+```html
+<input type="date" data-tp-picker="3+">
+<input type="date" data-tp-picker="3-">
+```
+
+### showDate / showTime — automatisch aus dem `type`
+
+| `type` des Inputs | Ergebnis |
+|---|---|
+| `date` | Nur Kalender |
+| `time` | Nur Zeitauswahl |
+| `datetime-local` | Kalender + Zeitauswahl |
+
+### Weitere Attribute
+
+| Attribut | Beschreibung |
+|---|---|
+| `data-tp-picker="<id>"` | **Pflicht.** Gruppen-ID, optional mit `+`/`-`-Suffix für die Rolle. |
+| `data-tp-format="native\|iso\|ms\|locale"` | Format des gespeicherten Werts (siehe unten). Standard: `native`. |
+| `data-tp-same-day="false"` | Bei Range: gleicher Tag als Von+Bis nicht erlaubt. Standard: erlaubt. |
+| `data-tp-position="js"` | JS-Positionierung erzwingen statt CSS Anchor Positioning. |
+
+## Beispiele
+
+```html
+<!-- Einzelnes Datum -->
+<input type="date" data-tp-picker="a">
+
+<!-- Datum + Uhrzeit -->
+<input type="datetime-local" data-tp-picker="b">
+
+<!-- Nur Uhrzeit -->
+<input type="time" data-tp-picker="c">
+
+<!-- Zeitspanne -->
+<input type="date" data-tp-picker="d">
+<input type="date" data-tp-picker="d">
+
+<script type="module" src="./datepicker.js"></script>
+<script>
+  document.querySelector('[data-tp-picker="a"]')
+    .addEventListener('change', e => console.log(e.target.value));
 </script>
 ```
 
-## Schnellstart
+Das ursprüngliche `<input>` bleibt im DOM (visuell ausgeblendet) und feuert beim Speichern ein normales `change`-Event — der Wert steht in `input.value`.
 
-```js
-const dp = new DatePicker({ lang: 'de' });
-
-// Single-Datum
-dp.create(document.getElementById('meinInput'));
-
-// Range — zwei Inputs als Array → automatisch Range-Modus
-dp.create([
-  document.getElementById('von'),
-  document.getElementById('bis'),
-]);
-
-// Datum + Uhrzeit
-dp.create(inputEl, { showTime: true });
-
-// Nur Zeit
-dp.create(inputEl, { showDate: false, showTime: true });
-```
-
-## Konstruktor
-
-```js
-new DatePicker(config)
-```
-
-| Parameter | Typ | Beschreibung |
-|---|---|---|
-| `config.lang` | `string` | UI-Sprache: `'de'` oder `'en'`. Standard: Browser-Sprache. |
-| `config.locale` | `string` | Locale für Datumsformatierung, z.B. `'de-DE'`. Standard: `navigator.language`. |
-| `config.translations` | `Object` | Eigene Texte für Buttons und Labels. |
-| `config.options` | `Object` | Globale Standardoptionen für alle `create()`-Aufrufe dieser Instanz. |
-
-## create(inputConfig, options)
-
-### inputConfig
-
-| Form | Ergebnis |
-|---|---|
-| `element` | Single-Modus |
-| `[element]` | Single-Modus |
-| `[start, end]` | Range-Modus — automatisch erkannt |
-
-### options
-
-| Option | Typ | Standard | Beschreibung |
-|---|---|---|---|
-| `showDate` | `boolean` | `true` | Kalender anzeigen. |
-| `showTime` | `boolean` | `true` | Zeitpicker anzeigen. |
-| `outputFormat` | `'locale'`\|`'ms'`\|`'iso'` | `'ms'` | Format des gespeicherten Werts im Input-Feld. |
-
-### outputFormat
+## outputFormat / data-tp-format
 
 | Wert | Beispiel | Beschreibung |
 |---|---|---|
-| `'locale'` | `13.03.2026` / `13.03.2026, 14:30` | Regionalformat nach `navigator.language` |
-| `'ms'` | `1742169600000` | Unix-Millisekunden als String |
-| `'iso'` | `2026-03-13` / `2026-03-13T14:30` | ISO 8601 |
-| Nur Zeit | `14:30` | Immer `HH:MM`, unabhängig von `outputFormat` |
+| `native` (Standard) | `2026-03-13` / `2026-03-13T14:30` / `14:30` | Format passend zum `type` des Inputs. |
+| `locale` | `13.03.2026` / `13.03.2026, 14:30` | Regionalformat nach `navigator.language`. |
+| `ms` | `1742169600000` | Unix-Millisekunden als String. |
+| `iso` | `2026-03-13` / `2026-03-13T14:30` | ISO 8601, lokal (nicht UTC). |
 
-> Die Anzeige im Trigger-Element ist immer im Regionalformat — unabhängig vom `outputFormat`.
-
-## Instanz-API
-
-```js
-const picker = dp.create(inputEl);
-
-picker.open();   // Picker öffnen
-picker.close();  // Schließen ohne Speichern
-picker.save();   // Speichern und schließen
-picker.reset();  // Auswahl zurücksetzen
-```
+> Die Anzeige im Trigger-Element ist immer im Regionalformat — unabhängig vom gewählten Format.
 
 ## Verhalten
 
@@ -93,6 +94,56 @@ picker.reset();  // Auswahl zurücksetzen
 **Single mit Zeit** — Speichern-Button erscheint, Picker schließt erst nach Klick.
 
 **Range** — Erster Klick setzt Von = Bis (einzelner Tag). Zweiter Klick weitet auf Bis aus. Hover zeigt Vorschau des Bereichs. Speichern-Button immer vorhanden.
+
+**Bearbeiten-Modus** — Doppelklick auf den Trigger (oder Klick auf das Stift-Icon) erlaubt manuelle Texteingabe des Datums, z.B. `13.03.2026`.
+
+## Manuell — Erweiterte API
+
+Für volle Kontrolle (eigene Sprache/Übersetzungen, globale Defaults, programmatischer Zugriff) kann eine eigene Instanz erstellt und `create()` direkt aufgerufen werden — nötig nur, wenn die Attribut-Steuerung nicht ausreicht.
+
+```js
+import { DatePicker } from './datepicker.js';
+
+const dp = new DatePicker({ lang: 'de' });
+const picker = dp.create(document.getElementById('meinInput'), { showTime: true });
+```
+
+### new DatePicker(config)
+
+| Parameter | Typ | Beschreibung |
+|---|---|---|
+| `config.lang` | `string` | UI-Sprache: `'de'` oder `'en'`. Standard: Browser-Sprache. |
+| `config.locale` | `string` | Locale für Datumsformatierung, z.B. `'de-DE'`. Standard: `navigator.language`. |
+| `config.translations` | `Object` | Eigene Texte für Buttons und Labels. |
+| `config.options` | `Object` | Globale Standardoptionen für alle `create()`-Aufrufe dieser Instanz. |
+
+### dp.create(inputConfig, options)
+
+| Form von `inputConfig` | Ergebnis |
+|---|---|
+| `element` | Single-Modus |
+| `[start, end]` | Range-Modus |
+
+| Option | Typ | Standard | Beschreibung |
+|---|---|---|---|
+| `showDate` | `boolean` | auto aus `type` | Kalender anzeigen. |
+| `showTime` | `boolean` | auto aus `type` | Zeitpicker anzeigen. |
+| `outputFormat` | `'native'\|'locale'\|'ms'\|'iso'` | `'native'` | Format des gespeicherten Werts. |
+| `allowSameDay` | `boolean` | `true` | Range: gleicher Tag als Start+Ende erlaubt. |
+| `forceJsPosition` | `boolean` | `false` | JS-Positionierung erzwingen. |
+
+> `create()` wird intern auch von der Attribut-Steuerung verwendet — beide Wege erzeugen dieselbe Picker-Instanz.
+
+### Instanz-API
+
+```js
+const picker = dp.create(inputEl);
+
+picker.open();          // Picker öffnen
+picker.close();          // Schließen ohne Speichern
+picker.saveAndClose();   // Speichern und schließen
+picker.reset();          // Auswahl zurücksetzen
+```
 
 ## CSS-Variablen
 
@@ -104,6 +155,7 @@ Alle Variablen einmal in `:root` setzen. Die Lightness-Abstufungen (hover, aktiv
 | `--clr-picker-trigger` | `hsl(0,0%,90%)` | Farbton des Trigger-Elements |
 | `--clr-picker-input` | `hsl(219,100%,50%)` | Akzentfarbe: Buttons, Auswahl, Range-Balken |
 | `--clr-picker-today` | `hsl(30,100%,52%)` | Farbe des Heute-Kreises |
+| `--clr-danger-200` / `--clr-danger-500` | — | Farben für ungültige Eingaben im Bearbeiten-Modus |
 | `--fs-picker-header` | `1rem` | Schriftgröße Header/Monat |
 | `--fs-input-picker` | `0.9rem` | Schriftgröße Tage & Inputs |
 | `--br-picker` | `0.5rem` | Border-Radius |
@@ -142,22 +194,6 @@ base64 -i picker-icons.woff2 | tr -d '\n' > picker-icons-base64.txt
 ```
 
 Den Inhalt von `picker-icons-base64.txt` dann als `BASE64_FONT_HERE` in der CSS einsetzen.
-
-## Versionierung
-
-`datepicker.js` und `datepicker.css` sind dünne Loader-Wrapper. Beim Release einer neuen Version:
-
-1. Neue versionierte Dateien ablegen: `datepicker_v1.0.1.js` / `datepicker_v1.0.1.css`
-2. In `datepicker.js` eine Zeile ändern:
-   ```js
-   export { DatePicker } from './datepicker_v1.0.1.js';
-   ```
-3. In `datepicker.css` eine Zeile ändern:
-   ```css
-   @import url('./datepicker_v1.0.1.css');
-   ```
-
-Alle HTML-Dateien importieren weiterhin `datepicker.js` / `datepicker.css` — **keine Änderungen nötig**.
 
 ## Browser-Support
 

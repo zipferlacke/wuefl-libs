@@ -1,8 +1,8 @@
 # SelectPicker
 
-Leichtgewichtiger Custom-Select-Picker ohne externe Abhängigkeiten. Unterstützt Single- und Multiselect, Auto-Initialisierung per Attribut, Suchfunktion, Icons, Mehrsprachigkeit, Style-Gruppen und Min/Max-Constraints.
+> Vanilla JS · Kein Framework · ES-Modul
 
----
+Leichtgewichtiger Custom-Select-Picker ohne externe Abhängigkeiten. Standardmäßig per Attribut gesteuert — kein Build-Schritt, keine manuelle Initialisierung nötig.
 
 ## Installation
 
@@ -12,20 +12,7 @@ Leichtgewichtiger Custom-Select-Picker ohne externe Abhängigkeiten. Unterstütz
 
 Beim Import wird automatisch eine globale `SelectPicker`-Instanz erzeugt, das CSS (`selectpicker.css`) nachgeladen, alle bestehenden `<select>` mit `[data-sp-picker]` initialisiert und ein `MutationObserver` registriert, der neue Elemente automatisch übernimmt.
 
-Für vollen Konfigurationszugriff (Sprache, eigene Übersetzungen, globale Defaults) kann eine eigene Instanz erstellt werden:
-
-```js
-import { SelectPicker } from './selectpicker.js';
-
-const sp = new SelectPicker({
-  lang: 'de',
-  options: { saveButton: true, showControls: true }
-});
-```
-
----
-
-## Auto-Init per Attribut
+## Attribut-Steuerung
 
 Jedes `<select>` mit `data-sp-picker` wird automatisch zum SelectPicker. Der Wert des Attributs wird als Titel verwendet — leer = kein Titel.
 
@@ -47,64 +34,19 @@ Jedes `<select>` mit `data-sp-picker` wird automatisch zum SelectPicker. Der Wer
 </select>
 ```
 
-### Attribute auf `<select>`
+### Weitere Attribute
 
-| Attribut | Wirkung |
+| Attribut | Beschreibung |
 |---|---|
-| `data-sp-picker` | Auf jedem `<select>`, das vom Picker übernommen werden soll. Wert (optional) wird als Titel verwendet. |
+| `data-sp-picker` | **Pflicht.** Auf jedem `<select>`, das vom Picker übernommen werden soll. Wert (optional) wird als Titel verwendet. |
 | `data-sp-search="false"` | Suchfeld komplett deaktivieren. Ohne Attribut: erscheint automatisch ab >5 Einträgen. |
 | `data-sp-save` | Speichern-Button im Footer (empfohlen für Multiselect). |
 | `data-sp-controls` | Reset- und Close-Button im Header anzeigen. |
-| `data-sp-group="<name>"` | Style-Gruppe zuweisen (siehe `createGroup`). |
+| `data-sp-group="<name>"` | Style-Gruppe zuweisen (siehe Style-Gruppen). |
 | `data-sp-jsposition` | JS-Positionierung erzwingen, auch wenn der Browser CSS Anchor Positioning unterstützt. |
 | `data-default='["a","b"]'` | JSON-Array mit Reset-Werten. Wenn gesetzt, erscheint der Reset-Button. |
-| `min` / `max` | Bei Multiselect: Mindest- und Höchstanzahl ausgewählter Optionen. Über `max` hinaus kann nichts mehr ausgewählt werden, unter `min` lässt sich der Picker nicht schließen. |
+| `min` / `max` | Bei Multiselect: Mindest- und Höchstanzahl ausgewählter Optionen. |
 | `multiple` | Standard-HTML-Attribut — aktiviert Multiselect. |
-
----
-
-## Manuelle Initialisierung
-
-Für volle Kontrolle pro Picker kann `create()` direkt aufgerufen werden — überschreibt etwaige Attribut-Konfiguration:
-
-```js
-import { SelectPicker } from './selectpicker.js';
-
-const sp = new SelectPicker();
-const instance = sp.create(document.getElementById('mySelect'), {
-  title: 'Option wählen',
-  search: true,
-  saveButton: true,
-  showControls: true,
-  group: 'dark',
-  forceJsPosition: true,
-});
-```
-
-### Optionen für `create()`
-
-| Option | Typ | Standard | Beschreibung |
-|---|---|---|---|
-| `title` | `string \| {de, en}` | leer | Titel im Header. Wenn nicht gesetzt **und** `showControls: false`, wird kein Header gerendert. |
-| `group` | `string` | `"default"` | Style-Gruppe (siehe unten). |
-| `search` | `boolean` | auto | `false` = nie. Sonst automatisch ab >5 Optionen. |
-| `saveButton` | `boolean` | `false` | Speichern-Button im Footer. |
-| `showControls` | `boolean` | `false` | Reset- und Close-Button im Header. |
-| `forceJsPosition` | `boolean` | `false` | JS-Positionierung erzwingen statt CSS-Anchor. |
-
----
-
-## Globale Konfiguration
-
-`new SelectPicker(config)` akzeptiert drei optionale Felder:
-
-| Feld | Typ | Beschreibung |
-|---|---|---|
-| `lang` | `string` | Startsprache `'de'` oder `'en'`. Standard: Browser-Sprache, sonst `'en'`. |
-| `translations` | `Object` | Eigene Übersetzungen (siehe unten). |
-| `options` | `Object` | Globale Defaults für alle `create()`-Aufrufe — werden pro Aufruf überschrieben. |
-
----
 
 ## Style-Gruppen
 
@@ -126,9 +68,7 @@ sp.createGroup('light', 'sp-theme-light');
 }
 ```
 
----
-
-## Mehrsprachige Titel
+## Mehrsprachigkeit
 
 Statt eines Strings kann ein Sprachobjekt übergeben werden — `resolveLangString` wählt nach `this.lang` aus, mit Fallback auf `en`.
 
@@ -138,7 +78,7 @@ sp.create(el, {
 });
 ```
 
-## Eigene Übersetzungen
+Eigene Übersetzungen für Buttons/Platzhalter:
 
 ```js
 new SelectPicker({
@@ -149,8 +89,6 @@ new SelectPicker({
   }
 });
 ```
-
----
 
 ## Icons
 
@@ -163,8 +101,6 @@ Jede `<option>` kann ein Icon erhalten — entweder als Material-Symbol-Ligaturn
 </select>
 ```
 
----
-
 ## Min / Max bei Multiselect
 
 ```html
@@ -174,9 +110,7 @@ Jede `<option>` kann ein Icon erhalten — entweder als Material-Symbol-Ligaturn
 ```
 
 - Beim Erreichen von `max` können keine weiteren Optionen hinzugefügt werden
-- Unter `min` lässt sich der Picker nicht schließen (`closePicker` blockiert)
-
----
+- Unter `min` lässt sich der Picker nicht schließen
 
 ## Standardwerte & Reset
 
@@ -192,35 +126,56 @@ Mit `data-default` werden feste Reset-Werte definiert. Der Reset-Button ist nur 
 
 Ohne `data-default` werden bei Reset die ursprünglich `selected`-markierten Optionen wiederhergestellt — der Reset-Button bleibt aber versteckt.
 
----
+## Manuell — Erweiterte API
 
-## Programmatische API
+Für volle Kontrolle (eigene Sprache/Übersetzungen, globale Defaults, programmatischer Zugriff) kann eine eigene Instanz erstellt und `create()` direkt aufgerufen werden — nötig nur, wenn die Attribut-Steuerung nicht ausreicht. `create()` überschreibt dabei etwaige Attribut-Konfiguration.
 
-`sp.create()` gibt eine `SelectInstance` zurück. Methoden:
+```js
+import { SelectPicker } from './selectpicker.js';
 
-| Methode | Beschreibung |
+const sp = new SelectPicker({ lang: 'de', options: { saveButton: true } });
+const instance = sp.create(document.getElementById('mySelect'), {
+  title: 'Option wählen',
+  search: true,
+  group: 'dark',
+});
+```
+
+### new SelectPicker(config)
+
+| Feld | Typ | Beschreibung |
+|---|---|---|
+| `lang` | `string` | Startsprache `'de'` oder `'en'`. Standard: Browser-Sprache, sonst `'en'`. |
+| `translations` | `Object` | Eigene Übersetzungen (siehe Mehrsprachigkeit). |
+| `options` | `Object` | Globale Defaults für alle `create()`-Aufrufe — werden pro Aufruf überschrieben. |
+
+### sp.create(selectElement, options)
+
+| Option | Typ | Standard | Beschreibung |
+|---|---|---|---|
+| `title` | `string \| {de, en}` | leer | Titel im Header. Wenn nicht gesetzt **und** `showControls: false`, wird kein Header gerendert. |
+| `group` | `string` | `"default"` | Style-Gruppe. |
+| `search` | `boolean` | auto | `false` = nie. Sonst automatisch ab >5 Optionen. |
+| `saveButton` | `boolean` | `false` | Speichern-Button im Footer. |
+| `showControls` | `boolean` | `false` | Reset- und Close-Button im Header. |
+| `forceJsPosition` | `boolean` | `false` | JS-Positionierung erzwingen statt CSS-Anchor. |
+
+### Instanz-API
+
+`sp.create()` gibt eine `SelectInstance` zurück:
+
+| Methode / Eigenschaft | Beschreibung |
 |---|---|
 | `instance.open()` | Popover öffnen |
 | `instance.close()` | Schließen **ohne** Speichern (respektiert `min`-Constraint) |
 | `instance.saveAndClose()` | Auswahl ins originale `<select>` schreiben + `change`-Event feuern + schließen |
 | `instance.reset()` | Auf `defaultValues` zurücksetzen, Popover bleibt offen |
-
-Wichtige Eigenschaften:
-
-| Eigenschaft | Beschreibung |
-|---|---|
 | `instance.originalSelect` | Das versteckte `<select>` — bleibt im DOM, feuert `change`-Events |
 | `instance.triggerElm` | Das sichtbare Element (`.sp_trigger`) |
-| `instance.popover` | Das `<dialog>` |
-| `instance.tempValue` | Aktuelle Auswahl vor `saveAndClose()` |
-| `instance.defaultValues` | Reset-Werte |
-| `instance.isOpen` | `true` wenn offen |
-| `instance.isMulti` | `true` bei `<select multiple>` |
+| `instance.isOpen` / `instance.isMulti` | Status-Flags |
 | `instance.min` / `instance.max` | Aus dem `<select>` übernommene Constraints |
 
-### Auf Änderungen reagieren
-
-Das originale `<select>` ist im DOM und feuert standardmäßiges `change`:
+Auf Änderungen reagieren — das originale `<select>` ist im DOM und feuert standardmäßiges `change`:
 
 ```js
 document.getElementById('mySelect').addEventListener('change', (e) => {
@@ -228,8 +183,6 @@ document.getElementById('mySelect').addEventListener('change', (e) => {
   console.log(values);
 });
 ```
-
----
 
 ## CSS-Variablen
 
@@ -250,8 +203,6 @@ document.getElementById('mySelect').addEventListener('change', (e) => {
 
 Light/Dark wird via `light-dark()` automatisch unterstützt.
 
----
-
 ## CSS-Klassen
 
 Präfix `sp_` — vollständig isoliert:
@@ -262,61 +213,33 @@ Präfix `sp_` — vollständig isoliert:
 | `sp_popover` | Popover-`<dialog>` |
 | `sp_header` / `sp_title` / `sp_actions` | Header (optional) |
 | `sp_btn` / `sp_btn_close` / `sp_btn_reset` / `sp_btn_save` | Buttons |
-| `sp_btn_reset_inline` | Kleiner Reset im Multi-Footer |
 | `sp_footer` / `sp_footer_inline` | Footer |
 | `sp_search` | Suchfeld |
 | `sp_content` | Optionen-Liste |
 | `sp_option` / `sp_selected` / `sp_option_hidden` | Einzelne Option |
 | `sp_chip` / `sp_single_value` / `sp_placeholder` | Trigger-Inhalt |
-| `sp_msr` | Material-Symbol-Icon |
 | `sp_open` | Auf `.sp_popover` solange offen |
-| `dp_trigger_open` | Auf `.sp_trigger` solange Popover offen |
-
----
 
 ## Positionierung
 
-### CSS Anchor Positioning (modern)
+In Chrome/Edge 125+ läuft die Positionierung per CSS via `position-anchor` mit vier Fallback-Stufen (unter/über dem Trigger, jeweils auch zentriert bei fehlendem seitlichem Platz). In Browsern ohne Anchor Positioning übernimmt eine JS-Routine dieselbe Logik, inklusive Re-Positionierung bei Scroll/Resize.
 
-In Chrome/Edge 125+ läuft die Positionierung per CSS via `position-anchor` mit folgenden Fallback-Stufen:
-
-1. Standard: unter dem Trigger, linksbündig
-2. `flip-block`: kein Platz unten → über den Trigger
-3. `--sp-center-bottom`: kein Platz seitlich → horizontal zentriert, unter Trigger
-4. `--sp-center-top`: kein Platz weder seitlich noch unten → zentriert, über Trigger
-
-### JS-Fallback
-
-In Browsern ohne Anchor Positioning übernimmt eine JS-Routine die identische Logik. Bei Scroll und Resize wird automatisch neu positioniert — auch in scrollbaren Vorfahren.
-
-### `forceJsPosition`
-
-In manchen Layouts bricht CSS Anchor Positioning auch in modernen Browsern, weil ein Vorfahre `transform`, `filter` oder `contain` setzt — diese erzeugen einen Containing-Block, der das Anchor-Positioning unmöglich macht. Auch in einem `<dialog>` mit `showModal()` gibt's regelmäßig Probleme.
+`forceJsPosition` (Attribut `data-sp-jsposition` oder global via `options`) erzwingt die JS-Positionierung — nötig wenn ein Vorfahre `transform`/`filter`/`contain` setzt, da das Anchor Positioning unmöglich macht.
 
 ```html
 <select data-sp-picker data-sp-jsposition>...</select>
 ```
 
-oder global:
-
-```js
-new SelectPicker({ options: { forceJsPosition: true } });
-```
-
----
-
 ## Barrierefreiheit
 
 - Trigger ist per `Tab` fokussierbar, öffnet mit `Enter` oder `Space`
 - Originales `<select>` bleibt im DOM (visuell auf 0×0 reduziert, nicht `display:none`) — Formular-Validierung und Screenreader funktionieren weiter
-- Suchfeld erhält nach dem Öffnen automatisch Fokus (mit 50ms Delay damit `popover` sicher offen ist)
+- Suchfeld erhält nach dem Öffnen automatisch Fokus
 - Klick außerhalb schließt automatisch (mit Save bei Single, ohne wenn `min` nicht erfüllt ist)
-
----
 
 ## CSS-Layer & Robustheit
 
-Das CSS liegt in `@layer components`. Globale Resets können den Layer überschreiben. Pack deinen Reset ebenfalls in einen Layer:
+Das CSS liegt in `@layer components`. Globale Resets können den Layer überschreiben — den eigenen Reset ebenfalls in einen Layer packen:
 
 ```css
 @layer resets, components;
@@ -324,3 +247,7 @@ Das CSS liegt in `@layer components`. Globale Resets können den Layer überschr
   * { padding: 0; margin: 0; box-sizing: border-box; }
 }
 ```
+
+## Browser-Support
+
+CSS Anchor Positioning ist in Chrome 125+, Edge 125+ vollständig unterstützt. Für alle anderen Browser (inkl. Firefox) greift automatisch der JS-Fallback.
