@@ -139,9 +139,12 @@
             "version":"2.0.0",
             "date":"2026-06-25",
             "changes":[
-                "1. Design für .table hinzugefügt",
-                "2. `colors.css` wieder hinzugefügt",
-                "3. Beispiel für die Verwendung für dennn css Part hinzugefügt."
+                "1. Design für .wDetails hinzugefügt",
+                "2. Viele CSS Klassen auf .w* geändert (z.B .wHeader, .wFooter, .wNav, .wSidenav, ...)",
+                "3. tabelview als Modul hinzugefügt, Tabellen automatisch sortieren, gruppieren, durchsuchen",
+                "4. INP verbessert und neue Methoden hinzugefügt (siehe InP Update)",
+                "5. SelectPicker auch mit Attributen steuerbar   (siehe SelectPicker Update)",
+                "6. DatePicker auch mit Attributen steuerbar und Bug fixes (siehe DatePicker Update)"
             ]
         },
         {
