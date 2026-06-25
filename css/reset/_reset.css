@@ -26,6 +26,7 @@ html{
     }
 }
 
+
 *:not(ol, ul, li){
     margin: 0; 
     text-decoration: none;

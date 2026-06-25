@@ -2,11 +2,95 @@
     "welcome":[
         "WueflLib"
     ],
+    
+  "modules": {
+    "selectpicker": [
+        {
+        "version": "1.1.0",
+        "date": "2026-04-26",
+        "changes": [
+          "Verbesserung: Reihenfolge in openPicker — DOM-Insert + Render vor Positionierung für korrekte Höhenmessung",
+          "CSS: [data-jsposition]-Override + @position-try Fallbacks für sauberes Zusammenspiel CSS/JS"
+        ]
+      },
+      {
+        "version": "1.0.0",
+        "date": "2025-10-01",
+        "changes": [
+          "Initiale Veröffentlichung",
+          "Single- und Multiselect mit Suchfunktion",
+          "Material-Symbol- und SVG-Icon-Support",
+          "Mehrsprachig (de/en) mit eigenen Übersetzungen",
+          "CSS Anchor Positioning mit JS-Fallback"
+        ]
+      }
+    ],
+    "datepicker": [
+      {
+        "version": "1.1.0",
+        "date": "2026-04-26",
+        "changes": [
+          "Manuelles Bearbeiten des Datums im Trigger via Edit-Mode",
+          "CSS Anchor Positioning mit JS-Fallback",
+          "Einige Style Verbesserungen beim Range Selct für bessere Nutzung."
+        ]
+      },
+      {
+        "version": "1.0.0",
+        "date": "2026-04-26",
+        "changes": [
+          "Initiale Veröffentlichung",
+          "Single- und Range-Modus mit optionalem Zeit-Picker",
+          "CSS Anchor Positioning mit JS-Fallback",
+          "Hover-Range-Preview, Smart Active-Side beim Edit"
+        ]
+      }
+    ],
+    "banner": [
+      {
+        "version": "1.0.0",
+        "date": "2026-04-26",
+        "changes": [
+          "Initiale Veröffentlichung"
+        ]
+      }
+    ],
+    "userDialog": [
+      {
+        "version": "1.0.0",
+        "date": "2026-04-26",
+        "changes": [
+          "Initiale Veröffentlichung"
+        ]
+      }
+    ],
+    "slideshow": [
+      {
+        "version": "1.0.0",
+        "date": "2026-04-26",
+        "changes": [
+          "Initiale Veröffentlichung"
+        ]
+      }
+    ],
+    "inp": [
+      {
+        "version": "1.0.0",
+        "date": "2026-06-03",
+        "changes": [
+          "Initiale Veröffentlichung"
+        ]
+      }
+    ]
+  },
+
+
 
 
     "changelog":[
         {
             "version":"1.2.0",
+            "date":"",
             "changes":[
                 "1. Design für .table hinzugefügt",
                 "2. `colors.css` wieder hinzugefügt",
@@ -15,6 +99,7 @@
         },
         {
             "version":"1.1.0",
+            "date":"",
             "changes":[
                 "1. Update des SelectPickers: Anpasssung des CSS und JS an allgemeine Pickerform (https://open.wuefl.de/wuefl-libs/selectpicker/)",
                 "2. DatePicker hinzugefügt (https://open.wuefl.de/wuefl-libs/datepicker/)",
@@ -24,12 +109,14 @@
         },
         {
             "version":"1.0.1",
+            "date":"",
             "changes":[
                 "1. Update des SelectPickers, inklusiver Erstellung einer Dokumentation und DemoSeite (https://open.wuefl.de/wuefl-libs/selectpicker/)"
             ]
         },
         {
             "version":"1.0.0",
+            "date":"",
             "changes":[
                 "Version 1.0.0"
             ]

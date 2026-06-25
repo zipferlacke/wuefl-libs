@@ -1,28 +1,65 @@
-progress{
+progress {
     appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
     border: none;
     border-radius: var(--br-default);
     color: var(--clr-primary-400);
-    background-color: var(--clr-neutral-200);
-    height: 0.75rem;
-    width: clamp(0rem, 5rem, 100%);
-}
-progress[value]::-webkit-progress-bar{
-    background-color: var(--clr-neutral-100);
-    border-radius: var(--br-default);
-}
-progress[value]::-webkit-progress-value{
-    background-color: var(--clr-primary-400) ;
-    border-radius: var(--br-default);
-}
-progress::-moz-progress-bar {background-color: var(--clr-primary-400) }
+    background-color: var(--clr-neutral-50);
+    height: 0.5rem;
+    width: 5rem;
+    overflow: hidden;
 
-progress.number_negative{
-    color: var(--clr-danger-300);
+    /* ── Mit Value ────────────────── */
+    &[value]::-webkit-progress-bar {
+        background-color: var(--clr-neutral-50);
+        border-radius: var(--br-default);
+    }
+
+    &[value]::-webkit-progress-value {
+        background-color: var(--clr-primary-400);
+        border-radius: var(--br-default);
+    }
+
+    &[value]::-moz-progress-bar {
+        background-color: var(--clr-primary-400);
+    }
+
+    /* ── Ohne Value (indeterminate) ── */
+    &:indeterminate::-webkit-progress-bar {
+        background-color: var(--clr-neutral-50);
+        border-radius: var(--br-default);
+        overflow: hidden;
+    }
+
+    &:indeterminate::-webkit-progress-value {
+        background-color: var(--clr-primary-400);
+        border-radius: var(--br-default);
+        animation: indeterminate 1.5s ease-in-out infinite;
+    }
+
+    &:indeterminate::-moz-progress-bar {
+        background-color: var(--clr-primary-400);
+        border-radius: var(--br-default);
+        animation: indeterminate 1.5s ease-in-out infinite;
+    }
+
+    /* ── Negative Variante ────────── */
+    &.number_negative {
+        color: var(--clr-danger-300);
+
+        &[value]::-webkit-progress-value {
+            background-color: var(--clr-danger-400);
+        }
+
+        &[value]::-moz-progress-bar {
+            background-color: var(--clr-danger-300);
+        }
+    }
 }
-progress.number_negative::-moz-progress-bar{
-    background-color: var(--clr-danger-300) ;
-}
-progress.number_negative[value]::-webkit-progress-value {
-    background-color: var(--clr-danger-300);
+
+@keyframes indeterminate {
+    0% { margin-left: -30%; width: 30%; }
+    50% { margin-left: 50%; width: 30%; }
+    100% { margin-left: 110%; width: 30%; }
 }

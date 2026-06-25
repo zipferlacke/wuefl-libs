@@ -4,116 +4,6 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>SelectPicker</title>
-  <style>
-    @import url('../css/fonts/google-icons-rounded.css');
-    @layer resets, components;
-    @layer resets {
-      *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    }
-
-    :root {
-      --paper:   #f5f4f0;
-      --surface: #ffffff;
-      --ink:     #18181b;
-      --ink-2:   #52525b;
-      --ink-3:   #a1a1aa;
-      --line:    #e4e4e7;
-      --accent:  #1d4ed8;
-      --mono:    'IBM Plex Mono', monospace;
-      --sans:    'IBM Plex Sans', sans-serif;
-    }
-
-    html { scroll-behavior: smooth; }
-    body { font-family: var(--sans); background: var(--paper); color: var(--ink); font-size: 15px; line-height: 1.6; }
-
-    .wrap { max-width: 860px; margin: 0 auto; padding: 0 1.5rem 5rem; }
-
-    nav {
-      position: sticky; top: 0; z-index: 100;
-      background: var(--paper); border-bottom: 1px solid var(--line);
-      padding: .75rem 1.5rem;
-      display: flex; align-items: center; justify-content: space-between;
-    }
-    .nav-brand { font-family: var(--mono); font-weight: 500; font-size: .95rem; color: var(--ink); text-decoration: none; }
-    .nav-links { display: flex; gap: 1.5rem; list-style: none; }
-    .nav-links a { font-size: .82rem; color: var(--ink-2); text-decoration: none; font-family: var(--mono); }
-    .nav-links a:hover { color: var(--ink); }
-
-    .hero { padding: 3.5rem 0 2rem; }
-    .hero-tag { font-family: var(--mono); font-size: .75rem; color: var(--accent); letter-spacing: .1em; text-transform: uppercase; margin-bottom: .75rem; }
-    .hero h1 { font-size: clamp(2rem, 5vw, 3rem); font-weight: 600; letter-spacing: -.03em; line-height: 1.1; margin-bottom: .75rem; }
-    .hero p { color: var(--ink-2); max-width: 50ch; font-size: .95rem; line-height: 1.7; }
-
-    .demo-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin: 2rem 0 1.5rem; }
-    @media (max-width: 600px) { .demo-grid { grid-template-columns: 1fr; } }
-
-    .demo-card { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
-    .demo-card-header {
-      display: flex; align-items: center; justify-content: space-between;
-      padding: .6rem 1rem;
-      background: var(--ink); font-family: var(--mono); font-size: .72rem; color: #71717a;
-    }
-    .demo-dots { display: flex; gap: .35rem; }
-    .demo-dots span { width: 9px; height: 9px; border-radius: 50%; }
-    .demo-dots span:nth-child(1) { background: #ef4444; }
-    .demo-dots span:nth-child(2) { background: #f59e0b; }
-    .demo-dots span:nth-child(3) { background: #22c55e; }
-    .demo-body { padding: 1.5rem 1.25rem; min-height: 140px; }
-    .demo-body label { display: block; font-family: var(--mono); font-size: .72rem; color: var(--ink-3); letter-spacing: .06em; text-transform: uppercase; margin-bottom: .5rem; }
-    .demo-log { margin-top: 1rem; padding: .6rem .8rem; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 6px; font-family: var(--mono); font-size: .75rem; color: #166534; }
-
-    .download-bar {
-      display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;
-      padding: 1.25rem 1.5rem;
-      background: var(--surface); border: 1px solid var(--line); border-radius: 10px;
-      margin-bottom: 3rem;
-    }
-    .btn-dl {
-      display: inline-flex; align-items: center; gap: .4rem;
-      padding: .55rem 1.1rem;
-      background: var(--ink); color: white;
-      border-radius: 6px; font-family: var(--mono); font-size: .8rem;
-      text-decoration: none; font-weight: 500; transition: background .15s;
-    }
-    .btn-dl:hover { background: #27272a; }
-    .btn-dl.outline { background: none; color: var(--ink); border: 1px solid var(--line); }
-    .btn-dl.outline:hover { background: var(--paper); }
-    .dl-info { font-family: var(--mono); font-size: .75rem; color: var(--ink-3); }
-
-    .section { margin-bottom: 3rem; }
-    .section-label {
-      font-family: var(--mono); font-size: .7rem; letter-spacing: .12em;
-      text-transform: uppercase; color: var(--ink-3); margin-bottom: 1rem;
-      display: flex; align-items: center; gap: .5rem;
-    }
-    .section-label::after { content: ''; flex: 1; height: 1px; background: var(--line); }
-
-    h2 { font-size: 1.3rem; font-weight: 600; letter-spacing: -.02em; margin-bottom: .5rem; }
-    h3 { font-family: var(--mono); font-size: .85rem; font-weight: 500; margin: 1.5rem 0 .4rem; color: var(--ink); }
-    p { color: var(--ink-2); margin-bottom: .8rem; line-height: 1.75; font-size: .93rem; }
-
-    code { font-family: var(--mono); font-size: .8em; background: #eff6ff; color: var(--accent); padding: .1em .35em; border-radius: 3px; }
-    pre { background: var(--ink); color: #e4e4e7; border-radius: 8px; padding: 1.2rem 1.4rem; overflow-x: auto; margin: .75rem 0 1.25rem; font-family: var(--mono); font-size: .8rem; line-height: 1.8; }
-    pre code { background: none; color: inherit; padding: 0; font-size: inherit; }
-    .kw { color: #f87171; } .str { color: #86efac; } .cmt { color: #52525b; font-style: italic; }
-    .fn { color: #c084fc; } .num { color: #60a5fa; }
-
-    table { width: 100%; border-collapse: collapse; margin: .75rem 0 1.25rem; font-size: .85rem; }
-    th { text-align: left; padding: .45rem .8rem; background: var(--ink); color: white; font-family: var(--mono); font-size: .72rem; letter-spacing: .05em; }
-    th:first-child { border-radius: 5px 0 0 0; } th:last-child { border-radius: 0 5px 0 0; }
-    td { padding: .5rem .8rem; border-bottom: 1px solid var(--line); color: var(--ink-2); vertical-align: top; line-height: 1.5; }
-    tr:last-child td { border-bottom: none; }
-    tr:nth-child(even) td { background: #fafafa; }
-    td code { font-size: .78rem; }
-
-    .callout { display: flex; gap: .7rem; align-items: flex-start; background: #eff6ff; border-left: 3px solid var(--accent); border-radius: 0 6px 6px 0; padding: .8rem 1rem; margin: .75rem 0; }
-    .callout .msr { color: var(--accent); font-size: 17px; flex-shrink: 0; margin-top: .1rem; }
-    .callout p { color: #1e40af; margin: 0; font-size: .85rem; }
-
-    footer { border-top: 1px solid var(--line); padding-top: 1.5rem; margin-top: 3rem; font-family: var(--mono); font-size: .75rem; color: var(--ink-3); display: flex; justify-content: space-between; flex-wrap: wrap; gap: .5rem; }
-    footer a { color: var(--ink-3); text-decoration: none; }
-    footer a:hover { color: var(--ink); }
-  </style>
 </head>
 <body>
 
@@ -132,7 +22,7 @@
   <!-- HERO -->
   <div class="hero">
     <div class="hero-tag">Vanilla JS · Kein Framework · ES-Modul</div>
-    <h1>SelectPicker</h1>
+    <h1>SelectPicker {version}</h1>
     <p>Custom-Select-Picker ohne externe Abhängigkeiten. Single- und Multiselect, Suchfunktion, Icons, i18n und vollständige CSS-Kontrolle über Custom Properties.</p>
   </div>
 
@@ -179,24 +69,19 @@
 
   <!-- DOWNLOAD -->
   <div class="download-bar">
-    <a class="btn-dl" href="selectpicker_v1_0_0.js" download>
-      <span class="msr" style="font-size:15px;">download</span> selectpicker.js
-    </a>
-    <a class="btn-dl outline" href="selectpicker_v1_0_0.css" download>
-      <span class="msr" style="font-size:15px;">download</span> selectpicker.css
-    </a>
+    {download}
     <a class="btn-dl outline" href="configurator.html">
       <span class="msr" style="font-size:15px;">tune</span> Konfigurator
     </a>
-    <span class="dl-info">Vanilla JS · kein Build-Schritt nötig</span>
+    <span class="dl-info">JS + CSS als ZIP · kein Build-Schritt nötig</span>
   </div>
 
   <!-- INSTALLATION -->
   <div class="section" id="installation">
     <div class="section-label">01 — Installation</div>
     <h2>Einbinden</h2>
-    <p>Einfach als ES-Modul importieren. Das CSS wird automatisch nachgeladen — <code>selectpicker_v1_0_0.css</code> muss im selben Verzeichnis liegen.</p>
-<pre><code><span class="kw">import</span> { SelectPicker } <span class="kw">from</span> <span class="str">'./selectpicker_v1_0_0.js'</span>;</code></pre>
+    <p>Einfach als ES-Modul importieren. Das CSS wird automatisch nachgeladen — <code data-fn="css-filename">selectpicker_{version}.css</code> muss im selben Verzeichnis liegen.</p>
+<pre><code><span class="kw">import</span> { SelectPicker } <span class="kw">from</span> <span class="str" data-fn="js-import">'./selectpicker_{version}.js'</span>;</code></pre>
 
     <h3>Schnellstart</h3>
 <pre><code><span class="cmt">&lt;!-- HTML --&gt;</span>
@@ -313,8 +198,15 @@ document.<span class="fn">getElementById</span>(<span class="str">'meinSelect'</
     <p>Alle Klassen tragen den Präfix <code>sp_</code> und sind vollständig von anderen Bibliotheken isoliert — auch bei Parallelladung mit dem DatePicker.</p>
   </div>
 
+  <div class="section" id="changelog">
+    <div class="section-label">04 — Changelog</div>
+    <h2>Versionsverlauf</h2>
+    <p>Alle Versionen mit den jeweiligen Änderungen.</p>
+    {changelog}
+  </div>
+
   <footer>
-    <span>SelectPicker v1_0_0 — Vanilla JS</span>
+    <span>SelectPicker {version} — Vanilla JS</span>
     <div style="display:flex;gap:1.5rem;">
       <a href="configurator.html">Konfigurator →</a>
       <a href="../index.html">wuefl-libs</a>
@@ -323,9 +215,24 @@ document.<span class="fn">getElementById</span>(<span class="str">'meinSelect'</
 
 </div>
 
-<script type="module">
-  import { SelectPicker } from './selectpicker_v1_0_0.js';
+<!-- versioning.css für die Version/Changelog/Download-Optik (optional) -->
+<link rel="stylesheet" href="../appdata/versioning.css">
 
+<script type="module">
+  // ── Imports ──────────────────────────────────────────────────────────────
+  import versioning       from '../appdata/versioning.js';
+  import { SelectPicker } from './selectpicker.js';
+
+  // ── Versioning: Version, Changelog, Download per ein Aufruf ──────────────
+  // versioning() ersetzt {version}, {changelog}, {download} Platzhalter im
+  // HTML, lädt die aktuelle Version aus messages.json, baut das ZIP
+  // on-the-fly. Eine zentrale Stelle für alles.
+  await versioning('selectpicker', {
+    zip:   true,
+    files: ['selectpicker.js', 'selectpicker.css'],
+  });
+
+  // ── Demo-Picker ──────────────────────────────────────────────────────────
   const selectpicker = new SelectPicker({ lang: 'de' });
 
   selectpicker.create(document.getElementById('demo1'), { title: 'Navigation', search: true });
@@ -337,7 +244,7 @@ document.<span class="fn">getElementById</span>(<span class="str">'meinSelect'</
   selectpicker.create(document.getElementById('demo2'), {
     title: { de: 'Sprachen wählen', en: 'Choose languages' },
     saveButton: true,
-    search: true
+    search: true,
   });
   document.getElementById('demo2').addEventListener('change', (e) => {
     const names = Array.from(e.target.selectedOptions).map(o => o.text);

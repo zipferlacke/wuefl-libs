@@ -164,6 +164,14 @@ Macht klassisches Server-Side Rendering dynamisch: HTML-Links und Buttons laden 
 
 ---
 
+### Tableview 
+
+Lässt statische Tabellen dynamisch weren, durch sortieren, gruppieren und durchsuchen.
+
+**→ [Vollständige Dokumentation](./tableview/readme.md)**
+
+---
+
 ### JavaScript Utilities
 
 Eine Sammlung allgemeiner JavaScript-Hilfsdateien.
