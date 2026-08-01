@@ -11,81 +11,55 @@ Macht klassische HTML-Tabellen interaktiv: Spalten sortieren, nach Werten gruppi
 ```html
 <script src="tableview.js" type="module"></script>
 ```
+Achtung das CSS `tableview.css` in den selben Ordner wie das `.js` es wird automatisch geladen. (oder css Pfad in Datei anpassen)
 
-Keine Abhängigkeiten. Beim Import registriert sich tableView automatisch als Klick-Handler und beobachtet das DOM via `MutationObserver` — neue Tabellen die per Fetch oder JavaScript eingefügt werden, werden automatisch initialisiert. Ein zugehöriges Stylesheet (`tableview.css`) wird beim ersten Aufruf nachgeladen.
-
-Zum manuellen Initialisieren bestimmter Tabellen (eigentlich nicht notwendig):
-
-```js
-import { prepareTables } from './tableview.js';
-prepareTables(document.getElementById('container'));
-```
+Keine Abhängigkeiten. Beim Import registriert sich tableView automatisch als Klick-Handler und beobachtet das DOM via `MutationObserver` — neue Tabellen die per Fetch oder JavaScript eingefügt werden, werden automatisch initialisiert. 
 
 ---
 
 ## Attribut-Steuerung
+Eine Spalte kann **sortierbar**, **gruppierbar** und **filterbar** gemacht werden und die ganze Tabelle **durchsuchbar**, über folgende Attribute:
 
-### Auf `<th>`: `t-sort`
+**td oder th**: `t-sort`, `t-group`, `t-filter`, `t-type`, `sortValue`
+
+**table**: `t-search`
+
+### `t-sort`
 
 Macht eine Spalte sortierbar. Bei Klick auf die Spaltenüberschrift wechselt die Sortierung zwischen aufsteigend → absteigend → unsortiert.
 
 ```html
 <th t-sort>Name</th>
 ```
-
 Als Default-Sortierung kann `asc` oder `desc` gesetzt werden:
 
 ```html
 <th t-sort="desc">Datum</th>
 ```
 
-### Auf `<th>`: `t-type`
-
-Bestimmt wie die Werte für die Sortierung verglichen werden. Ohne dieses Attribut wird automatisch erkannt (Datum, Zahl, Text in dieser Reihenfolge).
-
-| Wert | Beschreibung |
-|---|---|
-| `num` | Numerisch (`parseFloat`) |
-| `date` | Datum (ISO `YYYY-MM-DD` oder `DD.MM.YYYY [HH:MM]`) |
-
-```html
-<th t-sort t-type="num">Preis</th>
-<th t-sort t-type="date">Erstellt</th>
-```
-
-Für komplexere Werte kann pro Zelle `data-sort-value` gesetzt werden — der Inhalt der Zelle wird dann nur angezeigt, sortiert wird nach dem Datenwert:
-
-```html
-<td data-sort-value="2025-03-12">12. März 2025</td>
-```
-
-### Auf `<th>`: `t-group`
+### `t-group`
 
 Macht eine Spalte gruppierbar. Beim Klick auf das Gruppen-Icon werden alle Zeilen mit demselben Wert in der Spalte zu einer aufklappbaren Gruppe zusammengefasst. Mehrere Spalten können gleichzeitig gruppiert sein — sie werden dann verschachtelt.
 
 ```html
-<th t-sort t-group>Kategorie</th>
+<th t-group>Kategorie</th>
 ```
 
-Als Default-Gruppierung wird der Wert `active` verwendet:
+Wenn eine Zelle mehrere Werte enthält (z.B. `"Sport, Musik"`), kann der Separator als Werte bei `t-group` angegeben werden. Die Zeile erscheint dann in jeder zutreffenden Gruppe:
 
 ```html
-<th t-group="active">Status</th>
+<th t-group=",">Fach</th>
 ```
 
-#### Multi-Value-Gruppierung
-
-Wenn eine Zelle mehrere Werte enthält (z.B. `"Sport, Musik"`), kann der Separator als Wert von `t-group` angegeben werden. Die Zeile erscheint dann in jeder zutreffenden Gruppe:
-
+### `t-filter`
+Lässt eine Spalter durch einen Filter anpassen.
 ```html
-<th t-group=",">Tags</th>
+<th t-filter>Kategorie</th>
 ```
 
-Eine Zelle mit `"Sport, Musik"` taucht so unter "Sport" **und** unter "Musik" auf. Beim mehrfachen Erscheinen wird die ursprüngliche Zeile geklont; die Klone bekommen die Klasse `tv-clone`.
+### `t-search`
 
-### Auf `<table>`: `t-search`
-
-Fügt automatisch ein Suchfeld in den `<thead>` ein. Die Eingabe wird in Tokens (durch Leerzeichen getrennt) zerlegt — eine Zeile bleibt sichtbar wenn **alle** Tokens irgendwo in irgendeiner Spalte vorkommen. Live-Filterung mit 150ms Debounce.
+Fügt automatisch ein Suchfeld unter die Kopfzeile ein. Die Eingabe wird in Tokens (durch Leerzeichen getrennt) zerlegt — eine Zeile bleibt sichtbar wenn **alle** Tokens irgendwo in irgendeiner Spalte vorkommen.
 
 ```html
 <table t-search>
@@ -95,27 +69,23 @@ Fügt automatisch ein Suchfeld in den `<thead>` ein. Die Eingabe wird in Tokens 
 
 Gruppen ohne sichtbare Treffer werden automatisch ausgeblendet, der Treffer-Counter zeigt `gefiltert/gesamt`.
 
----
+### `t-type`
 
-## Robustheit
-
-tableView akzeptiert auch unvollständige Tabellenstrukturen:
-
-- **Kein `<tbody>`** → wird automatisch ergänzt, lose `<tr>` werden hineinverschoben
-- **Kein `<thead>`** → wenn die erste Zeile `<th>`-Zellen enthält, wird sie zum `<thead>` promoted
-- **Keine `<th>` vorhanden** → Tabelle wird unverändert gelassen
-
-Damit funktioniert auch das hier ohne weitere Anpassung:
+Hier kann angegeben werden was für ein Datentyp die Spalte hat, dies wird versucht automatisch zu erkennen, bei Bedarf selber setzen.
+`num`: für Nummer, `date` für Datum (ISO `YYYY-MM-DD` oder `DD.MM.YYYY [HH:MM]`),`string` 
 
 ```html
-<table>
-  <tr><th>Name</th><th t-sort>Preis</th></tr>
-  <tr><td>A</td><td>10</td></tr>
-  <tr><td>B</td><td>5</td></tr>
-</table>
+<th t-sort t-type="num">Preis</th>
+<th t-sort t-type="date">Erstellt</th>
 ```
+### `data-sortValue`
+Für komplexere Werte kann pro Zelle `data-sortValue` gesetzt werden — es wird dann fürs Sortieren und gruppieren nur der Wert von `data-sortValue` berücksichtigt:
 
+```html
+<td data-sortValue="2025-03-12">12. März 2025</td>
+```
 ---
+
 
 ## Beispiele
 

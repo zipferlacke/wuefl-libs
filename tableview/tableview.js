@@ -1,602 +1,828 @@
 /**
- * tableView.js – Sort, Multi-Group & Search Plugin (Event Delegation & Auto-Init)
+ * tableView.js – Sort, Group, Filter & Search (zustandslos, DOM-attributgesteuert)
+ * ============================================================================
  *
- * Attribute auf <th>:
- *   t-sort                    → Spalte sortierbar
- *   t-sort="asc|desc"         → Default-Sortierung
- *   t-type="date|num"         → Sortier-Typ (sonst auto)
- *   t-group                   → Spalte gruppierbar
- *   t-group="active"          → Default-Gruppierung
- *   t-group="<sep>"           → Gruppierbar mit Multi-Value-Split (z.B. t-group=",")
+ * Der komplette Zustand liegt in HTML-Attributen. Das Modul hält keinerlei
+ * eigenen State – jedes render() liest die Tabelle frisch aus dem DOM.
+ * Externe JS-Änderungen an der Tabelle sind daher jederzeit möglich.
  *
- * Attribut auf <table>:
- *   t-search                  → Sucheingabe in <thead> einfügen.
- *                               Tokens (durch Leerzeichen getrennt) müssen ALLE
- *                               in irgendeiner Spalte der Zeile vorkommen.
+ * ── Attribute auf <table> ────────────────────────────────────────────────────
+ *   t-search            Suchfeld einblenden (erst ab >7 Datenzeilen sichtbar)
+ *   t-open="a|b"        (intern) offene Gruppenpfade
  *
- * Hilfsklassen die gesetzt werden:
- *   .tv-hidden                → display:none (CSS muss dies definieren)
- *   .tv-clone                 → Klon einer Zeile (bei Multi-Value-Gruppen)
- *   .tv-group-row             → Gruppen-Header-Zeile
- */
-/**
- * tableView.js – Sort, Multi-Group & Search Plugin 
+ * ── Attribute auf den Zellen der ersten Zeile (<th> oder <td>) ───────────────
+ *   t-sort              Spalte sortierbar
+ *   t-sort="asc|desc"   aktive Sortierung (nur eine Spalte gleichzeitig)
+ *   t-group             Spalte gruppierbar
+ *   t-group="active"    aktive Gruppierung
+ *   t-split=","         Mehrfachwerte in der Zelle an "," trennen (Multi-Group)
+ *   t-filter            Spalte filterbar
+ *   t-filter='{"min":"5"}'  aktiver Filter (JSON)
+ *   t-type="date|num|string"  Datentyp; fehlt er, wird er erkannt und gesetzt
+ *                             (automatisch gesetzte tragen zusätzlich t-type-auto)
+ *
+ * ── Attribut das auf <td> geschrieben wird ───────────────────────────────────
+ *   t-value             numerischer Wert (Zahl bzw. Timestamp) für date/num
+ *
+ * ── Filter-Objekt je Datentyp (alle Bedingungen UND-verknüpft) ───────────────
+ *   date  { min, max, eq }          Werte als YYYY-MM-DD
+ *   num   { min, max, eq }
+ *   string{ contains, starts, ends, eq }
+ *
+ * ── Öffentliche API ─────────────────────────────────────────────────────────
+ *   prepareTables(scope)              Init (passiert auch automatisch)
+ *   renderTable(table)                Pipeline neu ausführen
+ *   checkType(table, col)             → { type, values }  (+ schreibt t-value/t-type)
+ *   sortTable(table, col, dir)        dir: 'asc' | 'desc' | 'none'
+ *   groupTable(table, col, active)    active: true | false | undefined(=toggle)
+ *   filterTable(table, col, filter)   filter: Objekt oder null (löschen)
  */
 
-let styleInjected = false;
-const tableStates = new WeakMap();
+const SEP = '\x1f';
+const MIN_ROWS_SEARCH = 7;
+
+/** Offene Gruppenpfade aus t-open lesen (JSON-Liste – Pfade dürfen alles enthalten). */
+function openPaths(table) {
+    try {
+        const l = JSON.parse(table.getAttribute('t-open') || '[]');
+        return new Set(Array.isArray(l) ? l : []);
+    } catch {
+        return new Set();
+    }
+}
+
+function setOpenPaths(table, set) {
+    table.setAttribute('t-open', JSON.stringify([...set]));
+}
+
+const ICO = {
+    sort:   'unfold_more',
+    asc:    'arrow_upward',
+    desc:   'arrow_downward',
+    group:  'workspaces',
+    filter: 'filter_alt',
+    clear:  'filter_alt_off',
+    open:   'expand_more',
+    closed: 'chevron_right',
+    remove: 'close',
+    search: 'search'
+};
+
+const FIELDS = {
+    date: [
+        { op: 'min', label: 'Ab (≥)',   type: 'date' },
+        { op: 'max', label: 'Bis (≤)',  type: 'date' },
+        { op: 'eq',  label: 'Genau am', type: 'date' }
+    ],
+    num: [
+        { op: 'min', label: 'Von (≥)',   type: 'number' },
+        { op: 'max', label: 'Bis (≤)',   type: 'number' },
+        { op: 'eq',  label: 'Genau (=)', type: 'number' }
+    ],
+    string: [
+        { op: 'contains', label: 'Enthält',     type: 'text' },
+        { op: 'starts',   label: 'Beginnt mit', type: 'text' },
+        { op: 'ends',     label: 'Endet auf',   type: 'text' },
+        { op: 'eq',       label: 'Ist genau',   type: 'text' }
+    ]
+};
+
+const OP_SHORT = { min: '≥', max: '≤', eq: '=', contains: '∋', starts: '^', ends: '$' };
+
+let uid = 0;
+const busy = new WeakSet();
+const observers = new WeakMap();
+
+/* ══════════════════════════════════════════════════════════════════════════
+   Zugriff auf die Tabelle – erste Zeile = Kopfzeile, Rest = Daten
+   ══════════════════════════════════════════════════════════════════════════ */
+
+/** Zellen der Kopfzeile (erste <tr> der Tabelle). */
+function headCells(table) {
+    const row = table.querySelector('tr');
+    return row ? [...row.children].filter(c => c.matches('th, td')) : [];
+}
+
+/** Alle echten Datenzeilen (ohne Kopf-, Such-, Gruppen-, Klon- und Leerzeile). */
+function dataRows(table) {
+    const head = table.querySelector('tr');
+    return [...table.querySelectorAll('tr')].filter(tr =>
+        tr !== head &&
+        !tr.classList.contains('tv-search-row') &&
+        !tr.classList.contains('tv-group-row') &&
+        !tr.classList.contains('tv-clone') &&
+        !tr.classList.contains('tv-empty-row'));
+}
+
+/** Container, in den Datenzeilen gehängt werden (tbody bzw. table). */
+function rowBox(table) {
+    return dataRows(table)[0]?.parentNode || table.querySelector('tr')?.parentNode;
+}
+
+/** Wert einer Zelle (data-sort-value hat Vorrang vor dem Text). */
+function cellValue(tr, col) {
+    const td = tr.children[col];
+    if (!td) return '';
+    return (td.dataset.sortValue ?? td.textContent).trim();
+}
+
+/** Beschriftung einer Kopfzelle (ohne die Icon-Leiste). */
+function colName(cell) {
+    if (!cell) return '';
+    return [...cell.childNodes]
+        .filter(n => n.nodeType === Node.TEXT_NODE)
+        .map(n => n.textContent).join(' ').trim() || cell.textContent.trim();
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   Der eine Parser: String → Zahl (für 'date' Timestamp, für 'num' Zahl)
+   ══════════════════════════════════════════════════════════════════════════ */
+
+export function toNumber(str, type) {
+    if (str === null || str === undefined) return null;
+    const v = String(str).trim();
+    if (!v) return null;
+
+    if (type === 'date') {
+        // ISO: 2024-03-01 / 2024-03-01T08:30 / 2024-03-01 08:30:00
+        let m = v.match(/^(\d{4})-(\d{2})-(\d{2})(?:[T ](\d{1,2}):(\d{2})(?::(\d{2}))?)?$/);
+        if (m) return Date.UTC(+m[1], +m[2] - 1, +m[3], +(m[4] || 0), +(m[5] || 0), +(m[6] || 0));
+
+        // Deutsch: 01.03.2024 / 1.3.24 / 01.03.2024 08:30
+        m = v.match(/^(\d{1,2})\.(\d{1,2})\.(\d{2}|\d{4})(?:[,\s]+(\d{1,2}):(\d{2})(?::(\d{2}))?)?$/);
+        if (m) {
+            let y = +m[3];
+            if (y < 100) y += y < 70 ? 2000 : 1900;
+            return Date.UTC(y, +m[2] - 1, +m[1], +(m[4] || 0), +(m[5] || 0), +(m[6] || 0));
+        }
+        return null;
+    }
+
+    // num: Währungs-/Prozentzeichen weg, deutsche Schreibweise umbauen
+    let n = v.replace(/[\s\u00a0€$%]/g, '');
+    if (/^-?\d{1,3}(\.\d{3})+(,\d+)?$/.test(n)) n = n.replace(/\./g, '').replace(',', '.');
+    else if (/^-?\d+,\d+$/.test(n))             n = n.replace(',', '.');
+    if (!/^-?\d+(\.\d+)?$/.test(n)) return null;
+    return parseFloat(n);
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   checkType – erkennt den Spaltentyp, schreibt t-type und t-value
+   ══════════════════════════════════════════════════════════════════════════ */
+
+/**
+ * Prüft eine Spalte komplett durch und liefert { type, values }.
+ * values = alle Zellwerte in der aktuellen Reihenfolge.
+ *
+ * Reihenfolge der Erkennung: erst date, dann num, sonst string.
+ * Ein bereits von Hand gesetztes t-type gewinnt; passt es nicht zu den
+ * Daten, gibt es eine Warnung in der Console.
+ * Bei date/num bekommt jedes <td> den numerischen Wert als t-value.
+ */
+export function checkType(table, col, rows) {
+    rows = rows || dataRows(table);
+    const cell   = headCells(table)[col];
+    const values = rows.map(tr => cellValue(tr, col));
+    const filled = values.filter(v => v !== '');
+
+    // ── 1. Typ aus den Daten erkennen: date → num → string ──────────────────
+    let detected = 'string';
+    if (filled.length) {
+        if      (filled.every(v => toNumber(v, 'date') !== null)) detected = 'date';
+        else if (filled.every(v => toNumber(v, 'num')  !== null)) detected = 'num';
+    }
+
+    // ── 2. Handgesetztes t-type hat Vorrang (t-type-auto = von uns gesetzt) ──
+    const declared = cell?.getAttribute('t-type');
+    const isAuto   = cell?.hasAttribute('t-type-auto');
+    let manual = null;
+    if (declared && !isAuto) {
+        // Schreibweisen wie int/integer/number/float/text auf unsere drei Typen mappen
+        const d = declared.toLowerCase();
+        manual = /^(date|datetime|time)$/.test(d)              ? 'date'
+               : /^(num|int|integer|number|float|zahl)$/.test(d) ? 'num'
+               : /^(string|text|str)$/.test(d)                 ? 'string'
+               : null;
+        if (!manual) {
+            console.warn(`[tableView] Spalte ${col} ("${colName(cell)}"): unbekanntes `
+                + `t-type="${declared}" – erkannt wird stattdessen "${detected}".`);
+        }
+    }
+    const type = manual || detected;
+
+    if (manual && manual !== detected && detected !== 'string') {
+        console.warn(`[tableView] Spalte ${col} ("${colName(cell)}") ist als t-type="${manual}" `
+            + `deklariert, erkannt wurde aber "${detected}".`);
+    }
+
+    // ── 3. Erkannten Typ zurückschreiben, damit er im DOM sichtbar ist ──────
+    if (cell && !manual) {
+        cell.setAttribute('t-type', detected);
+        cell.setAttribute('t-type-auto', '');
+    }
+
+    // ── 4. t-value auf die <td> schreiben (nur bei date/num) ────────────────
+    if (type === 'date' || type === 'num') {
+        let bad = 0;
+        rows.forEach((tr, i) => {
+            const td = tr.children[col];
+            if (!td) return;
+            const n = toNumber(values[i], type);
+            if (n === null) {
+                td.removeAttribute('t-value');
+                if (values[i] !== '') bad++;
+            } else {
+                td.setAttribute('t-value', n);
+            }
+        });
+        if (bad) {
+            console.warn(`[tableView] Spalte ${col} ("${colName(cell)}"): ${bad} Wert(e) `
+                + `konnten nicht als "${type}" gelesen werden.`);
+        }
+    } else {
+        rows.forEach(tr => tr.children[col]?.removeAttribute('t-value'));
+    }
+
+    return { type, values };
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   Init
+   ══════════════════════════════════════════════════════════════════════════ */
 
 export function prepareTables(scope) {
-    if (!styleInjected) { injectCss(); styleInjected = true; }
-    
-    const tables = scope instanceof HTMLTableElement 
-        ? [scope] 
-        : (scope || document).querySelectorAll('table');
-
-    tables.forEach(_setupTableHeaders);
+    injectCss();
+    const tables = scope instanceof HTMLTableElement
+        ? [scope]
+        : [...(scope || document).querySelectorAll('table')];
+    tables.forEach(init);
 }
 
-function _setupTableHeaders(table) {
-    if (table.dataset.tvInit) return; 
-    table.dataset.tvInit = "true";
+function init(table) {
+    if (table.dataset.tvInit) return;
+    const head = table.querySelector('tr');
+    if (!head) return;
+
+    table.dataset.tvInit = 'true';
     table.classList.add('tv-enabled');
+    if (!table.id) table.id = `tv-table-${++uid}`;
 
-    const headerRow = _ensureStructure(table);
-    if (!headerRow) return;
+    // ── Icons je Kopfzelle: sortieren / gruppieren / filtern ────────────────
+    headCells(table).forEach((cell, i) => {
+        const sortable   = cell.hasAttribute('t-sort');
+        const groupable  = cell.hasAttribute('t-group');
+        const filterable = cell.hasAttribute('t-filter');
+        if (!sortable && !groupable && !filterable) return;
 
-    const ths = [...headerRow.querySelectorAll('th')];
-    if (ths.length === 0) return;
+        cell.dataset.tvCol = i;
+        const icons = document.createElement('span');
+        icons.className = 'tv-icons';
 
-    const state = {
-        sortCol: -1, sortDir: 'none',
-        groups: [],
-        collapsed: new Set(),
-        searchQuery: '',
-        allTrs: null
-    };
-    tableStates.set(table, state);
-
-    ths.forEach((th, i) => {
-        const canSort = th.hasAttribute('t-sort');
-        const canGroup = th.hasAttribute('t-group');
-        if (!canSort && !canGroup) return;
-
-        th.dataset.tvCol = i;
-        const wrap = document.createElement('span');
-        wrap.className = 'tv-icons';
-
-        if (canSort) {
-            wrap.innerHTML += `<span class="msr tv-ico tv-ico-sort" data-col="${i}" title="Sortieren">unfold_more</span>`;
-            th.style.cursor = 'pointer';
+        if (sortable) {
+            icons.insertAdjacentHTML('beforeend',
+                `<span class="tv_msr tv-ico tv-ico-sort" data-col="${i}" title="Sortieren">${ICO.sort}</span>`);
+            cell.style.cursor = 'pointer';
         }
-        if (canGroup) {
-            wrap.innerHTML += `<span class="msr tv-ico tv-ico-group" data-col="${i}" title="Gruppieren">workspaces</span>`;
+        if (groupable) {
+            icons.insertAdjacentHTML('beforeend',
+                `<span class="tv_msr tv-ico tv-ico-group" data-col="${i}" title="Gruppieren">${ICO.group}</span>`);
         }
-        th.appendChild(wrap);
+        if (filterable) icons.appendChild(makeFilterButton(table, i));
+
+        cell.appendChild(icons);
     });
 
-    ths.forEach((th, i) => {
-        const s = th.getAttribute('t-sort');
-        if (s === 'asc' || s === 'desc') { state.sortCol = i; state.sortDir = s; }
-        if (th.getAttribute('t-group') === 'active') state.groups.push(i);
+    // ── Suchzeile direkt unter die Kopfzeile ────────────────────────────────
+    if (table.hasAttribute('t-search')) {
+        const tr = document.createElement('tr');
+        tr.className = 'tv-search-row';
+        tr.innerHTML = `
+            <th colspan="${Math.max(1, headCells(table).length)}">
+                <div class="tv-search-wrap">
+                    <span class="tv_msr tv-search-icon">${ICO.search}</span>
+                    <input type="text" class="tv-search-input" placeholder="Suchen ...">
+                    <span class="tv_msr tv-search-clear">${ICO.remove}</span>
+                </div>
+            </th>`;
+        head.after(tr);
+    }
+
+    observe(table);
+    renderTable(table);
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   Öffentliche Aktionen
+   ══════════════════════════════════════════════════════════════════════════ */
+
+export function sortTable(table, col, dir) {
+    headCells(table).forEach((cell, i) => {
+        if (!cell.hasAttribute('t-sort')) return;
+        cell.setAttribute('t-sort', (i === col && dir && dir !== 'none') ? dir : '');
     });
-
-    if (table.hasAttribute('t-search')) _setupSearch(table, state, ths.length);
-
-    _renderTable(table, { fireGroupsRendered: state.groups.length > 0 });
+    renderTable(table);
 }
 
-// ========== Struktur-Sicherung ==========
-
-/**
- * Sorgt dafür dass die Tabelle valide thead/tbody hat.
- * - tbody fehlt → wird ergänzt (lose <tr> reingeschoben)
- * - thead fehlt → wenn erste tbody-Zeile <th> enthält, wird sie zum thead promoted
- * - keine Header gefunden → return null (Plugin überspringt diese Tabelle)
- */
-function _ensureStructure(table) {
-    let thead = table.querySelector(':scope > thead');
-    let tbody = table.querySelector(':scope > tbody');
-
-    if (!tbody) {
-        tbody = document.createElement('tbody');
-        const looseTrs = [...table.children].filter(c => c.tagName === 'TR');
-        looseTrs.forEach(tr => tbody.appendChild(tr));
-        table.appendChild(tbody);
-    }
-
-    if (!thead) {
-        const firstRow = tbody.querySelector(':scope > tr');
-        if (firstRow && firstRow.querySelector('th')) {
-            thead = document.createElement('thead');
-            thead.appendChild(firstRow);
-            table.insertBefore(thead, tbody);
-        } else {
-            return null;
-        }
-    }
-
-    return thead.querySelector(':scope > tr');
+export function groupTable(table, col, active) {
+    const cell = headCells(table)[col];
+    if (!cell || !cell.hasAttribute('t-group')) return;
+    const isActive = cell.getAttribute('t-group') === 'active';
+    cell.setAttribute('t-group', (active === undefined ? !isActive : !!active) ? 'active' : '');
+    renderTable(table);
 }
 
-// ========== Search Setup ==========
-function _setupSearch(table, state, colCount) {
-    const thead = table.querySelector(':scope > thead');
-    if (!thead) return;
+export function filterTable(table, col, filter) {
+    const cell = headCells(table)[col];
+    if (!cell || !cell.hasAttribute('t-filter')) return;
+    const clean = {};
+    for (const [k, v] of Object.entries(filter || {})) {
+        if (v !== '' && v !== null && v !== undefined) clean[k] = String(v);
+    }
+    cell.setAttribute('t-filter', Object.keys(clean).length ? JSON.stringify(clean) : '');
+    renderTable(table);
+}
 
-    const searchRow = document.createElement('tr');
-    searchRow.className = 'tv-search-row';
-    const th = document.createElement('th');
-    th.colSpan = colCount;
-    th.innerHTML = `
-        <div class="tv-search-wrap">
-            <span class="msr tv-search-icon">search</span>
-            <input type="text" class="tv-search-input" placeholder="Suchen ...">
-            <span class="msr tv-search-clear" style="display:none">close</span>
+function readFilter(cell) {
+    const raw = cell?.getAttribute('t-filter');
+    if (!raw) return null;
+    try {
+        const o = JSON.parse(raw);
+        return (o && typeof o === 'object' && Object.keys(o).length) ? o : null;
+    } catch {
+        console.warn('[tableView] t-filter ist kein gültiges JSON:', raw);
+        return null;
+    }
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   Filter-Popover (Popover-API: Öffnen/Schließen rein per HTML-Attribut)
+   ══════════════════════════════════════════════════════════════════════════ */
+
+function makeFilterButton(table, col) {
+    const id = `tv-filter-${++uid}`;
+    const anchor = `--${id}`;
+
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'tv-ico tv-ico-filter';
+    btn.title = 'Filtern';
+    btn.dataset.col = col;
+    btn.setAttribute('popovertarget', id);
+    btn.style.setProperty('anchor-name', anchor);
+    btn.innerHTML = `<span class="tv_msr">${ICO.filter}</span><small class="tv-filter-sum"></small>`;
+
+    const pop = document.createElement('div');
+    pop.className = 'tv-pop';
+    pop.id = id;
+    pop.setAttribute('popover', 'auto');
+    pop.dataset.tvFor = table.id;
+    pop.dataset.col = col;
+    pop.style.setProperty('position-anchor', anchor);
+    pop.innerHTML = `
+        <div class="tv-pop-header">
+            <span class="tv-pop-title">Filter</span>
+            <button type="button" class="tv-pop-clear tv_msr" title="Filter löschen">${ICO.clear}</button>
         </div>
-    `;
-    searchRow.appendChild(th);
-    thead.insertBefore(searchRow, thead.firstChild);
+        <div class="tv-pop-body"></div>`;
+    document.body.appendChild(pop);
 
-    const input = th.querySelector('.tv-search-input');
-    const clear = th.querySelector('.tv-search-clear');
+    return btn;
+}
 
-    let debounceTimer;
-    input.addEventListener('input', () => {
-        clearTimeout(debounceTimer);
-        debounceTimer = setTimeout(() => {
-            state.searchQuery = input.value;
-            clear.style.display = input.value ? '' : 'none';
-            _renderTable(table);
-        }, 150);
+/** Popover-Felder an den Spaltentyp anpassen + Icon-Zustand setzen. */
+function syncPopover(table, col, type, filter) {
+    const btn = headCells(table)[col]?.querySelector('.tv-ico-filter');
+    if (!btn) return;
+    const pop = document.getElementById(btn.getAttribute('popovertarget'));
+    if (!pop) return;
+
+    if (!FIELDS[type]) type = 'string';
+
+    if (pop.dataset.tvType !== type) {
+        pop.dataset.tvType = type;
+        pop.querySelector('.tv-pop-body').innerHTML = FIELDS[type].map(f => `
+            <label class="tv-pop-field">
+                <span class="tv-pop-label">${f.label}</span>
+                <input class="tv-pop-input" type="${f.type}" data-tv-op="${f.op}">
+            </label>`).join('');
+    }
+
+    pop.querySelectorAll('.tv-pop-input').forEach(inp => {
+        const v = filter?.[inp.dataset.tvOp] ?? '';
+        if (document.activeElement !== inp && inp.value !== v) inp.value = v;
     });
 
-    clear.addEventListener('click', () => {
-        input.value = '';
-        state.searchQuery = '';
-        clear.style.display = 'none';
-        _renderTable(table);
-    });
-}
-
-// ========== Globale Event Delegation ==========
-
-document.addEventListener('click', (e) => {
-    const btnSort = e.target.closest('.tv-ico-sort');
-    const btnGroup = e.target.closest('.tv-ico-group');
-    const btnExpand = e.target.closest('.tv-group-content');
-    const btnUngroup = e.target.closest('.tv-ungroup');
-    const thSort = e.target.closest('th[t-sort]');
-
-    if (btnSort || (thSort && !btnGroup && !btnUngroup && !btnExpand)) {
-        e.stopPropagation();
-        const th = thSort || btnSort.closest('th');
-        _doSort(th.closest('table'), parseInt(th.dataset.tvCol));
-    } 
-    else if (btnGroup) {
-        e.stopPropagation();
-        _doGroup(btnGroup.closest('table'), parseInt(btnGroup.dataset.col));
-    } 
-    else if (btnExpand) {
-        const tr = btnExpand.closest('tr');
-        const table = tr?.closest('table');
-        const state = table ? tableStates.get(table) : null;
-        if (!state) return;
-        const path = tr.dataset.groupPath;
-        if (!path) return;
-        
-        if (state.collapsed.has(path)) state.collapsed.delete(path);
-        else state.collapsed.add(path);
-        
-        _applyCollapseFast(table, state); 
-    } 
-    else if (btnUngroup) {
-        e.stopPropagation();
-        const table = btnUngroup.closest('table');
-        const state = tableStates.get(table);
-        if (!state) return;
-        const col = parseInt(btnUngroup.dataset.col);
-        
-        state.groups = state.groups.filter(c => c !== col);
-        _renderTable(table, { fireGroupsRendered: true });
-    }
-});
-
-// ========== Actions ==========
-
-function _doSort(table, col) {
-    const state = tableStates.get(table);
-    if (!state) return;
-    const dirs = ['none', 'asc', 'desc'];
-    if (state.sortCol === col) {
-        state.sortDir = dirs[(dirs.indexOf(state.sortDir) + 1) % 3];
-    } else {
-        state.sortCol = col;
-        state.sortDir = 'asc';
-    }
-    _renderTable(table);
-}
-
-function _doGroup(table, col) {
-    const state = tableStates.get(table);
-    if (!state) return;
-    const idx = state.groups.indexOf(col);
-    if (idx > -1) state.groups.splice(idx, 1);
-    else state.groups.push(col);
-    _renderTable(table, { fireGroupsRendered: true });
-}
-
-// ========== Core Logic ==========
-
-function _renderTable(table, opts = {}) {
-    const state = tableStates.get(table);
-    if (!state) return;
-
-    const thead = table.querySelector(':scope > thead');
-    const tbody = table.querySelector(':scope > tbody');
-    if (!thead || !tbody) return;
-
-    const headerTr = thead.querySelector(':scope > tr:not(.tv-search-row)') || thead.querySelector(':scope > tr');
-    if (!headerTr) return;
-    const realThs = [...headerTr.querySelectorAll('th')];
-
-    const rowsData = _extractRowData(table, realThs);
-
-    const query = state.searchQuery?.trim().toLowerCase();
-    if (query) {
-        const tokens = query.split(/\s+/);
-        rowsData.forEach(r => {
-            const allText = r.vals.join(' ').toLowerCase();
-            r.filtered = !tokens.every(t => allText.includes(t));
-        });
-    }
-
-    realThs.forEach((th, i) => {
-        const sortIco = th.querySelector('.tv-ico-sort');
-        if (sortIco) {
-            if (state.sortCol === i && state.sortDir !== 'none') {
-                sortIco.textContent = state.sortDir === 'asc' ? 'arrow_upward' : 'arrow_downward';
-                sortIco.classList.add('tv-ico-active');
-            } else {
-                sortIco.textContent = 'unfold_more';
-                sortIco.classList.remove('tv-ico-active');
+    btn.classList.toggle('tv-ico-active', !!filter);
+    btn.querySelector('.tv-filter-sum').textContent = filter
+        ? Object.entries(filter).map(([op, v]) => {
+            let s = String(v);
+            if (type === 'date') {
+                const ts = toNumber(v, 'date');
+                if (ts !== null) s = new Date(ts).toLocaleDateString('de-DE');
             }
+            if (s.length > 10) s = s.slice(0, 9) + '…';
+            return (OP_SHORT[op] || op) + s;
+        }).join(' ')
+        : '';
+}
+
+/** Prüft eine Zeile gegen den Filter einer Spalte. */
+function passes(tr, col, type, filter) {
+    if (!filter) return true;
+
+    if (type === 'date' || type === 'num') {
+        const attr = tr.children[col]?.getAttribute('t-value');
+        const v = attr ? parseFloat(attr) : toNumber(cellValue(tr, col), type);
+        if (v === null || Number.isNaN(v)) return false;
+
+        if (filter.min !== undefined) {
+            const b = toNumber(filter.min, type);
+            if (b !== null && v < b) return false;
         }
-        const groupIco = th.querySelector('.tv-ico-group');
-        if (groupIco) {
-            groupIco.classList.toggle('tv-ico-active', state.groups.includes(i));
+        if (filter.max !== undefined) {
+            let b = toNumber(filter.max, type);
+            if (b !== null && type === 'date') b += 86399999;      // ganzer Tag inklusive
+            if (b !== null && v > b) return false;
         }
+        if (filter.eq !== undefined) {
+            const b = toNumber(filter.eq, type);
+            if (b === null) return false;
+            if (type === 'date') {
+                if (Math.floor(v / 86400000) !== Math.floor(b / 86400000)) return false;
+            } else if (v !== b) return false;
+        }
+        return true;
+    }
 
-        th.classList.toggle('tv-col-hidden', state.groups.includes(i));
+    const s = cellValue(tr, col).toLowerCase();
+    if (filter.contains !== undefined && !s.includes(filter.contains.toLowerCase()))   return false;
+    if (filter.starts   !== undefined && !s.startsWith(filter.starts.toLowerCase()))   return false;
+    if (filter.ends     !== undefined && !s.endsWith(filter.ends.toLowerCase()))       return false;
+    if (filter.eq       !== undefined && s !== filter.eq.toLowerCase())                return false;
+    return true;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   Render-Pipeline:  Filter → Gruppieren → Sortieren
+   ══════════════════════════════════════════════════════════════════════════ */
+
+export function renderTable(table) {
+    if (!table || busy.has(table)) return;
+    busy.add(table);
+    try {
+        render(table);
+    } finally {
+        // Die Änderungen aus dem Render selbst verwerfen – sonst würde der
+        // Observer daraufhin sofort den nächsten Render anstoßen (Endlosschleife).
+        observers.get(table)?.takeRecords();
+        busy.delete(table);
+    }
+}
+
+function render(table) {
+    const cells = headCells(table);
+    const box   = rowBox(table);
+    if (!cells.length || !box) return;
+
+    // ── 1. Generierte Zeilen weg → nur Originalzeilen bleiben ───────────────
+    table.querySelectorAll('.tv-group-row, .tv-clone, .tv-empty-row').forEach(tr => tr.remove());
+
+    const rows = dataRows(table);
+    rows.forEach((tr, i) => { if (tr.dataset.tvIdx === undefined) tr.dataset.tvIdx = i; });
+
+    // ── 2. Spalten-Metadaten (Typ, Sortierung, Gruppierung, Filter) ─────────
+    const meta = cells.map((cell, i) => {
+        const used = cell.hasAttribute('t-sort') || cell.hasAttribute('t-group') || cell.hasAttribute('t-filter');
+        const dir  = cell.getAttribute('t-sort');
+        return {
+            cell,
+            type:      used ? checkType(table, i, rows).type : 'string',
+            sortable:  cell.hasAttribute('t-sort'),
+            groupable: cell.hasAttribute('t-group'),
+            grouped:   cell.getAttribute('t-group') === 'active',
+            split:     cell.getAttribute('t-split') || null,
+            filter:    readFilter(cell),
+            dir:       (dir === 'asc' || dir === 'desc') ? dir : 'none'
+        };
     });
 
-    rowsData.forEach(r => {
-        [...r.tr.children].forEach((td, i) => {
-            td.classList.toggle('tv-col-hidden', state.groups.includes(i));
-        });
+    const sortCol = meta.findIndex(m => m.dir !== 'none');
+    const groups  = meta.map((m, i) => m.grouped ? i : -1).filter(i => i >= 0);
+
+    // ── 3. Filtern: Spaltenfilter + Freitextsuche ───────────────────────────
+    const input  = table.querySelector('.tv-search-input');
+    const query  = input ? input.value.trim().toLowerCase() : '';
+    const tokens = query ? query.split(/\s+/) : [];
+
+    const data = rows.map(tr => {
+        let ok = true;
+        for (let i = 0; i < meta.length && ok; i++) {
+            if (meta[i].filter) ok = passes(tr, i, meta[i].type, meta[i].filter);
+        }
+        if (ok && tokens.length) {
+            const text = tr.textContent.toLowerCase();
+            ok = tokens.every(t => text.includes(t));
+        }
+        return { tr, idx: +tr.dataset.tvIdx, hidden: !ok };
     });
 
-    let visibleCols = 0;
-    realThs.forEach((th, i) => {
-        if (!state.groups.includes(i) && !th.classList.contains('tv-col-hidden')) visibleCols++;
-    });
-    if (visibleCols === 0) visibleCols = 1;
+    // ── 4. Gruppierte Spalten ausblenden ────────────────────────────────────
+    cells.forEach((cell, i) => cell.classList.toggle('tv-col-hidden', meta[i].grouped));
+    rows.forEach(tr => [...tr.children].forEach((td, i) =>
+        td.classList.toggle('tv-col-hidden', !!meta[i]?.grouped)));
 
-    // Baum bauen (mit State für Auto-Collapse)
-    const treeNodes = _buildTree(rowsData, state.groups, 0, "", realThs, state);
-    const root = { isLeaf: false, children: treeNodes };
+    const visibleCols = cells.filter((c, i) => !meta[i].grouped).length || 1;
 
-    _sortTree(root, state.sortCol, state.sortDir, realThs);
+    // ── 5. Gruppenbaum bauen und sortieren ──────────────────────────────────
+    const open = openPaths(table);
+    const root = { children: buildTree(data, groups, 0, '', meta) };
+    sortTree(root, sortCol, sortCol >= 0 ? meta[sortCol].dir : 'none', meta);
 
-    const fragment = document.createDocumentFragment();
-    const appendedRows = new Set();
-    _flattenTree(root, fragment, state, visibleCols, realThs, false, appendedRows, "");
+    // ── 6. Ausgeben ─────────────────────────────────────────────────────────
+    const frag = document.createDocumentFragment();
+    flatten(root, frag, { open, visibleCols, meta, used: new Set(), hidden: false, path: '' });
+    box.appendChild(frag);
 
-    tbody.innerHTML = '';
-    tbody.appendChild(fragment);
-
-    const visibleCount = rowsData.filter(r => !r.filtered).length;
-    if (visibleCount === 0 && query) {
+    if (!data.some(d => !d.hidden)) {
         const tr = document.createElement('tr');
         tr.className = 'tv-empty-row';
-        tr.innerHTML = `<td colspan="${visibleCols}" class="tv-empty">Keine Treffer für „${_esc(state.searchQuery)}"</td>`;
-        tbody.appendChild(tr);
+        tr.innerHTML = `<td colspan="${visibleCols}" class="tv-empty">Keine Treffer</td>`;
+        box.appendChild(tr);
     }
 
-    // Custom Event NUR feuern wenn die Gruppen-Struktur sich tatsächlich geändert hat
-    // (also nicht bei Sort, Suche, Auf/Zuklappen).
-    if (opts.fireGroupsRendered) {
-        const actionBoxes = Array.from(table.querySelectorAll('.tv-group-actions'));
+    // ── 7. Kopfzeile, Popovers und Suchfeld aktualisieren ───────────────────
+    meta.forEach((m, i) => {
+        const s = m.cell.querySelector('.tv-ico-sort');
+        if (s) {
+            s.textContent = m.dir === 'asc' ? ICO.asc : m.dir === 'desc' ? ICO.desc : ICO.sort;
+            s.classList.toggle('tv-ico-active', m.dir !== 'none');
+        }
+        const g = m.cell.querySelector('.tv-ico-group');
+        if (g) g.classList.toggle('tv-ico-active', m.grouped);
+        if (m.cell.hasAttribute('t-filter')) syncPopover(table, i, m.type, m.filter);
+    });
+
+    const searchRow = table.querySelector('.tv-search-row');
+    if (searchRow) {
+        searchRow.classList.toggle('tv-hidden', rows.length <= MIN_ROWS_SEARCH && !query);
+        searchRow.querySelector('th').colSpan = visibleCols;
+        searchRow.querySelector('.tv-search-clear')?.classList.toggle('tv-hidden', !query);
+    }
+
+    if (groups.length) {
         table.dispatchEvent(new CustomEvent('tableview:groups-rendered', {
             bubbles: true,
-            detail: {
-                table: table,
-                groupedColumns: state.groups,
-                actionBoxes: actionBoxes
-            }
+            detail: { table, groupedColumns: groups, actionBoxes: [...table.querySelectorAll('.tv-group-actions')] }
         }));
     }
 }
 
-/**
- * Schneller Pfad fürs Auf/Zuklappen: ändert nur CSS-Klassen + Icon, kein DOM-Rebuild.
- * Berücksichtigt Filter-Status via dataset.tvFiltered.
- */
-function _applyCollapseFast(table, state) {
-    const tbody = table.querySelector(':scope > tbody');
-    if (!tbody) return;
-
-    for (const row of tbody.children) {
-        const path = row.dataset.groupPath;
-        if (!path) continue;
-
-        const isGroupRow = row.classList.contains('tv-group-row');
-        const isFiltered = row.dataset.tvFiltered === "1";
-
-        if (isGroupRow) {
-            // Eigener Collapse-State → Klasse + Icon
-            const isOwnCollapsed = state.collapsed.has(path);
-            row.classList.toggle('tv-group-collapsed', isOwnCollapsed);
-            const icon = row.querySelector('.tv-expand');
-            if (icon) icon.textContent = isOwnCollapsed ? 'chevron_right' : 'expand_more';
-
-            // Eigene Sichtbarkeit: hidden wenn ein VORFAHR collapsed
-            const ancestorCollapsed = _isAnyAncestorCollapsed(path, state.collapsed);
-            row.classList.toggle('tv-hidden', ancestorCollapsed || isFiltered);
-        } else {
-            // Data-Row: hidden wenn deren Group oder ein Vorfahr collapsed ist
-            const groupOrAncestorCollapsed = _isPathOrAncestorCollapsed(path, state.collapsed);
-            row.classList.toggle('tv-hidden', groupOrAncestorCollapsed || isFiltered);
-        }
-    }
-}
-
-function _isAnyAncestorCollapsed(path, collapsedSet) {
-    if (!path) return false;
-    const parts = path.split('|');
-    for (let i = 1; i < parts.length; i++) {
-        const ancestorPath = parts.slice(0, i).join('|');
-        if (collapsedSet.has(ancestorPath)) return true;
-    }
-    return false;
-}
-
-function _isPathOrAncestorCollapsed(path, collapsedSet) {
-    if (!path) return false;
-    if (collapsedSet.has(path)) return true;
-    return _isAnyAncestorCollapsed(path, collapsedSet);
-}
-
-function _extractRowData(table, ths) {
-    const state = tableStates.get(table);
-    const tbody = table.querySelector(':scope > tbody');
-    if (!tbody) return [];
-
-    if (!state.allTrs) {
-        const trs = [...tbody.querySelectorAll('tr:not(.tv-group-row):not(.tv-clone):not(.tv-empty-row)')];
-        trs.forEach((tr, i) => {
-            if (tr.dataset.tvOrig === undefined) tr.dataset.tvOrig = i;
-        });
-        state.allTrs = trs;
-    }
-
-    return state.allTrs.map(tr => ({
-        tr: tr,
-        origIndex: parseInt(tr.dataset.tvOrig),
-        vals: ths.map((th, ci) => _val(tr, ci)),
-        filtered: false
-    }));
-}
-
-function _buildTree(rows, groups, depth, parentPath, ths, state) {
+function buildTree(data, groups, depth, parentPath, meta) {
     if (depth >= groups.length) {
-        const visibleCount = rows.filter(r => !r.filtered).length;
-        return [{ isLeaf: true, rows: rows, visibleCount }];
+        return [{ leaf: true, rows: data, visible: data.filter(d => !d.hidden).length }];
     }
 
-    const col = groups[depth];
-    const th = ths[col];
-    const groupVal = th?.getAttribute('t-group');
-    const splitDelim = (groupVal && groupVal !== 'active' && groupVal !== '') ? groupVal : null;
+    const col   = groups[depth];
+    const split = meta[col].split;
+    const map   = new Map();
 
-    const groupMap = new Map();
-
-    rows.forEach(r => {
-        const rawVal = r.vals[col] || '';
-
-        if (splitDelim) {
-            const parts = rawVal.split(splitDelim).map(p => p.trim()).filter(Boolean);
-            if (parts.length === 0) {
-                if (!groupMap.has('')) groupMap.set('', []);
-                groupMap.get('').push(r);
-            } else {
-                parts.forEach(part => {
-                    if (!groupMap.has(part)) groupMap.set(part, []);
-                    groupMap.get(part).push(r);
-                });
-            }
-        } else {
-            if (!groupMap.has(rawVal)) groupMap.set(rawVal, []);
-            groupMap.get(rawVal).push(r);
-        }
-    });
-
-    const children = [];
-    groupMap.forEach((groupRows, key) => {
-        const path = parentPath ? `${parentPath}|${col}:${key}` : `${col}:${key}`;
-
-        // Gruppen standardmäßig zuklappen, wenn sie neu erstellt werden
-        if (!state.initCollapsedPaths) state.initCollapsedPaths = new Set();
-        if (!state.initCollapsedPaths.has(path)) {
-            state.initCollapsedPaths.add(path);
-            state.collapsed.add(path);
-        }
-
-        const subChildren = _buildTree(groupRows, groups, depth + 1, path, ths, state);
-        const visibleCount = subChildren.reduce((sum, c) => sum + (c.visibleCount || 0), 0);
-        children.push({
-            isLeaf: false,
-            col: col,
-            key: key,
-            path: path,
-            depth: depth,
-            count: groupRows.length,
-            visibleCount: visibleCount,
-            children: subChildren
+    data.forEach(d => {
+        const raw  = cellValue(d.tr, col);
+        const keys = split ? raw.split(split).map(p => p.trim()).filter(Boolean) : [raw];
+        (keys.length ? keys : ['']).forEach(k => {
+            if (!map.has(k)) map.set(k, []);
+            map.get(k).push(d);
         });
     });
 
-    return children;
+    const out = [];
+    map.forEach((sub, key) => {
+        const path     = parentPath ? `${parentPath}${SEP}${col}:${key}` : `${col}:${key}`;
+        const children = buildTree(sub, groups, depth + 1, path, meta);
+        out.push({
+            leaf: false, col, key, path, depth,
+            count:   sub.length,
+            visible: children.reduce((s, c) => s + (c.visible || 0), 0),
+            children
+        });
+    });
+    return out;
 }
 
-function _sortTree(node, sortCol, sortDir, ths) {
-    if (node.isLeaf) {
-        if (sortDir === 'none' || sortCol === -1) {
-            node.rows.sort((a, b) => a.origIndex - b.origIndex);
+function sortTree(node, sortCol, dir, meta) {
+    if (node.leaf) {
+        if (dir === 'none' || sortCol < 0) {
+            node.rows.sort((a, b) => a.idx - b.idx);
         } else {
-            const type = ths[sortCol]?.getAttribute('t-type');
+            const type = meta[sortCol].type;
             node.rows.sort((a, b) => {
-                const r = _cmp(a.vals[sortCol], b.vals[sortCol], type);
-                return sortDir === 'asc' ? r : -r;
+                const r = compare(cellValue(a.tr, sortCol), cellValue(b.tr, sortCol), type);
+                return dir === 'asc' ? r : -r;
             });
         }
         return;
     }
 
-    if (node.children.length > 0 && !node.children[0].isLeaf) {
-        const isExplicit = sortCol !== -1 && sortDir !== 'none' && node.children[0].col === sortCol;
-        const desc = isExplicit && sortDir === 'desc';
-        const type = ths[node.children[0].col]?.getAttribute('t-type');
+    if (node.children.length && !node.children[0].leaf) {
+        const col  = node.children[0].col;
+        const desc = sortCol === col && dir === 'desc';
         node.children.sort((a, b) => {
-            const r = _cmp(a.key, b.key, type);
+            const r = compare(a.key, b.key, meta[col].type);
             return desc ? -r : r;
         });
     }
-
-    node.children.forEach(c => _sortTree(c, sortCol, sortDir, ths));
+    node.children.forEach(c => sortTree(c, sortCol, dir, meta));
 }
 
-function _flattenTree(node, fragment, state, visibleCols, ths, isHidden, appendedRows, currentPath = "") {
-    if (node.isLeaf) {
-        node.rows.forEach(r => {
-            let trToAdd = r.tr;
-            if (appendedRows.has(r.tr)) {
-                trToAdd = r.tr.cloneNode(true);
-                trToAdd.classList.add('tv-clone');
-            } else {
-                appendedRows.add(r.tr);
-            }
-            
-            if (currentPath) {
-                trToAdd.dataset.groupPath = currentPath;
-            } else {
-                delete trToAdd.dataset.groupPath;
-            }
+function compare(a, b, type) {
+    if (type === 'date' || type === 'num') {
+        const x = toNumber(a, type), y = toNumber(b, type);
+        if (x === null && y === null) return 0;
+        if (x === null) return 1;
+        if (y === null) return -1;
+        return x - y;
+    }
+    return String(a).localeCompare(String(b), 'de', { numeric: true, sensitivity: 'base' });
+}
 
-            // Filter-Status persistent als Attribut → Fast-Path beim Collapse-Toggle kann das berücksichtigen
-            trToAdd.dataset.tvFiltered = r.filtered ? "1" : "";
-
-            trToAdd.classList.toggle('tv-hidden', isHidden || r.filtered);
-            fragment.appendChild(trToAdd);
+function flatten(node, frag, ctx) {
+    // ── Blatt: die Datenzeilen selbst (bei Multi-Group als Klon) ────────────
+    if (node.leaf) {
+        node.rows.forEach(d => {
+            let tr = d.tr;
+            if (ctx.used.has(d.tr)) {
+                tr = d.tr.cloneNode(true);
+                tr.classList.add('tv-clone');
+            } else {
+                ctx.used.add(d.tr);
+            }
+            if (ctx.path) tr.dataset.groupPath = ctx.path;
+            else delete tr.dataset.groupPath;
+            tr.classList.toggle('tv-hidden', ctx.hidden || d.hidden);
+            frag.appendChild(tr);
         });
         return;
     }
-    if (node.children && node.path === undefined) {
-         node.children.forEach(c => _flattenTree(c, fragment, state, visibleCols, ths, isHidden, appendedRows, currentPath));
-         return;
+
+    // ── Wurzel hat keinen eigenen Kopf ──────────────────────────────────────
+    if (node.path === undefined) {
+        node.children.forEach(c => flatten(c, frag, ctx));
+        return;
     }
 
-    const isCollapsed = state.collapsed.has(node.path);
-    const groupHasNoVisible = node.visibleCount === 0;
+    // ── Gruppenkopf ─────────────────────────────────────────────────────────
+    const collapsed = !ctx.open.has(node.path);
     const tr = document.createElement('tr');
-    tr.className = 'tv-group-row' + (isCollapsed ? ' tv-group-collapsed' : '');
+    tr.className = 'tv-group-row' + (collapsed ? ' tv-group-collapsed' : '');
     tr.dataset.groupPath = node.path;
-    tr.classList.toggle('tv-hidden', isHidden || groupHasNoVisible);
+    tr.classList.toggle('tv-hidden', ctx.hidden || node.visible === 0);
 
-    const td = document.createElement('td');
-    td.colSpan = visibleCols;
-
-    const paddingLeft = (node.depth * 1.5) + 1.25;
-    const colNameRaw = ths[node.col]?.textContent?.replace(/unfold_more|workspaces|arrow_upward|arrow_downward|search|close/g, '').trim() || `Spalte ${node.col}`;
-
-    const countDisplay = (node.visibleCount !== undefined && node.visibleCount !== node.count)
-        ? `${node.visibleCount}/${node.count}`
-        : node.count;
-
+    const name  = colName(ctx.meta[node.col].cell) || `Spalte ${node.col}`;
+    const count = node.visible !== node.count ? `${node.visible}/${node.count}` : node.count;
+    const td    = document.createElement('td');
+    td.colSpan  = ctx.visibleCols;
     td.innerHTML = `
-        <div class="tv-group-content" style="padding-left: ${paddingLeft}rem">
-            <span class="msr tv-expand">${isCollapsed ? 'chevron_right' : 'expand_more'}</span>
+        <div class="tv-group-content" style="padding-left:${node.depth * 1.5 + 1.25}rem">
+            <span class="tv_msr tv-expand">${collapsed ? ICO.closed : ICO.open}</span>
             <span class="tv-group-name">
-                <small class="tv-group-label">${_esc(colNameRaw)}:</small>
-                ${_esc(node.key)}
+                <small class="tv-group-label">${esc(name)}:</small>
+                ${esc(node.key || '—')}
             </span>
-            <span class="tv-count">${countDisplay}</span>
+            <span class="tv-count">${count}</span>
         </div>
-        <div class="tv-group-actions" data-group-path="${node.path}" data-col="${node.col}" data-col-name="${_esc(colNameRaw)}"></div>
-        <span class="msr tv-ungroup" data-col="${node.col}" title="Gruppierung aufheben">close</span>
-    `;
+        <div class="tv-group-actions" data-group-path="${esc(node.path)}" data-col="${node.col}" data-col-name="${esc(name)}"></div>
+        <span class="tv_msr tv-ungroup" data-col="${node.col}" title="Gruppierung aufheben">${ICO.remove}</span>`;
     tr.appendChild(td);
-    fragment.appendChild(tr);
+    frag.appendChild(tr);
 
-    const childrenHidden = isHidden || isCollapsed;
-    node.children.forEach(c => _flattenTree(c, fragment, state, visibleCols, ths, childrenHidden, appendedRows, node.path));
+    node.children.forEach(c => flatten(c, frag, {
+        ...ctx,
+        hidden: ctx.hidden || collapsed,
+        path:   node.path
+    }));
 }
 
-function _val(row, col) {
-    const cell = row.children[col];
-    if (!cell) return '';
-    return cell.dataset.sortValue !== undefined ? cell.dataset.sortValue : cell.textContent.trim();
-}
-
-function _cmp(a, b, type) {
-    if (type === 'num') {
-        const na = parseFloat(a), nb = parseFloat(b);
-        return (isNaN(na) ? 0 : na) - (isNaN(nb) ? 0 : nb);
-    }
-    if (type === 'date') {
-        return (_date(a) || 0) - (_date(b) || 0);
-    }
-    const na = parseFloat(a), nb = parseFloat(b);
-    if (!isNaN(na) && !isNaN(nb)) return na - nb;
-    const da = _date(a), db = _date(b);
-    if (da && db) return da - db;
-    return String(a).localeCompare(String(b), 'de');
-}
-
-function _date(s) {
-    if (/^\d{4}-\d{2}-\d{2}/.test(s)) return new Date(s).getTime();
-    const m = String(s).match(/^(\d{2})\.(\d{2})\.(\d{4})\s*(\d{2}:\d{2})?/);
-    if (m) return new Date(`${m[3]}-${m[2]}-${m[1]}T${m[4] || '00:00'}`).getTime();
-    return null;
-}
-
-function _esc(s) {
+function esc(s) {
     const d = document.createElement('div');
-    d.textContent = s;
+    d.textContent = s ?? '';
     return d.innerHTML;
 }
 
-function injectCss() {
-    const cssUrl = new URL('./tableview.css', import.meta.url);
-    if (document.querySelector(`link[href="${cssUrl.href}"]`)) return;
-    document.head.insertAdjacentHTML("beforeend", `<link rel="stylesheet" href="${cssUrl.href}">`);
-}
+/* ══════════════════════════════════════════════════════════════════════════
+   Events (Delegation – gilt auch für später eingefügte Tabellen)
+   ══════════════════════════════════════════════════════════════════════════ */
 
-// ========== Auto Init Observer ==========
-const observer = new MutationObserver((mutationsList) => {
-    if (!styleInjected) { injectCss(); styleInjected = true; }
-    for (const mutation of mutationsList) {
-        if (mutation.type === 'childList') {
-            mutation.addedNodes.forEach(node => {
-                if (node.nodeType !== Node.ELEMENT_NODE) return;
-                if (node instanceof HTMLTableElement) _setupTableHeaders(node);
-                else {
-                    const tables = node.querySelectorAll('table');
-                    tables.forEach(table => _setupTableHeaders(table));
-                }
-            });
-        }
+document.addEventListener('click', e => {
+    // ── Filter löschen (im Popover) ─────────────────────────────────────────
+    const clear = e.target.closest('.tv-pop-clear');
+    if (clear) {
+        const pop = clear.closest('.tv-pop');
+        const table = document.getElementById(pop.dataset.tvFor);
+        if (table) filterTable(table, +pop.dataset.col, null);
+        pop.hidePopover?.();
+        return;
+    }
+    if (e.target.closest('.tv-pop')) return;
+
+    // ── Suchfeld leeren ─────────────────────────────────────────────────────
+    const searchClear = e.target.closest('.tv-search-clear');
+    if (searchClear) {
+        const table = searchClear.closest('table');
+        const inp = table?.querySelector('.tv-search-input');
+        if (inp) { inp.value = ''; renderTable(table); }
+        return;
+    }
+
+    const table = e.target.closest('table.tv-enabled');
+    if (!table) return;
+
+    const group   = e.target.closest('.tv-ico-group');
+    const ungroup = e.target.closest('.tv-ungroup');
+    const expand  = e.target.closest('.tv-group-content');
+    const filter  = e.target.closest('.tv-ico-filter');
+    const sortIco = e.target.closest('.tv-ico-sort');
+    const head    = e.target.closest('[t-sort]');
+
+    if (filter) return;                                  // Popover öffnet per HTML-Attribut
+
+    if (group) {
+        e.stopPropagation();
+        groupTable(table, +group.dataset.col);
+    } else if (ungroup) {
+        e.stopPropagation();
+        groupTable(table, +ungroup.dataset.col, false);
+    } else if (expand) {
+        // ── Gruppe auf-/zuklappen (Zustand als t-open am <table>) ───────────
+        const path = expand.closest('tr')?.dataset.groupPath;
+        if (!path) return;
+        const open = openPaths(table);
+        open.has(path) ? open.delete(path) : open.add(path);
+        setOpenPaths(table, open);
+        renderTable(table);
+    } else if (sortIco || head) {
+        const cell = head || sortIco.closest('th, td');
+        const cur  = cell.getAttribute('t-sort');
+        sortTable(table, +cell.dataset.tvCol, cur === 'asc' ? 'desc' : cur === 'desc' ? 'none' : 'asc');
     }
 });
-observer.observe(document.body, { childList: true, subtree: true });
-document.addEventListener('DOMContentLoaded', () => prepareTables());
+
+let inputTimer;
+document.addEventListener('input', e => {
+    const inp = e.target.closest('.tv-pop-input, .tv-search-input');
+    if (!inp) return;
+    clearTimeout(inputTimer);
+    inputTimer = setTimeout(() => {
+        // ── Suche ───────────────────────────────────────────────────────────
+        if (inp.classList.contains('tv-search-input')) {
+            const table = inp.closest('table');
+            if (table) renderTable(table);
+            return;
+        }
+        // ── Filter: alle Felder des Popovers einsammeln ─────────────────────
+        const pop = inp.closest('.tv-pop');
+        const table = document.getElementById(pop.dataset.tvFor);
+        if (!table) return;
+        const filter = {};
+        pop.querySelectorAll('.tv-pop-input').forEach(f => {
+            if (f.value !== '') filter[f.dataset.tvOp] = f.value;
+        });
+        filterTable(table, +pop.dataset.col, filter);
+    }, 180);
+});
+
+/* ══════════════════════════════════════════════════════════════════════════
+   Beobachter: neue Tabellen + externe Änderungen an bestehenden
+   ══════════════════════════════════════════════════════════════════════════ */
+
+function observe(table) {
+    let timer;
+    const obs = new MutationObserver(() => {
+        if (busy.has(table)) return;
+        clearTimeout(timer);
+        timer = setTimeout(() => renderTable(table), 30);
+    });
+    obs.observe(table, { childList: true, subtree: true, characterData: true });
+    observers.set(table, obs);
+}
+
+new MutationObserver(list => {
+    for (const m of list) {
+        m.addedNodes.forEach(n => {
+            if (n.nodeType !== Node.ELEMENT_NODE) return;
+            if (n instanceof HTMLTableElement) init(n);
+            else n.querySelectorAll?.('table').forEach(init);
+        });
+    }
+}).observe(document.documentElement, { childList: true, subtree: true });
+
+function injectCss() {
+    const url = new URL('./tableview.css', import.meta.url);
+    if (document.querySelector(`link[href="${url.href}"]`)) return;
+    document.head.insertAdjacentHTML('beforeend', `<link rel="stylesheet" href="${url.href}">`);
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => prepareTables());
+} else {
+    prepareTables();
+}

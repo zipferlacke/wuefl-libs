@@ -1,13 +1,21 @@
-<div class="card">
-  <div class="card-head"><div class="dots"><span></span><span></span><span></span></div><span>Sortierbar · Gruppierbar · Durchsuchbar</span></div>
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+<body>
+  <div class="card">
+  <div class="card-head"><div class="dots"><span></span><span></span><span></span></div><span>Sortierbar · Gruppierbar · Filterbar · Durchsuchbar</span></div>
   <div class="card-body">
     <table t-search>
       <thead>
         <tr>
-          <th t-sort>Name</th>
+          <th t-sort t-filter>Name</th>
           <th t-sort t-type="date">Datum</th>
           <th t-sort t-group>Kategorie</th>
-          <th t-sort t-type="num">Preis</th>
+          <th t-sort t-filter>Preis</th>
         </tr>
       </thead>
       <tbody>
@@ -16,9 +24,19 @@
         <tr><td>Birne</td><td>2025-03-14</td><td>Obst</td><td>1.50</td></tr>
         <tr><td>Brötchen</td><td>2025-03-15</td><td>Backwaren</td><td>0.40</td></tr>
         <tr><td>Banane</td><td>2025-03-16</td><td>Obst</td><td>0.90</td></tr>
+        <tr><td>Weintrauben</td><td>2025-03-16</td><td>Obst</td><td>1.30</td></tr>
+        <tr><td>Tomate</td><td>2025-03-16</td><td>Gemüse</td><td>0.90</td></tr>
+        <tr><td>Zuchini</td><td>2026-03-16</td><td>Gemüse</td><td>2.90</td></tr>
+        <tr><td>Kürbis</td><td>2026-05-16</td><td>Gemüse</td><td>3.90</td></tr>
+        <tr><td>Melone</td><td>2026-05-15</td><td>Obst</td><td>4.90</td></tr>
+        <tr><td>Pfand Dose</td><td>2026-05-15</td><td>Pfand</td><td>-0.25</td></tr>
+        <tr><td>Pfand Flasche</td><td>2026-05-15</td><td>Pfand</td><td>-0.08</td></tr>
       </tbody>
     </table>
   </div>
 </div>
 
 <script type="module" src="./tableview.js"></script>
+</body>
+</html>
+
