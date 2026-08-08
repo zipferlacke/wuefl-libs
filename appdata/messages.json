@@ -1,11 +1,17 @@
 {
-    "welcome":[
-        "WueflLib"
-    ],
-    
+  "welcome": [
+    "WueflLib"
+  ],
   "modules": {
     "selectpicker": [
-        {
+      {
+        "version": "2.0.1",
+        "date": "2026-08-08",
+        "changes": [
+          "1. Automatischer Darkmode entfernt, für mehr Nutzerkontrolle."
+        ]
+      },
+      {
         "version": "2.0.0",
         "date": "2026-06-25",
         "changes": [
@@ -35,6 +41,13 @@
       }
     ],
     "datepicker": [
+      {
+        "version": "2.0.1",
+        "date": "2026-08-08",
+        "changes": [
+          "1. Automatischer Darkmode entfernt, für mehr Nutzerkontrolle."
+        ]
+      },
       {
         "version": "2.0.0",
         "date": "2026-06-25",
@@ -84,6 +97,13 @@
     ],
     "slideshow": [
       {
+        "version": "1.0.1",
+        "date": "2026-08-08",
+        "changes": [
+          "1. Automatischer Darkmode entfernt, für mehr Nutzerkontrolle."
+        ]
+      },
+      {
         "version": "1.0.0",
         "date": "2026-04-26",
         "changes": [
@@ -92,6 +112,14 @@
       }
     ],
     "inp": [
+      {
+        "version": "2.0.1",
+        "date": "2026-08-08",
+        "changes": [
+          "1. Automatischer Darkmode entfernt, für mehr Nutzerkontrolle.",
+          "2. Fehlerbehoben: Inlinescripte werden wieder ausgeführt."
+        ]
+      },
       {
         "version": "2.0.0",
         "date": "2026-06-25",
@@ -111,6 +139,13 @@
       }
     ],
     "tableview": [
+      {
+        "version": "1.1.1",
+        "date": "2026-08-08",
+        "changes": [
+          "1. Automatischer Darkmode entfernt, für mehr Nutzerkontrolle."
+        ]
+      },
       {
         "version": "1.1.0",
         "date": "2026-08-1",
@@ -138,62 +173,66 @@
       }
     ]
   },
-
-
-
-
-    "changelog":[
-        {
-            "version":"2.1.0",
-            "date":"2026-08-1",
-            "changes":[
-                "1. Tableview aktualisiert"
-            ]
-        },
-        {
-            "version":"2.0.0",
-            "date":"2026-06-25",
-            "changes":[
-                "1. Design für .wDetails hinzugefügt",
-                "2. Viele CSS Klassen auf .w* geändert (z.B .wHeader, .wFooter, .wNav, .wSidenav, ...)",
-                "3. tabelview als Modul hinzugefügt, Tabellen automatisch sortieren, gruppieren, durchsuchen",
-                "4. INP verbessert und neue Methoden hinzugefügt (siehe InP Update)",
-                "5. SelectPicker auch mit Attributen steuerbar   (siehe SelectPicker Update)",
-                "6. DatePicker auch mit Attributen steuerbar und Bug fixes (siehe DatePicker Update)"
-            ]
-        },
-        {
-            "version":"1.2.0",
-            "date":"",
-            "changes":[
-                "1. Design für .table hinzugefügt",
-                "2. `colors.css` wieder hinzugefügt",
-                "3. Beispiel für die Verwendung für dennn css Part hinzugefügt."
-            ]
-        },
-        {
-            "version":"1.1.0",
-            "date":"",
-            "changes":[
-                "1. Update des SelectPickers: Anpasssung des CSS und JS an allgemeine Pickerform (https://open.wuefl.de/wuefl-libs/selectpicker/)",
-                "2. DatePicker hinzugefügt (https://open.wuefl.de/wuefl-libs/datepicker/)",
-                "3. InP hinzugefügt (https://open.wuefl.de/wuefl-libs/inp/)",
-                "4. Readmes ergänst und HTML Seiten erstellt"
-            ]
-        },
-        {
-            "version":"1.0.1",
-            "date":"",
-            "changes":[
-                "1. Update des SelectPickers, inklusiver Erstellung einer Dokumentation und DemoSeite (https://open.wuefl.de/wuefl-libs/selectpicker/)"
-            ]
-        },
-        {
-            "version":"1.0.0",
-            "date":"",
-            "changes":[
-                "Version 1.0.0"
-            ]
-        }
-    ]
+  "changelog": [
+    {
+      "version": "2.2.1",
+      "date": "2026-08-08",
+      "changes": [
+        "1. Automatischer Darkmode in Untermodulen entfernt",
+        "2. Fehlerbehebungen: InP"
+      ]
+    },
+    {
+      "version": "2.1.0",
+      "date": "2026-08-1",
+      "changes": [
+        "1. Tableview aktualisiert"
+      ]
+    },
+    {
+      "version": "2.0.0",
+      "date": "2026-06-25",
+      "changes": [
+        "1. Design für .wDetails hinzugefügt",
+        "2. Viele CSS Klassen auf .w* geändert (z.B .wHeader, .wFooter, .wNav, .wSidenav, ...)",
+        "3. tabelview als Modul hinzugefügt, Tabellen automatisch sortieren, gruppieren, durchsuchen",
+        "4. INP verbessert und neue Methoden hinzugefügt (siehe InP Update)",
+        "5. SelectPicker auch mit Attributen steuerbar   (siehe SelectPicker Update)",
+        "6. DatePicker auch mit Attributen steuerbar und Bug fixes (siehe DatePicker Update)"
+      ]
+    },
+    {
+      "version": "1.2.0",
+      "date": "",
+      "changes": [
+        "1. Design für .table hinzugefügt",
+        "2. `colors.css` wieder hinzugefügt",
+        "3. Beispiel für die Verwendung für dennn css Part hinzugefügt."
+      ]
+    },
+    {
+      "version": "1.1.0",
+      "date": "",
+      "changes": [
+        "1. Update des SelectPickers: Anpasssung des CSS und JS an allgemeine Pickerform (https://open.wuefl.de/wuefl-libs/selectpicker/)",
+        "2. DatePicker hinzugefügt (https://open.wuefl.de/wuefl-libs/datepicker/)",
+        "3. InP hinzugefügt (https://open.wuefl.de/wuefl-libs/inp/)",
+        "4. Readmes ergänst und HTML Seiten erstellt"
+      ]
+    },
+    {
+      "version": "1.0.1",
+      "date": "",
+      "changes": [
+        "1. Update des SelectPickers, inklusiver Erstellung einer Dokumentation und DemoSeite (https://open.wuefl.de/wuefl-libs/selectpicker/)"
+      ]
+    },
+    {
+      "version": "1.0.0",
+      "date": "",
+      "changes": [
+        "Version 1.0.0"
+      ]
+    }
+  ]
 }
