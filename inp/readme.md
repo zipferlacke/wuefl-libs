@@ -2,7 +2,9 @@
 
 > Vanilla JS · Server-Side Rendering · ES-Modul
 
-Macht klassisches Server-Side Rendering dynamisch: Normale HTML-Links und Buttons laden Inhalte per Fetch im Hintergrund und öffnen sie als Modal oder aktualisieren Teile der aktuellen Seite — ohne Seiten-Reload.
+InP lässt klassisches Server-Side Rendering dynamisch werden: Normale HTML-Links und Button Aufrufe werden im Hintergrund geladen (per fetch) und bei Bedarf als Popup-Dialog geöffnet und/oder aktualisieren Teile der aktuellen Seite — ohne Seiten-Reload. 
+
+Das ganze wird bereitgestellt von InP und lässt sich bequem über wenige HTML-Attribute steuern.
 
 ---
 
@@ -12,7 +14,7 @@ Macht klassisches Server-Side Rendering dynamisch: Normale HTML-Links und Button
 <script src="inp.js" type="module"></script>
 ```
 
-Kein Build-Schritt, keine Abhängigkeiten. InP setzt sich nach dem Laden automatisch als globaler Klick- und Submit-Handler.
+InP aktiviert sich nach dem Laden automatisch als globaler Klick- und Submit-Handler auf der Seite.
 
 ---
 

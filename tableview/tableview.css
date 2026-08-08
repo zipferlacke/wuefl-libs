@@ -23,7 +23,7 @@
 
   /* ── @font-face ─────────────────────────────────────────────────────────── */
   @font-face {
-    font-family: 'Material Symbols Rounded';
+    font-family: 'Tableview Icons';
     font-style:  normal;
     font-weight: 400;
     /*ICONS: close refresh check search apps_outage chevron_left chevron_right*/
@@ -31,8 +31,6 @@
         format('woff2');
   }
   :root {
-    color-scheme: light dark;
-
     /* ── Basiswerte: übernommen falls gesetzt, sonst Default ─────────────── */
     --_tv-base: var(--clr-picker,       light-dark(hsl(0, 0%, 90%), hsl(0, 0%, 10%)));
     --_tv-acc:  var(--clr-picker-input, light-dark(hsl(219, 100%, 50%), hsl(219, 100%, 30%)));
@@ -58,7 +56,7 @@
   }
 
   .tv_msr {
-    font-family:    'Material Symbols Rounded';
+    font-family:    'Material Symbols Rounded', 'Tableview Icons';
     font-weight:    normal;
     font-style:     normal;
     font-size:      24px;
@@ -115,8 +113,6 @@
       line-height:     1;
       cursor:          pointer;
       transition:      background .15s, color .15s;
-
-      &:hover { background: var(--_tv-700); color: var(--_tv-100); }
 
       &.tv-ico-active { color: var(--_tv-acc-500); }
     }
@@ -266,7 +262,7 @@
     border-radius: calc(var(--_tv-br) * 1.5);
     background:    var(--_tv-900);
     color:         var(--_tv-100);
-    box-shadow:    0 8px 28px hsl(from var(--_tv-base) h s 10% / 0.2);
+    box-shadow:    0rem 1rem 1.5rem hsl(from var(--_tv-base) h s 10% /0.5);
     font-family:   inherit;
     font-size:     var(--_tv-fs);
     line-height:   1.4;
