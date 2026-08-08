@@ -58,15 +58,15 @@ export function userDialog({
     // ===
     const modal = `
     <dialog id="${id}" class="userDialog" data-dialog-type="${type}">
-        <form novalidate>
+        <form novalidate class="uD-form">
             <div class="content">
-                <header>${title}</header>
+                <header class="uD-header">${title}</header>
                 ${image}
-                <main>
+                <main class="uD-main">
                     ${content}
                 </main>
             </div>
-            <footer>
+            <footer class="uD-footer">
                 <button class="button dialog_close" style="${onlyConfirm? "display:none":""}">${cancelText}</button>
                 <button type="submit" class="button dialog_submit" data="images">${confirmText}</button>
             </footer>

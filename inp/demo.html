@@ -1,47 +1,88 @@
-<div class="demo-grid">
-  <div class="demo-card">
-    <div class="demo-card-header"><div class="demo-dots"><span></span><span></span><span></span></div><span>Modal · Einfach</span></div>
-    <div class="demo-body">
-      <p>Ein Link öffnet die Zielseite als Dialog — ein Attribut genügt.</p>
-      <a href="information-dialog.html" data-inp-typ="modal" class="inp-demo-btn">
-        <span class="msr" style="font-size:15px;">open_in_new</span> Demo
-      </a>
-    </div>
-  </div>
+<!DOCTYPE html>
+<html lang="de">
 
-  <div class="demo-card">
-    <div class="demo-card-header"><div class="demo-dots"><span></span><span></span><span></span></div><span>Modal · data-extract</span></div>
-    <div class="demo-body">
-      <p>Hat die Zieldatei Header/Footer, lädt <code>data-extract</code> nur den gewünschten Bereich.</p>
-      <button data-inp-typ="modal" data-href="login-page.html" data-extract="#form-area" class="inp-demo-btn">
-        <span class="msr" style="font-size:15px;">open_in_new</span> Demo
-      </button>
-    </div>
-  </div>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DEMO</title>
+</head>
 
-  <div class="demo-card">
-    <div class="demo-card-header"><div class="demo-dots"><span></span><span></span><span></span></div><span>Submit · data-target</span></div>
-    <div class="demo-body">
-      <p>Nach einem Formular-Submit im Modal wird nur <code>#demo-update-box</code> ausgetauscht.</p>
-      <div style="display:flex;align-items:center;gap:.75rem;flex-wrap:wrap;">
-        <a href="changeData.php" data-inp-typ="modal" data-target="#demo-update-box" class="inp-demo-btn">
+<body>
+  <div class="demo-grid">
+    <div class="demo-card">
+      <div class="demo-card-header">
+        <div class="demo-dots"><span></span><span></span><span></span></div><span>Modal · Einfach</span>
+      </div>
+      <div class="demo-body">
+        <p>
+          Verlinkte Seite wird als PopUp-Dialog geöffnet. 
+          <br>Mit Attribut: <code>data-inp-typ="modal"</code>
+        </p>
+        <a href="./information-dialog.html" data-inp-typ="modal" class="inp-demo-btn">
           <span class="msr" style="font-size:15px;">open_in_new</span> Demo
         </a>
-        <span class="dl-info">benötigt Server</span>
       </div>
-      <div class="log" id="demo-update-box">Aktueller Wert: <strong>Hier ändern…</strong></div>
+    </div>
+
+    <div class="demo-card">
+      <div class="demo-card-header">
+        <div class="demo-dots"><span></span><span></span><span></span></div><span>Modal · data-extract</span>
+      </div>
+      <div class="demo-body">
+        <p>
+          Aus verlinkter Seite wird Form zum Anzeigen im PoPup-Dialog ausgeschnitten.
+           <br>Mit Attribut: <code>data-inp-typ="modal"</code>, <code>data-extract="#form-area"</code>
+           <br><a target="_blank" href="./login-page.html">Normaler Link</a>
+          </p>
+        <button data-inp-typ="modal" data-href="login-page.html" data-extract="#form-area" class="inp-demo-btn">
+          <span class="msr" style="font-size:15px;">open_in_new</span> Demo
+        </button>
+      </div>
+    </div>
+
+    <div class="demo-card">
+      <div class="demo-card-header">
+        <div class="demo-dots"><span></span><span></span><span></span></div><span>Submit · data-target</span>
+      </div>
+      <div class="demo-body">
+        <p>
+          Verlinkte Seite wird als PopUp-Dialog geöffnet und anschließend die aktuelle Seite im Hintergrund aktualisiert.
+          <br>Mit Attribut: <code>data-inp-typ="modal"</code>, <code>data-target="#demo-update-box"</code>
+        </p>
+        <div style="display:flex;align-items:center;gap:.75rem;flex-wrap:wrap;">
+          <a href="./changeData.php" data-inp-typ="modal" data-target="#demo-update-box" class="inp-demo-btn">
+            <span class="msr" style="font-size:15px;">open_in_new</span> Demo
+          </a>
+        </div>
+        <div class="log" id="demo-update-box">Ihr Name: <strong>Unbekannt...</strong></div>
+      </div>
     </div>
   </div>
-</div>
 
-<style>
-  .inp-demo-btn {
-    display: inline-flex; align-items: center; gap: .35rem;
-    padding: .45rem .9rem; background: var(--accent); color: white;
-    border: none; border-radius: 6px; font-family: var(--mono); font-size: .78rem;
-    cursor: pointer; text-decoration: none; font-weight: 500; transition: background .15s;
-  }
-  .inp-demo-btn:hover { background: #1e40af; }
-</style>
+  <style>
+    .inp-demo-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: .35rem;
+      padding: .45rem .9rem;
+      background: var(--accent, black);
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-family: var(--mono);
+      font-size: .78rem;
+      cursor: pointer;
+      text-decoration: none;
+      font-weight: 500;
+      transition: background .15s;
+    }
 
-<script type="module" src="./inp.js"></script>
+    .inp-demo-btn:hover {
+      background: #1e40af;
+    }
+  </style>
+
+  <script type="module" src="./inp.js"></script>
+</body>
+
+</html>

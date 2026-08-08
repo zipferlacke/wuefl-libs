@@ -160,6 +160,10 @@ async function createModal(href, target, extract) {
             return;
         }
 
+        const foundLinks   = [...fetchedDoc.querySelectorAll('link[rel="stylesheet"]')];
+        const foundStyles  = [...fetchedDoc.querySelectorAll('style')];
+        const foundScripts = [...fetchedDoc.querySelectorAll('script')];
+
         const dialog = document.createElement('dialog');
         const dialogID = Date.now();
         dialog.dataset.inp_id = dialogID;
@@ -172,7 +176,7 @@ async function createModal(href, target, extract) {
         // CSS in @scope wrappen — jedes Modal hat seinen eigenen Style-Bereich
         const cssPromises = [];
 
-        fetchedDoc.querySelectorAll('link[rel="stylesheet"]').forEach(linkEl => {
+        foundLinks.forEach(linkEl => {
             let styleHref = linkEl.getAttribute('href');
             if (styleHref && !styleHref.startsWith('http') && !styleHref.startsWith('/')) {
                 styleHref = new URL(styleHref, base).href;
@@ -195,7 +199,7 @@ async function createModal(href, target, extract) {
             );
         });
 
-        fetchedDoc.querySelectorAll('style').forEach(styleEl => {
+        foundStyles.forEach(styleEl => {
             const styleTag = document.createElement('style');
             styleTag.textContent = `@scope (dialog[data-inp_id="${dialogID}"]) {\n${styleEl.textContent}\n}`;
             dialog.appendChild(styleTag);
@@ -204,7 +208,7 @@ async function createModal(href, target, extract) {
         await Promise.all(cssPromises);
 
         // Externe Scripts
-        fetchedDoc.querySelectorAll('script[src]').forEach(oldScript => {
+        foundScripts.filter(s => s.src).forEach(oldScript => {
             let src = oldScript.getAttribute('src');
             if (!src.startsWith('http') && !src.startsWith('/')) {
                 src = new URL(src, base).href;
@@ -229,7 +233,7 @@ async function createModal(href, target, extract) {
         let combinedInlineJS = "";
         const modulesToLoad = [];
 
-        fetchedDoc.querySelectorAll('script:not([src])').forEach(scr => {
+        foundScripts.filter(s => !s.src).forEach(scr => {
             if (scr.type === 'module') {
                 const scriptContent = scr.textContent;
                 const importRegex = /import\s+[\s\S]*?from\s+(['"].*?['"])\s*;?/gm;

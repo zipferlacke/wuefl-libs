@@ -4,151 +4,219 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>wuefl-libs</title>
+
+  <!-- Liefert @font-face für Material Symbols Rounded -->
   <link rel="stylesheet" href="css/fonts/google-icons-rounded.css">
+
+  <!-- Basis der Doku-Seiten: Reset, Variablen (inkl. Dark Mode), Typo, nav,
+       .wrap, .section-label, footer. Alles Weitere unten ist seitenspezifisch. -->
+  <link rel="stylesheet" href="appdata/versioning.css">
+
   <style>
-    @import url('../css/fonts/google-icons-rounded.css');
+    /* Bewusst ohne @layer: unlayered Regeln stechen die aus
+       @layer components in versioning.css und überschreiben sie damit
+       ohne !important. */
 
-    @layer resets, page;
-    @layer resets {
-      *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    /* ── Anpassungen an der geteilten Basis ──────────────────────────────── */
+    .wrap { max-width: 900px; }
+
+    nav {
+      display:         flex;
+      justify-content: space-between;
     }
-    @layer page {
-      :root {
-        --paper:   #f5f4f0;
-        --surface: #ffffff;
-        --ink:     #18181b;
-        --ink-2:   #52525b;
-        --ink-3:   #a1a1aa;
-        --line:    #e4e4e7;
-        --accent:  #1d4ed8;
-        --mono:    'IBM Plex Mono', monospace;
-        --sans:    'IBM Plex Sans', sans-serif;
+    .nav-version {
+      font-family: var(--mono);
+      font-size:   .72rem;
+      color:       var(--ink-3);
+    }
+
+    /* Icon-Basis – google-icons-rounded.css bringt nur die Schrift mit */
+    .msr {
+      font-family:            'Material Symbols Rounded';
+      font-weight:            normal;
+      font-style:             normal;
+      font-size:              24px;
+      line-height:            1;
+      letter-spacing:         normal;
+      text-transform:         none;
+      display:                inline-block;
+      white-space:            nowrap;
+      direction:              ltr;
+      -webkit-font-smoothing: antialiased;
+      font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+
+    /* ── Theme-Schalter ─────────────────────────────────────────────────── */
+    .theme-toggle {
+      display:       grid;
+      place-items:   center;
+      width:         2rem;
+      height:        2rem;
+      border:        1px solid var(--line);
+      border-radius: 6px;
+      background:    var(--surface);
+      color:         var(--ink-2);
+      cursor:        pointer;
+
+      &:hover { border-color: var(--ink-3); color: var(--ink); }
+      & .msr  { font-size: 18px; }
+    }
+
+    .nav-right {
+      display:     flex;
+      align-items: center;
+      gap:         .75rem;
+    }
+
+    /* ── Hero ───────────────────────────────────────────────────────────── */
+    .hero {
+      padding: 4rem 0 3rem;
+
+      & .hero-tag {
+        font-family:    var(--mono);
+        font-size:      .72rem;
+        color:          var(--accent);
+        letter-spacing: .12em;
+        text-transform: uppercase;
+        margin-bottom:  .75rem;
       }
 
-      html { scroll-behavior: smooth; }
-      body { font-family: var(--sans); background: var(--paper); color: var(--ink); font-size: 15px; line-height: 1.6; min-height: 100vh; }
-
-      /* ── NAV ── */
-      nav {
-        position: sticky; top: 0; z-index: 100;
-        background: var(--paper); border-bottom: 1px solid var(--line);
-        padding: .75rem 1.5rem;
-        display: flex; align-items: center; justify-content: space-between;
+      & h1 {
+        font-size:      clamp(2.2rem, 5vw, 3.2rem);
+        font-weight:    700;
+        letter-spacing: -.04em;
+        line-height:    1.08;
+        margin-bottom:  1rem;
       }
-      .nav-brand { font-family: var(--mono); font-weight: 700; font-size: 1rem; color: var(--ink); text-decoration: none; letter-spacing: -.02em; }
-      .nav-version { font-family: var(--mono); font-size: .72rem; color: var(--ink-3); }
 
-      /* ── LAYOUT ── */
-      .wrap { max-width: 900px; margin: 0 auto; padding: 0 1.5rem 5rem; }
-
-      /* ── HERO ── */
-      .hero { padding: 4rem 0 3rem; }
-      .hero-tag { font-family: var(--mono); font-size: .72rem; color: var(--accent); letter-spacing: .12em; text-transform: uppercase; margin-bottom: .75rem; }
-      .hero h1 { font-size: clamp(2.2rem, 5vw, 3.2rem); font-weight: 700; letter-spacing: -.04em; line-height: 1.08; margin-bottom: 1rem; }
-      .hero p { color: var(--ink-2); max-width: 52ch; font-size: 1rem; line-height: 1.75; }
-
-      /* ── SECTION LABEL ── */
-      .section-label {
-        font-family: var(--mono); font-size: .68rem; letter-spacing: .14em;
-        text-transform: uppercase; color: var(--ink-3); margin-bottom: 1.25rem;
-        display: flex; align-items: center; gap: .5rem;
+      & p {
+        max-width: 52ch;
+        font-size: 1rem;
       }
-      .section-label::after { content: ''; flex: 1; height: 1px; background: var(--line); }
+    }
 
-      /* ── COMPONENT GRID ── */
-      .component-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1rem; margin-bottom: 3rem; }
+    /* ── Komponenten-Raster ─────────────────────────────────────────────── */
+    /* Eigene comp-*-Klassen statt card-*: versioning.css belegt .card-body
+       und .card-head bereits für die Demo-Cards der Modulseiten. */
+    .component-grid {
+      display:               grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap:                   1rem;
+      margin-bottom:         3rem;
+    }
 
-      .component-card {
-        background: var(--surface);
-        border: 1px solid var(--line);
-        border-radius: 12px;
-        overflow: hidden;
-        text-decoration: none;
-        color: inherit;
-        display: flex;
-        flex-direction: column;
-        transition: border-color .15s, box-shadow .15s;
-      }
-      .component-card:hover {
+    .component-card {
+      display:         flex;
+      flex-direction:  column;
+      background:      var(--surface);
+      border:          1px solid var(--line);
+      border-radius:   12px;
+      overflow:        hidden;
+      text-decoration: none;
+      color:           inherit;
+      transition:      border-color .15s, box-shadow .15s;
+
+      &:hover {
         border-color: var(--accent);
-        box-shadow: 0 4px 16px hsl(219 100% 50% / .1);
-      }
-      .component-card:hover .card-arrow { transform: translateX(3px); }
+        box-shadow:   0 4px 16px color-mix(in srgb, var(--accent) 18%, transparent);
 
-      .card-top {
-        padding: 1.25rem 1.25rem .75rem;
-        display: flex;
-        align-items: flex-start;
+        & .comp-arrow { transform: translateX(3px); }
+      }
+
+      & .comp-top {
+        display:         flex;
+        align-items:     flex-start;
         justify-content: space-between;
-        gap: .5rem;
+        gap:             .5rem;
+        padding:         1.25rem 1.25rem .75rem;
       }
-      .card-icon {
-        width: 40px; height: 40px;
-        background: var(--paper);
+
+      & .comp-icon {
+        display:       grid;
+        place-items:   center;
+        width:         40px;
+        height:        40px;
+        flex-shrink:   0;
         border-radius: 8px;
-        display: grid; place-items: center;
-        flex-shrink: 0;
-        font-size: 20px;
-        color: var(--ink-2);
+        background:    var(--paper);
+        color:         var(--ink-2);
+
+        & .msr { font-size: 22px; }
       }
-      .card-icon .msr { font-size: 22px; }
-      .card-arrow { color: var(--ink-3); transition: transform .2s; font-size: 18px; }
-      .card-arrow .msr { font-size: 18px; }
 
-      .card-body { padding: 0 1.25rem 1.25rem; flex: 1; }
-      .card-title { font-weight: 600; font-size: .95rem; letter-spacing: -.01em; margin-bottom: .3rem; }
-      .card-desc  { font-size: .82rem; color: var(--ink-2); line-height: 1.6; }
+      & .comp-arrow {
+        color:      var(--ink-3);
+        transition: transform .2s;
 
-      .card-footer {
-        padding: .6rem 1.25rem;
+        & .msr { font-size: 18px; }
+      }
+
+      & .comp-body {
+        flex:    1;
+        padding: 0 1.25rem 1.25rem;
+      }
+
+      & .comp-title {
+        margin-bottom:  .3rem;
+        font-size:      .95rem;
+        font-weight:    600;
+        letter-spacing: -.01em;
+      }
+
+      & .comp-desc {
+        font-size:   .82rem;
+        color:       var(--ink-2);
+        line-height: 1.6;
+      }
+
+      & .comp-footer {
+        display:    flex;
+        flex-wrap:  wrap;
+        gap:        .5rem;
+        padding:    .6rem 1.25rem;
         border-top: 1px solid var(--line);
-        display: flex;
-        gap: .5rem;
-        flex-wrap: wrap;
       }
-      .tag {
-        font-family: var(--mono); font-size: .65rem; letter-spacing: .04em;
-        padding: .15rem .45rem;
-        border-radius: 3px;
-        background: var(--paper);
-        color: var(--ink-3);
-        border: 1px solid var(--line);
-      }
-      .tag.tag-has-docs { color: var(--accent); border-color: #bfdbfe; background: #eff6ff; }
+    }
 
-      /* ── CSS UTILITIES ── */
-      .util-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: .75rem; margin-bottom: 3rem; }
-      .util-card {
-        background: var(--surface);
-        border: 1px solid var(--line);
-        border-radius: 8px;
-        padding: .85rem 1rem;
-        font-family: var(--mono);
-        font-size: .78rem;
-        color: var(--ink-2);
-      }
-      .util-card strong { display: block; font-size: .8rem; color: var(--ink); margin-bottom: .2rem; }
+    .tag {
+      padding:        .15rem .45rem;
+      border:         1px solid var(--line);
+      border-radius:  3px;
+      background:     var(--paper);
+      color:          var(--ink-3);
+      font-family:    var(--mono);
+      font-size:      .65rem;
+      letter-spacing: .04em;
 
-      /* ── FOOTER ── */
-      footer {
-        border-top: 1px solid var(--line);
-        padding-top: 1.5rem;
-        margin-top: 3rem;
-        font-family: var(--mono);
-        font-size: .75rem;
-        color: var(--ink-3);
-        display: flex;
-        justify-content: space-between;
-        flex-wrap: wrap;
-        gap: .5rem;
+      &.tag-has-docs {
+        background:   var(--code-bg);
+        border-color: color-mix(in srgb, var(--accent) 40%, transparent);
+        color:        var(--accent);
       }
+    }
 
-      .msr {
-        font-family: 'Material Symbols Rounded'; font-weight: normal; font-style: normal;
-        font-size: 24px; line-height: 1; letter-spacing: normal; text-transform: none;
-        display: inline-block; white-space: nowrap; direction: ltr;
-        -webkit-font-smoothing: antialiased;
-        font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    /* ── CSS-Utilities ──────────────────────────────────────────────────── */
+    .util-grid {
+      display:               grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap:                   .75rem;
+      margin-bottom:         3rem;
+    }
+
+    .util-card {
+      padding:       .85rem 1rem;
+      border:        1px solid var(--line);
+      border-radius: 8px;
+      background:    var(--surface);
+      font-family:   var(--mono);
+      font-size:     .78rem;
+      color:         var(--ink-2);
+
+      & strong {
+        display:       block;
+        margin-bottom: .2rem;
+        font-size:     .8rem;
+        color:         var(--ink);
       }
     }
   </style>
@@ -157,7 +225,12 @@
 
 <nav>
   <a class="nav-brand" href="#">wuefl-libs</a>
-  <span class="nav-version">Vanilla JS · ES-Module · Kein Framework</span>
+  <span class="nav-right">
+    <span class="nav-version">Vanilla JS · ES-Module · Kein Framework</span>
+    <button class="theme-toggle" type="button" id="theme-toggle" title="Hell / Dunkel umschalten">
+      <span class="msr">contrast</span>
+    </button>
+  </span>
 </nav>
 
 <div class="wrap">
@@ -174,15 +247,15 @@
   <div class="component-grid">
 
     <a class="component-card" href="inp/index.html">
-      <div class="card-top">
-        <div class="card-icon"><span class="msr">swap_horiz</span></div>
-        <div class="card-arrow"><span class="msr">arrow_forward</span></div>
+      <div class="comp-top">
+        <div class="comp-icon"><span class="msr">swap_horiz</span></div>
+        <div class="comp-arrow"><span class="msr">arrow_forward</span></div>
       </div>
-      <div class="card-body">
-        <div class="card-title">InP</div>
-        <div class="card-desc">Interactive Pages — macht Server-Side Rendering dynamisch. Links und Buttons öffnen Inhalte als Modal oder aktualisieren Teile der Seite ohne Reload. Formulare werden per Fetch abgesendet, Redirects automatisch erkannt.</div>
+      <div class="comp-body">
+        <div class="comp-title">InP</div>
+        <div class="comp-desc">Interactive Pages — macht Server-Side Rendering dynamisch. Links und Buttons öffnen Inhalte als Modal oder aktualisieren Teile der Seite ohne Reload. Formulare werden per Fetch abgesendet, Redirects automatisch erkannt.</div>
       </div>
-      <div class="card-footer">
+      <div class="comp-footer">
         <span class="tag tag-has-docs">Docs</span>
         <span class="tag">Modal</span>
         <span class="tag">Partial Update</span>
@@ -195,16 +268,17 @@
   <!-- UI-KOMPONENTEN -->
   <div class="section-label">UI-Komponenten</div>
   <div class="component-grid">
+
     <a class="component-card" href="selectpicker/index.html">
-      <div class="card-top">
-        <div class="card-icon"><span class="msr">arrow_drop_down_circle</span></div>
-        <div class="card-arrow"><span class="msr">arrow_forward</span></div>
+      <div class="comp-top">
+        <div class="comp-icon"><span class="msr">arrow_drop_down_circle</span></div>
+        <div class="comp-arrow"><span class="msr">arrow_forward</span></div>
       </div>
-      <div class="card-body">
-        <div class="card-title">SelectPicker</div>
-        <div class="card-desc">Custom Select & Multiselect mit Suche, Icons, Reset und vollständiger CSS-Kontrolle. Ersetzt native <code style="font-size:.75rem;background:#f4f4f5;padding:.1em .3em;border-radius:3px;">&lt;select&gt;</code>-Elemente.</div>
+      <div class="comp-body">
+        <div class="comp-title">SelectPicker</div>
+        <div class="comp-desc">Custom Select &amp; Multiselect mit Suche, Icons, Reset und vollständiger CSS-Kontrolle. Ersetzt native <code>&lt;select&gt;</code>-Elemente.</div>
       </div>
-      <div class="card-footer">
+      <div class="comp-footer">
         <span class="tag tag-has-docs">Docs</span>
         <span class="tag tag-has-docs">Konfigurator</span>
         <span class="tag">sp_</span>
@@ -213,31 +287,32 @@
     </a>
 
     <a class="component-card" href="datepicker/index.html">
-      <div class="card-top">
-        <div class="card-icon"><span class="msr">calendar_month</span></div>
-        <div class="card-arrow"><span class="msr">arrow_forward</span></div>
+      <div class="comp-top">
+        <div class="comp-icon"><span class="msr">calendar_month</span></div>
+        <div class="comp-arrow"><span class="msr">arrow_forward</span></div>
       </div>
-      <div class="card-body">
-        <div class="card-title">DatePicker</div>
-        <div class="card-desc">Datum- und Zeitpicker für Single- und Range-Auswahl, optionale Uhrzeit, drei Output-Formate (locale, ISO, ms).</div>
+      <div class="comp-body">
+        <div class="comp-title">DatePicker</div>
+        <div class="comp-desc">Datum- und Zeitpicker für Single- und Range-Auswahl, optionale Uhrzeit, drei Output-Formate (locale, ISO, ms).</div>
       </div>
-      <div class="card-footer">
+      <div class="comp-footer">
         <span class="tag tag-has-docs">Docs</span>
         <span class="tag">dp_</span>
         <span class="tag">Range</span>
         <span class="tag">i18n</span>
       </div>
     </a>
+
     <a class="component-card" href="tableview/index.html">
-      <div class="card-top">
-        <div class="card-icon"><span class="msr">table_chart</span></div>
-        <div class="card-arrow"><span class="msr">arrow_forward</span></div>
+      <div class="comp-top">
+        <div class="comp-icon"><span class="msr">table_chart</span></div>
+        <div class="comp-arrow"><span class="msr">arrow_forward</span></div>
       </div>
-      <div class="card-body">
-        <div class="card-title">tableView</div>
-        <div class="card-desc">Macht statische HTML-Tabellen interaktiv: sortieren, gruppieren (auch verschachtelt) und live durchsuchen — komplett über Attribute steuerbar.</div>
+      <div class="comp-body">
+        <div class="comp-title">tableView</div>
+        <div class="comp-desc">Macht statische HTML-Tabellen interaktiv: sortieren, gruppieren (auch verschachtelt), zusammenfassen und live durchsuchen — komplett über Attribute steuerbar.</div>
       </div>
-      <div class="card-footer">
+      <div class="comp-footer">
         <span class="tag tag-has-docs">Docs</span>
         <span class="tag">t-sort</span>
         <span class="tag">t-group</span>
@@ -246,15 +321,15 @@
     </a>
 
     <a class="component-card" href="userDialog/index.html">
-      <div class="card-top">
-        <div class="card-icon"><span class="msr">chat_bubble</span></div>
-        <div class="card-arrow"><span class="msr">arrow_forward</span></div>
+      <div class="comp-top">
+        <div class="comp-icon"><span class="msr">chat_bubble</span></div>
+        <div class="comp-arrow"><span class="msr">arrow_forward</span></div>
       </div>
-      <div class="card-body">
-        <div class="card-title">userDialog</div>
-        <div class="card-desc">Zugängliche Dialog- und Modal-Komponente. Optionale Upload-Erweiterung für Datei-Uploads direkt im Dialog.</div>
+      <div class="comp-body">
+        <div class="comp-title">userDialog</div>
+        <div class="comp-desc">Zugängliche Dialog- und Modal-Komponente. Optionale Upload-Erweiterung für Datei-Uploads direkt im Dialog.</div>
       </div>
-      <div class="card-footer">
+      <div class="comp-footer">
         <span class="tag tag-has-docs">Docs</span>
         <span class="tag">userDialog.js</span>
         <span class="tag">Upload-Addon</span>
@@ -262,15 +337,15 @@
     </a>
 
     <a class="component-card" href="slideshow/index.html">
-      <div class="card-top">
-        <div class="card-icon"><span class="msr">slideshow</span></div>
-        <div class="card-arrow"><span class="msr">arrow_forward</span></div>
+      <div class="comp-top">
+        <div class="comp-icon"><span class="msr">slideshow</span></div>
+        <div class="comp-arrow"><span class="msr">arrow_forward</span></div>
       </div>
-      <div class="card-body">
-        <div class="card-title">Slideshow</div>
-        <div class="card-desc">Leichtgewichtige Slideshow/Karussell-Komponente mit Touch-Unterstützung und CSS-Animationen.</div>
+      <div class="comp-body">
+        <div class="comp-title">Slideshow</div>
+        <div class="comp-desc">Leichtgewichtige Slideshow/Karussell-Komponente mit Touch-Unterstützung und CSS-Animationen.</div>
       </div>
-      <div class="card-footer">
+      <div class="comp-footer">
         <span class="tag tag-has-docs">Docs</span>
         <span class="tag">slideshow.js</span>
         <span class="tag">Touch</span>
@@ -278,30 +353,30 @@
     </a>
 
     <a class="component-card" href="banner/index.html">
-      <div class="card-top">
-        <div class="card-icon"><span class="msr">info</span></div>
-        <div class="card-arrow"><span class="msr">arrow_forward</span></div>
+      <div class="comp-top">
+        <div class="comp-icon"><span class="msr">info</span></div>
+        <div class="comp-arrow"><span class="msr">arrow_forward</span></div>
       </div>
-      <div class="card-body">
-        <div class="card-title">Banner</div>
-        <div class="card-desc">Hinweis- und Benachrichtigungsbanner für System-Meldungen, Cookie-Hinweise und Statusmeldungen.</div>
+      <div class="comp-body">
+        <div class="comp-title">Banner</div>
+        <div class="comp-desc">Hinweis- und Benachrichtigungsbanner für System-Meldungen, Cookie-Hinweise und Statusmeldungen.</div>
       </div>
-      <div class="card-footer">
+      <div class="comp-footer">
         <span class="tag tag-has-docs">Docs</span>
         <span class="tag">banner.js</span>
       </div>
     </a>
 
     <a class="component-card" href="qrcode/index.html">
-      <div class="card-top">
-        <div class="card-icon"><span class="msr">qr_code</span></div>
-        <div class="card-arrow"><span class="msr">arrow_forward</span></div>
+      <div class="comp-top">
+        <div class="comp-icon"><span class="msr">qr_code</span></div>
+        <div class="comp-arrow"><span class="msr">arrow_forward</span></div>
       </div>
-      <div class="card-body">
-        <div class="card-title">QR-Code</div>
-        <div class="card-desc">QR-Code-Generator als minimaler Wrapper um qrcode-min.js — kein Build-Schritt nötig.</div>
+      <div class="comp-body">
+        <div class="comp-title">QR-Code</div>
+        <div class="comp-desc">QR-Code-Generator als minimaler Wrapper um qrcode-min.js — kein Build-Schritt nötig.</div>
       </div>
-      <div class="card-footer">
+      <div class="comp-footer">
         <span class="tag tag-has-docs">Docs</span>
         <span class="tag">qrcode-min.js</span>
       </div>
@@ -310,7 +385,7 @@
   </div>
 
   <!-- CSS-UTILITIES -->
-  <div class="section-label">CSS-Utilities & Styles</div>
+  <div class="section-label">CSS-Utilities &amp; Styles</div>
   <div class="util-grid">
     <div class="util-card"><strong>import.css</strong>Zentraler CSS-Import für alle Komponenten-Styles</div>
     <div class="util-card"><strong>reset / _reset.css</strong>Minimaler CSS-Reset als @layer</div>
@@ -326,5 +401,23 @@
   </footer>
 
 </div>
+
+<script>
+  // versioning.css schaltet über color-scheme. Ohne data-theme folgt die Seite
+  // dem System, mit Attribut wird es erzwungen.
+  const KEY = 'wuefl-theme';
+  const root = document.documentElement;
+
+  const saved = localStorage.getItem(KEY);
+  if (saved) root.dataset.theme = saved;
+
+  document.getElementById('theme-toggle').addEventListener('click', () => {
+    const systemDark = window.matchMedia?.('(prefers-color-scheme: dark)').matches ?? false;
+    const isDark = root.dataset.theme ? root.dataset.theme === 'dark' : systemDark;
+    root.dataset.theme = isDark ? 'light' : 'dark';
+    localStorage.setItem(KEY, root.dataset.theme);
+  });
+</script>
+
 </body>
 </html>

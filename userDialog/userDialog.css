@@ -4,29 +4,33 @@
     }
 
     .userDialog{
-        position: absolute;
+        position: fixed;
         z-index: 1000;
-        border: none;
-        align-self: center;
-        justify-self: center;
-        min-width: min(600px, 90vw);
-        max-width: min(800px, 100vw);
+        place-self: center;
+        min-width: min(500px, 90vw);
+        max-width: min(900px, 100vw);
         width: max-content;
         max-height: 90dvh;
+        border: none;
         padding: 1rem;
         padding-right: 0.5rem;
-        border-radius: 1rem;
+        border-radius: 1.5rem;
         
         background-color: var(--clr-neutral-50);
-        box-shadow: 0 0 2rem var(--clr-neutral-800);
+        box-shadow: 0 0 2rem -1rem var(--clr-neutral-400);
+        animation: inp-fade-in 0.2s ease-out;
 
-        &::backdrop{
-            background-color: color-mix(in hsl, var(--clr-neutral-50) 50%, transparent);
-        }
-
+        
         box-sizing: border-box;
         --dialog-gap:0.75rem; 
         overflow: hidden;
+
+        &::backdrop{
+            background-color: color-mix(in hsl, var(--clr-neutral-50) 80%, transparent);
+            backdrop-filter: blur(1px);
+        }
+
+        
         form{
             display: grid;
             grid-template-columns: 1fr;
@@ -63,6 +67,7 @@
                 gap: 1rem;
                 justify-content: space-around;
                 margin-right: 0.5rem;
+                
                 & .button{
                     max-width: max-content;
                     width: 100%;
@@ -138,5 +143,19 @@
                 border-radius: 0 0 1rem 1rem;
             }
         }
+
+        @keyframes inp-fade-in {
+            from {
+                opacity: 0;
+                transform: scale(0.95);
+            }
+
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
     }
+
+    
 }

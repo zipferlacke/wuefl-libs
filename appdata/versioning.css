@@ -11,6 +11,8 @@
  *   5. Demo-Cards (.card, .card-head, .dots, .card-body, .log)
  *   6. Download-Bar (.download-bar, .btn-dl, .dl-info)
  *   7. Versioning-spezifisch (.versioning-version / -changelog / -download)
+ *   8. Dark Mode über light-dark() – folgt dem System, erzwingbar per
+ *      <html data-theme="dark"> oder data-theme="light"
  *
  * Alle Farben, Schriftarten und Größen sind über CSS-Variablen anpassbar
  * (siehe :root unten). Wer eine Modul-Seite anlegt, braucht im <head> nur:
@@ -24,16 +26,40 @@
   /* ── Reset ───────────────────────────────────────────────────────────────── */
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-  /* ── Variablen ───────────────────────────────────────────────────────────── */
+  /* ── Variablen ───────────────────────────────────────────────────────────
+     Hell und dunkel stecken in light-dark(); umgeschaltet wird über
+     color-scheme, nicht über doppelte Regelsätze. Standard folgt der
+     Systemeinstellung, per Attribut lässt sich das erzwingen:
+
+         <html data-theme="dark">   bzw.   data-theme="light"
+     ──────────────────────────────────────────────────────────────────────── */
   :root {
-    --paper:        #f5f4f0;
-    --surface:      #fff;
-    --ink:          #18181b;
-    --ink-2:        #52525b;
-    --ink-3:        #a1a1aa;
-    --line:         #e4e4e7;
-    --accent:       #1d4ed8;
-    --accent-text:  #fff;
+    color-scheme: light dark;
+
+    --paper:        light-dark(#f5f4f0, #161618);
+    --surface:      light-dark(#ffffff, #202023);
+    --ink:          light-dark(#18181b, #f4f4f5);
+    --ink-2:        light-dark(#52525b, #c8c8ce);
+    --ink-3:        light-dark(#a1a1aa, #86868f);
+    --line:         light-dark(#e4e4e7, #3a3a41);
+    --accent:       light-dark(#1d4ed8, #7aa2f7);
+    --accent-text:  light-dark(#ffffff, #10131c);
+
+    /* Flächen die im Hellen bewusst dunkel sind (Code, Tabellenkopf, Card-Kopf)
+       bleiben auch im Dunkeln dunkel – nur einen Tick tiefer als der Grund. */
+    --code-bg:      light-dark(#eff6ff, #1c2333);
+    --code-text:    var(--accent);
+    --pre-bg:       light-dark(#18181b, #0e0e10);
+    --pre-text:     light-dark(#e4e4e7, #d4d4d8);
+    --head-bg:      light-dark(#18181b, #0e0e10);
+    --head-text:    light-dark(#71717a, #8b8b94);
+    --th-text:      light-dark(#ffffff, #f4f4f5);
+    --row-alt:      light-dark(#fafafa, #26262a);
+    --callout-bg:   light-dark(#eff6ff, #16203a);
+    --callout-text: light-dark(#1e40af, #bfdbfe);
+    --log-bg:       light-dark(#f0fdf4, #0c2417);
+    --log-line:     light-dark(#bbf7d0, #17502f);
+    --log-text:     light-dark(#166534, #86efac);
 
     --sans:         'IBM Plex Sans', system-ui, -apple-system, sans-serif;
     --mono:         'IBM Plex Mono', ui-monospace, 'SF Mono', Menlo, monospace;
@@ -47,10 +73,14 @@
     --versioning-text:        var(--ink-2);
     --versioning-heading:     var(--ink);
     --versioning-muted:       var(--ink-3);
-    --versioning-btn-bg:      var(--ink);
-    --versioning-btn-bg-hover:#27272a;
-    --versioning-btn-text:    #fff;
+    --versioning-btn-bg:      light-dark(#18181b, #e4e4e7);
+    --versioning-btn-bg-hover:light-dark(#27272a, #ffffff);
+    --versioning-btn-text:    light-dark(#ffffff, #18181b);
   }
+
+  /* Erzwungenes Schema, unabhängig vom System. */
+  :root[data-theme="light"] { color-scheme: light; }
+  :root[data-theme="dark"]  { color-scheme: dark; }
 
   /* ── Body / Wrap ─────────────────────────────────────────────────────────── */
   html { scroll-behavior: smooth; }
@@ -163,27 +193,27 @@
     display:        flex;
     gap:             .7rem;
     align-items:     flex-start;
-    background:      #eff6ff;
+    background:      var(--callout-bg);
     border-left:     3px solid var(--accent);
     border-radius:   0 6px 6px 0;
     padding:         .8rem 1rem;
     margin:          .75rem 0 1rem;
 
     & .msr { color: var(--accent); font-size: 17px; flex-shrink: 0; margin-top: .1rem; }
-    & p    { color: #1e40af; margin: 0; font-size: .85rem; }
+    & p    { color: var(--callout-text); margin: 0; font-size: .85rem; }
   }
 
   code {
     font-family:   var(--mono);
     font-size:     .79em;
-    background:    #eff6ff;
-    color:         var(--accent);
+    background:    var(--code-bg);
+    color:         var(--code-text);
     padding:       .1em .35em;
     border-radius: 3px;
   }
   pre {
-    background:    #18181b;
-    color:         #e4e4e7;
+    background:    var(--pre-bg);
+    color:         var(--pre-text);
     border-radius: 8px;
     padding:       1.1rem 1.3rem;
     overflow-x:    auto;
@@ -211,8 +241,8 @@
     & th {
       text-align:     left;
       padding:        .4rem .75rem;
-      background:     #18181b;
-      color:          #fff;
+      background:     var(--head-bg);
+      color:          var(--th-text);
       font-family:    var(--mono);
       font-size:      .7rem;
       letter-spacing: .05em;
@@ -228,7 +258,7 @@
     }
     & td code { font-size: .77rem; }
     & tr:last-child td { border-bottom: none; }
-    & tr:nth-child(even) td { background: #fafafa; }
+    & tr:nth-child(even) td { background: var(--row-alt); }
   }
 
   /* ── Section ─────────────────────────────────────────────────────────────── */
@@ -276,10 +306,10 @@
     align-items:     center;
     justify-content: space-between;
     padding:         .55rem 1rem;
-    background:      var(--ink);
+    background:      var(--head-bg);
     font-family:     var(--mono);
     font-size:       .7rem;
-    color:           #71717a;
+    color:           var(--head-text);
   }
 
   .dots,
@@ -317,12 +347,12 @@
   .demo-log {
     margin-top:    .85rem;
     padding:       .5rem .75rem;
-    background:    #f0fdf4;
-    border:        1px solid #bbf7d0;
+    background:    var(--log-bg);
+    border:        1px solid var(--log-line);
     border-radius: 6px;
     font-family:   var(--mono);
     font-size:     .73rem;
-    color:         #166534;
+    color:         var(--log-text);
   }
 
   /* ── Download-Bar ────────────────────────────────────────────────────────── */
@@ -342,8 +372,8 @@
     align-items:     center;
     gap:             .4rem;
     padding:         .55rem 1.1rem;
-    background:      var(--ink);
-    color:           white;
+    background:      var(--versioning-btn-bg);
+    color:           var(--versioning-btn-text);
     border:          none;
     border-radius:   6px;
     font-family:     var(--mono);
@@ -353,7 +383,7 @@
     cursor:          pointer;
     transition:      background .15s, opacity .15s;
 
-    &:hover    { background: #27272a; }
+    &:hover    { background: var(--versioning-btn-bg-hover); }
     &:disabled { opacity: .6; cursor: wait; }
 
     &.outline {
