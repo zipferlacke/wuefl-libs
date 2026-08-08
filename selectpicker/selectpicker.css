@@ -2,7 +2,7 @@
 
   /* ── @font-face ─────────────────────────────────────────────────────────── */
   @font-face {
-    font-family: 'Material Symbols Rounded';
+    font-family: 'Selectpicker Icons';
     font-style:  normal;
     font-weight: 400;
     /*ICONS: close refresh check search apps_outage chevron_left chevron_right*/
@@ -12,8 +12,6 @@
 
   /* ── CSS-Variablen ───────────────────────────────────────────────────────── */
   :root {
-    color-scheme: light dark;
-
     --clr-picker:          light-dark(hsl(0,0%,90%), hsl(0,0%,10%));
     --clr-picker-trigger:  light-dark(hsl(0,0%,90%), hsl(0,0%,10%));
     --clr-picker-input:    light-dark(hsl(219,100%,50%), hsl(219,100%,30%));
@@ -47,7 +45,7 @@
 
   /* ── sp_msr ──────────────────────────────────────────────────────────────── */
   .sp_msr {
-    font-family:    'Material Symbols Rounded';
+    font-family:    'Material Symbols Rounded', 'Selectpicker Icons';
     font-weight:    normal;
     font-style:     normal;
     font-size:      24px;

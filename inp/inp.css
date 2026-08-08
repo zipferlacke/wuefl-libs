@@ -1,56 +1,58 @@
 /* ========== InP Modal ========== */
+@layer components {
+    :root {
+        --_inp-color: var(--inp-color, var(--clr-neutral-50, light-dark(hsl(0 0 100%), hsl(0 0 10%))));
+        --_inp-bg: var(--inp_bg, var(--_inp-color));
+        --_inp-backdrop: var(--inp-backdrop, hsl(from var(--_inp-color) h s l / 0.2));
+        --_inp-boxshadow: var(--inp-boxshadow, hsl(from var(--_inp-color) h s 20%));
+        --inp-text: var(--text-color, light-dark(hsl(0 0 10%), hsl(0 0 95%)));
 
-.inp-modal[open] {
-    padding: 0;
-    border: 0;
-    border-radius: 1rem;
-    background-color: var(--inp-bg, var(--clr-neutral-50, #ffffff));
-    color: var(--inp-text, var(--text-color, #1a1a1a));
-    box-shadow: 0 0 3rem 5px var(--clr-neutral-400);
-    align-self: center;
-    justify-self: center;
-    animation: inp-fade-in 0.2s ease-out;
-    min-width: min(600px, 90vw);
-    max-width: min(800px, 100vw);
-    width: max-content;
-    max-height: 90dvh;
-    overflow: auto;
-    
-    
-    & > *{position: relative;}
-    @media screen and (max-width:525px) {
-        &{
-            min-width: min(450px, 100vw);
-            align-self:start;
-            border-radius: 0 0 1rem 1rem;
-        }
     }
-}
 
-.inp-modal[open]::backdrop {
-    background: rgba(0, 0, 0, 0.3);
-    backdrop-filter: blur(8px);
-}
-
-@keyframes inp-fade-in {
-    from {
-        opacity: 0;
-        transform: scale(0.95);
-    }
-    to {
-        opacity: 1;
-        transform: scale(1);
-    }
-}
-
-/* ========== Dark Mode ========== */
-
-@media (prefers-color-scheme: dark) {
     .inp-modal[open] {
-        box-shadow: 0 0 3rem 2px var(--clr-neutral-300);
-        &::backdrop {
-            background: rgba(0, 0, 0, 0.6);
+        padding: 0;
+        border: 0;
+        border-radius: 1rem;
+        background-color: var(--_inp-bg);
+        color: var(--inp-text);
+        box-shadow: 0 0 1rem var(--_inp-boxshadow);
+        align-self: center;
+        justify-self: center;
+        animation: inp-fade-in 0.2s ease-out;
+        min-width: min(600px, 90vw);
+        max-width: min(800px, 100vw);
+        width: max-content;
+        max-height: 90dvh;
+        overflow: auto;
+
+
+        &>* {
+            position: relative;
+        }
+
+        @media screen and (max-width:525px) {
+            & {
+                min-width: min(450px, 100vw);
+                align-self: start;
+                border-radius: 0 0 1rem 1rem;
+            }
+        }
+    }
+
+    .inp-modal[open]::backdrop {
+        background: var(--_inp-backdrop);
+        backdrop-filter: blur(3px);
+    }
+
+    @keyframes inp-fade-in {
+        from {
+            opacity: 0;
+            transform: scale(0.95);
+        }
+
+        to {
+            opacity: 1;
+            transform: scale(1);
         }
     }
 }
-
