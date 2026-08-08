@@ -2,7 +2,9 @@
 
 > Vanilla JS · Server-Side Rendering · ES-Modul
 
-Macht klassisches Server-Side Rendering dynamisch: Normale HTML-Links und Buttons laden Inhalte per Fetch im Hintergrund und öffnen sie als Modal oder aktualisieren Teile der aktuellen Seite — ohne Seiten-Reload.
+InP lässt klassisches Server-Side Rendering dynamisch werden: Normale HTML-Links und Buttons aufrufe werden im Hintergrund geladen  (per fetch) und bei Bedarf als Popup-Dialog geöffnet und/oder aktualisieren Teile der aktuellen Seite — ohne Seiten-Reload. 
+
+Das ganze wird bereitgestellt von InP und läast sich bequem über wenige HTML-Attribute steuern.
 
 ---
 
