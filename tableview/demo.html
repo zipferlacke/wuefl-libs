@@ -9,13 +9,13 @@
   <div class="card">
   <div class="card-head"><div class="dots"><span></span><span></span><span></span></div><span>Sortierbar · Gruppierbar · Filterbar · Durchsuchbar</span></div>
   <div class="card-body">
-    <table t-search>
+    <table t-search t-summarize="top">
       <thead>
         <tr>
           <th t-sort t-filter>Name</th>
           <th t-sort t-type="date">Datum</th>
           <th t-sort t-group>Kategorie</th>
-          <th t-sort t-filter>Preis</th>
+          <th t-sort t-filter t-mean="w" t-min="" t-max="">Preis</th>
         </tr>
       </thead>
       <tbody>

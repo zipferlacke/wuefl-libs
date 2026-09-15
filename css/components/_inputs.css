@@ -14,10 +14,13 @@
     border: none;
     outline: none;
     &:hover{
-        background-color: var(--bg-input-hover);
+        background-color: var(--clr-primary-100)!important;
+    }
+    &.hightlight{
+        background-color: var(--clr-primary-400)!important;
     }
     &.hightlight:hover{
-        background-color: var(--clr-primary-800)!important;
+        background-color: var(--clr-primary-300)!important;
     }
 }
 
@@ -88,9 +91,9 @@ textarea{
     border-radius: var(--br-default);
 
     &:has(input[type="radio"]:checked){
-        background-color: var(--bg-default);
+        background-color: var(--bg-input);
         color: var(--clr-input);
-        box-shadow: 0.05rem 0.05rem 0.5rem var(--clr-neutral-300);
+        box-shadow: 0 0 0.125rem var(--clr-neutral-300);
     }
     &:hover{
         background-color: var(--bg-input-hover);
@@ -98,6 +101,31 @@ textarea{
 
     input[type="radio"]{
         display:none
+    }
+}
+
+.group-radio{
+    background-color: var(--clr-neutral-200);
+    border-radius: var(--br-default);
+    padding:0.125rem;
+    display:flex;
+    gap:0.25rem;
+    font-size: 0.75rem;
+    
+    input[type="radio"]{display: none;}
+    label{
+        border-radius: calc(var(--br-default) - 0.125rem);
+        padding: 0.25rem 0.5rem;
+        color: var(--clr-neutral-800);
+        cursor: pointer;
+        transition: background-color 0.2s ease, box-shadow 0.2s ease;
+        &:has(input[type="radio"]:checked){
+            background-color:var(--clr-neutral-50);   
+            box-shadow: 0 0 0.25rem var(--clr-neutral-300);
+        }
+        &:hover{
+            background-color:var(--clr-neutral-100);   
+        }
     }
 }
 

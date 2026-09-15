@@ -8,23 +8,33 @@
         --inp-text: var(--text-color, light-dark(hsl(0 0 10%), hsl(0 0 95%)));
 
     }
+    html:has(.inp-modal[open]), body:has(.inp-modal[open]){
+        overflow:hidden;
+    }
 
     .inp-modal[open] {
-        padding: 0;
-        border: 0;
-        border-radius: 1rem;
-        background-color: var(--_inp-bg);
-        color: var(--inp-text);
-        box-shadow: 0 0 1rem var(--_inp-boxshadow);
-        align-self: center;
-        justify-self: center;
-        animation: inp-fade-in 0.2s ease-out;
-        min-width: min(600px, 90vw);
+        position: fixed;
+        place-self: center;
+        min-width: min(500px, 90vw);
         max-width: min(800px, 100vw);
         width: max-content;
         max-height: 90dvh;
+        border: none;
+        padding: 0;
+        border-radius: 1.5rem;
+
+        background-color: var(--_inp-bg);
+        box-shadow: 0 0 1rem var(--_inp-boxshadow);
+
+        color: var(--inp-text);
+        animation: inp-fade-in 0.2s ease-out;
+
         overflow: auto;
 
+        &::backdrop {
+            background: var(--_inp-backdrop);
+            backdrop-filter: blur(3px);
+        }
 
         &>* {
             position: relative;
@@ -37,11 +47,6 @@
                 border-radius: 0 0 1rem 1rem;
             }
         }
-    }
-
-    .inp-modal[open]::backdrop {
-        background: var(--_inp-backdrop);
-        backdrop-filter: blur(3px);
     }
 
     @keyframes inp-fade-in {

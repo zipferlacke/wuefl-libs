@@ -79,6 +79,13 @@
     ],
     "banner": [
       {
+        "version": "1.1.0",
+        "date": "2026-09-15",
+        "changes": [
+          "CSS Farben angepasst für bessere Lesbarkeit."
+        ]
+      },
+      {
         "version": "1.0.0",
         "date": "2026-04-26",
         "changes": [
@@ -87,6 +94,13 @@
       }
     ],
     "userDialog": [
+      {
+        "version": "1.1.0",
+        "date": "2026-09-14",
+        "changes": [
+          "BugFix: Layout Probleme behoben"
+        ]
+      },
       {
         "version": "1.0.0",
         "date": "2026-04-26",
@@ -112,6 +126,13 @@
       }
     ],
     "inp": [
+      {
+        "version": "2.1.0",
+        "date": "2026-09-14",
+        "changes": [
+          "Bugfix: Layout Probleme behoben."
+        ]
+      },
       {
         "version": "2.0.1",
         "date": "2026-08-08",
@@ -139,6 +160,18 @@
       }
     ],
     "tableview": [
+      {
+        "version": "2.0.0",
+        "date": "2026-09-15",
+        "changes": [
+          "1. BugFix: Keine Eintraeg vorhanden, ohne Sucheeingabe eleminiert.",
+          "2. Die Elemente der Suche werden hervorgehoben.",
+          "3. Gruppierung übersichtlicher gestaltet.",
+          "4. Spalten lassen sich zusammenfassen zu Summe, Min, Max und Mittelwert.",
+          "5. Tabellenansicht lässt sich speichern",
+          "6. Standerdmäig UTF-8 Icons laasen sich aber durch belibig ander ersetzen"
+        ]
+      },
       {
         "version": "1.1.1",
         "date": "2026-08-08",
@@ -174,6 +207,14 @@
     ]
   },
   "changelog": [
+    {
+      "version": "2.3.0",
+      "date": "2026-09-15",
+      "changes": [
+        "1. Bugfixes & Neue Feature tabelview",
+        "2. Standatisierung von CSS in InP, userDialog und banner"
+      ]
+    },
     {
       "version": "2.2.1",
       "date": "2026-08-08",
