@@ -2,7 +2,7 @@
 
 > Vanilla JS · ES-Modul
 
-Macht klassische HTML-Tabellen interaktiv: Spalten sortieren, nach Werten gruppieren (auch verschachtelt und mit Multi-Value-Split), nach Wertenfilterbar, die ganze Tabelle live durchsuchen und die eigene Ansicht speichern.
+Macht klassische HTML-Tabellen interaktiv: Spalten sortieren, nach Werten gruppieren (auch verschachtelt und mit Multi-Value-Split), die ganze Tabelle live durchsuchen, Spalten zusammenfassen und die eigene Ansicht speichern.
 
 ---
 
@@ -29,7 +29,7 @@ Eine Spalte kann **sortierbar**, **gruppierbar**, **filterbar** und **zusammenfa
 | Attribut | Wirkung | Besonderheit |
 |---|---|---|
 | [`t-sort`](#t-sort) | Spalte sortierbar | Wert `asc`/`desc` setzt die Startsortierung |
-| [`t-group`](#t-group) | Spalte gruppierbar | Mehrere Spalten verschachteln sich, die Reihenfolge ergibt sich aus der **Klickreihenfolge** |
+| [`t-group`](#t-group) | Spalte gruppierbar | Wert `active:0`, `active:1` … setzt die Startgruppierung samt Reihenfolge; sonst ergibt sie sich aus der **Klickreihenfolge** |
 | [`t-split`](#t-split) | Mehrfachwerte in der Zelle trennen | Die Zeile erscheint in jeder Gruppe — als Klon, der auf die echte Zeile zeigt |
 | [`t-filter`](#t-filter) | Spalte filterbar | Der aktive Filter steht als JSON im Attribut |
 | [`t-type`](#t-type) | Datentyp `num`, `date`, `string` | Wird automatisch erkannt, nur bei Bedarf selbst setzen |
@@ -73,7 +73,24 @@ Macht eine Spalte gruppierbar. Beim Klick auf das Gruppen-Icon werden alle Zeile
 <th t-group>Kategorie</th>
 ```
 
-Mehrere Spalten können gleichzeitig gruppiert sein — sie werden dann verschachtelt. **Die Reihenfolge ergibt sich aus der Klickreihenfolge**, nicht aus der Spaltenposition: die zuerst gruppierte Spalte ist die äußerste, jede weitere wird darunter feiner. Gespeichert wird das als `t-group="active:0"`, `t-group="active:1"` usw.; ein blankes `t-group="active"` im HTML gilt als Position 0.
+Mehrere Spalten können gleichzeitig gruppiert sein — sie werden dann verschachtelt. **Die Reihenfolge ergibt sich aus der Klickreihenfolge**, nicht aus der Spaltenposition: die zuerst gruppierte Spalte ist die äußerste, jede weitere wird darunter feiner. Gespeichert wird das als `t-group="active:0"`, `t-group="active:1"` usw.
+
+**Startgruppierung.** Dieselbe Schreibweise im HTML lässt die Tabelle bereits gruppiert starten, ohne dass der Nutzer etwas anklicken muss:
+
+```html
+<th t-group="active">Kategorie</th>
+```
+
+Bei mehreren Ebenen gibt die Zahl die Reihenfolge vor — hier ist Jahr die äußere Ebene, obwohl Kategorie links davon steht:
+
+```html
+<th t-group="active:1">Kategorie</th>
+<th t-group="active:0">Jahr</th>
+```
+
+Ein blankes `t-group="active"` gilt als Position 0. Sinnvoll dazu ist [`t-open`](#t-open), sonst sieht der Nutzer zunächst nur zugeklappte Balken.
+
+Diese Vorgabe ist zugleich der Ausgangszustand für die [gespeicherten Ansichten](#gespeicherte-ansichten): die Knöpfe bleiben aus solange nichts davon abweicht, und ein Zurücksetzen landet genau hier — nicht bei „ungruppiert".
 
 Mehr dazu unter [Verschachtelte Gruppen](#verschachtelte-gruppen).
 

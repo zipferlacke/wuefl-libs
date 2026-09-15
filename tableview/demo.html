@@ -1,42 +1,322 @@
-<!DOCTYPE html>
-<html lang="de">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Document</title>
-</head>
-<body>
-  <div class="card">
-  <div class="card-head"><div class="dots"><span></span><span></span><span></span></div><span>Sortierbar · Gruppierbar · Filterbar · Durchsuchbar</span></div>
+<!--
+  demo.html — wird von page-builder.js als Fragment in #demo-mount eingehängt.
+
+  Deshalb bewusst KEIN <!DOCTYPE>, <html>, <head>, <body>, <title> und kein
+  <link>: deren Inhalt landet sonst mitten in der Doku-Seite. Ein injiziertes
+  <title> überschreibt sogar document.title, weil das erste <title> im Dokument
+  zählt — egal wo es steht.
+
+  Das Styling kommt aus versioning.css (.card, .card-head, .dots, .card-body,
+  .msr) und aus tableview.css, das tableview.js selbst nachlädt. Alles was hier
+  ergänzt wird, ist unter .tv-demo gescopet, damit es die restliche Seite nicht
+  anfasst. Die Farbwerte greifen auf die Variablen aus versioning.css zu, mit
+  Fallback falls die Datei mal fehlt.
+
+  Initialisiert wird über die Autoerkennung von tableview.js. Gruppierung,
+  Aufklappen und Sticky bedient der Nutzer direkt in der Tabelle, das Panel
+  fasst sie nicht an.
+-->
+
+<style>
+  .tv-demo {
+    /* ── Bedienpanel ──────────────────────────────────────────────────────── */
+    & .tv-demo-panel {
+      display:       flex;
+      flex-wrap:     wrap;
+      gap:           .9rem 1.4rem;
+      margin-bottom: 1rem;
+      padding:       .8rem .9rem;
+      border:        1px solid var(--line, #e4e4e7);
+      border-radius: 8px;
+      background:    var(--paper, #f5f4f0);
+
+      & .grp {
+        display:        flex;
+        flex-direction: column;
+        gap:            .35rem;
+      }
+
+      & .lbl {
+        font-family:    var(--mono, ui-monospace, monospace);
+        font-size:      .68rem;
+        letter-spacing: .06em;
+        text-transform: uppercase;
+        color:          var(--ink-3, #a1a1aa);
+      }
+
+      & .row {
+        display:   flex;
+        flex-wrap: wrap;
+        gap:       .25rem;
+      }
+
+      & button {
+        padding:       .3rem .65rem;
+        border:        1px solid var(--line, #e4e4e7);
+        border-radius: 5px;
+        background:    var(--surface, #fff);
+        color:         var(--ink-2, #52525b);
+        font-family:   var(--mono, ui-monospace, monospace);
+        font-size:     .76rem;
+        cursor:        pointer;
+        transition:    background .12s, border-color .12s, color .12s;
+
+        &:hover { border-color: var(--ink-3, #a1a1aa); color: var(--ink, #18181b); }
+
+        &[aria-pressed="true"] {
+          border-color: var(--accent, #1d4ed8);
+          background:   var(--accent, #1d4ed8);
+          color:        var(--accent-text, #fff);
+        }
+      }
+    }
+
+    /* ── Tabelle: nur zurücksetzen was versioning.css global für Tabellen
+         setzt und hier stören würde. Den Rest macht tableview.css. ───────── */
+    & table {
+      margin: 0;
+
+      & thead th {
+        background:     transparent;
+        color:          var(--ink, #18181b);
+        font-family:    var(--sans, system-ui, sans-serif);
+        font-size:      .84rem;
+        font-weight:    600;
+        letter-spacing: 0;
+        border-bottom:  1px solid var(--line, #e4e4e7);
+        border-radius:  0;
+      }
+
+      & tbody tr:nth-child(even) td { background: var(--paper, #fafafa); }
+      & tbody tr:last-child td      { border-bottom: 1px solid var(--line, #e4e4e7); }
+    }
+
+    /* ── Live-Ansicht der gesetzten Attribute ─────────────────────────────── */
+    & .tv-demo-code {
+      margin-top: 1rem;
+
+      & summary {
+        cursor:      pointer;
+        font-family: var(--mono, ui-monospace, monospace);
+        font-size:   .72rem;
+        color:       var(--ink-3, #a1a1aa);
+      }
+
+      & pre { margin: .5rem 0 0; }
+    }
+  }
+</style>
+
+<div class="card tv-demo">
+  <div class="card-head">
+    <div class="dots"><span></span><span></span><span></span></div>
+    <span>Sortierbar · Gruppierbar · Filterbar · Durchsuchbar</span>
+  </div>
+
   <div class="card-body">
-    <table t-search t-summarize="top">
+
+    <div class="tv-demo-panel" id="tv-demo-panel">
+
+      <div class="grp">
+        <span class="lbl">Zusammenfassung</span>
+        <div class="row" data-set="summarize">
+          <button data-val="off">aus</button>
+          <button data-val="top">oben</button>
+          <button data-val="bottom">unten</button>
+        </div>
+      </div>
+
+      <div class="grp">
+        <span class="lbl">Werte (Preis)</span>
+        <div class="row" data-toggle="agg">
+          <button data-val="sum">Σ Summe</button>
+          <button data-val="mean">⌀ Mittel</button>
+          <button data-val="min">Min</button>
+          <button data-val="max">Max</button>
+        </div>
+      </div>
+
+      <div class="grp">
+        <span class="lbl">Beschriftung</span>
+        <div class="row" data-set="labels">
+          <button data-val="on">mit</button>
+          <button data-val="off">nur Zahl</button>
+        </div>
+      </div>
+
+      <div class="grp">
+        <span class="lbl">Datum Min/Max</span>
+        <div class="row" data-set="dateagg">
+          <button data-val="off">aus</button>
+          <button data-val="on">an</button>
+        </div>
+      </div>
+
+
+
+      <div class="grp">
+        <span class="lbl">Suche</span>
+        <div class="row" data-set="search">
+          <button data-val="off">aus</button>
+          <button data-val="on">an</button>
+        </div>
+      </div>
+
+
+      <div class="grp">
+        <span class="lbl">Icons</span>
+        <div class="row" data-set="icons">
+          <button data-val="utf8">UTF-8</button>
+          <button data-val="msr">Material</button>
+        </div>
+      </div>
+
+    </div>
+
+    <table id="tv-demo-table" t-search>
       <thead>
         <tr>
           <th t-sort t-filter>Name</th>
           <th t-sort t-type="date">Datum</th>
           <th t-sort t-group>Kategorie</th>
-          <th t-sort t-filter t-mean="w" t-min="" t-max="">Preis</th>
+          <th t-group t-split=",">Tags</th>
+          <th t-sort t-filter t-type="num">Preis</th>
         </tr>
       </thead>
       <tbody>
-        <tr><td>Apfel</td><td>2025-03-12</td><td>Obst</td><td>1.20</td></tr>
-        <tr><td>Brot</td><td>2025-03-13</td><td>Backwaren</td><td>2.50</td></tr>
-        <tr><td>Birne</td><td>2025-03-14</td><td>Obst</td><td>1.50</td></tr>
-        <tr><td>Brötchen</td><td>2025-03-15</td><td>Backwaren</td><td>0.40</td></tr>
-        <tr><td>Banane</td><td>2025-03-16</td><td>Obst</td><td>0.90</td></tr>
-        <tr><td>Weintrauben</td><td>2025-03-16</td><td>Obst</td><td>1.30</td></tr>
-        <tr><td>Tomate</td><td>2025-03-16</td><td>Gemüse</td><td>0.90</td></tr>
-        <tr><td>Zuchini</td><td>2026-03-16</td><td>Gemüse</td><td>2.90</td></tr>
-        <tr><td>Kürbis</td><td>2026-05-16</td><td>Gemüse</td><td>3.90</td></tr>
-        <tr><td>Melone</td><td>2026-05-15</td><td>Obst</td><td>4.90</td></tr>
-        <tr><td>Pfand Dose</td><td>2026-05-15</td><td>Pfand</td><td>-0.25</td></tr>
-        <tr><td>Pfand Flasche</td><td>2026-05-15</td><td>Pfand</td><td>-0.08</td></tr>
+        <tr><td>Apfel</td><td>2025-03-12</td><td>Obst</td><td>regional, bio</td><td>1.20</td></tr>
+        <tr><td>Brot</td><td>2025-03-13</td><td>Backwaren</td><td>regional</td><td>2.50</td></tr>
+        <tr><td>Birne</td><td>2025-03-14</td><td>Obst</td><td>regional</td><td>1.50</td></tr>
+        <tr><td>Brötchen</td><td>2025-03-15</td><td>Backwaren</td><td>Angebot</td><td>0.40</td></tr>
+        <tr><td>Banane</td><td>2025-03-16</td><td>Obst</td><td>bio, Import</td><td>0.90</td></tr>
+        <tr><td>Weintrauben</td><td>2025-03-16</td><td>Obst</td><td>Import</td><td>1.30</td></tr>
+        <tr><td>Tomate</td><td>2025-03-16</td><td>Gemüse</td><td>regional, bio</td><td>0.90</td></tr>
+        <tr><td>Zuchini</td><td>2026-03-16</td><td>Gemüse</td><td>regional</td><td>2.90</td></tr>
+        <tr><td>Kürbis</td><td>2026-05-16</td><td>Gemüse</td><td>regional, Angebot</td><td>3.90</td></tr>
+        <tr><td>Melone</td><td>2026-05-15</td><td>Obst</td><td>Import</td><td>4.90</td></tr>
+        <tr><td>Pfand Dose</td><td>2026-05-15</td><td>Pfand</td><td>Pfand</td><td>-0.25</td></tr>
+        <tr><td>Pfand Flasche</td><td>2026-05-15</td><td>Pfand</td><td>Pfand</td><td>-0.08</td></tr>
       </tbody>
     </table>
+
+    <details class="tv-demo-code">
+      <summary>Gesetzte Attribute ansehen</summary>
+      <pre><code id="tv-demo-markup"></code></pre>
+    </details>
+
   </div>
 </div>
 
-<script type="module" src="./tableview.js"></script>
-</body>
-</html>
+<script type="module">
+import { renderTable, setIcons } from './tableview.js';
 
+const table = document.getElementById('tv-demo-table');
+const panel = document.getElementById('tv-demo-panel');
+const cells = () => [...table.tHead.rows[0].cells];
+
+const COL = { name: 0, datum: 1, kat: 2, tags: 3, preis: 4 };
+
+const state = {
+  summarize: 'off',
+  agg:       new Set(['sum']),
+  labels:    'on',
+  dateagg:   'off',
+  search:    'on',
+  icons:     'utf8'
+};
+
+/* ── Zustand auf Attribute übertragen ─────────────────────────────────────── */
+function apply() {
+  const c = cells();
+
+  // Zusammenfassung der Preisspalte. Die Attributreihenfolge im HTML bestimmt
+  // die Ausgabereihenfolge, deshalb in fester Folge neu setzen.
+  ['t-sum', 't-mean', 't-min', 't-max'].forEach(a => c[COL.preis].removeAttribute(a));
+  if (state.summarize !== 'off') {
+    const label = state.labels === 'off' ? '-' : '';
+    [['sum', 't-sum'], ['mean', 't-mean'], ['min', 't-min'], ['max', 't-max']]
+      .forEach(([key, attr]) => {
+        if (state.agg.has(key)) c[COL.preis].setAttribute(attr, label);
+      });
+    table.setAttribute('t-summarize', state.summarize);
+  } else {
+    table.removeAttribute('t-summarize');
+  }
+
+  // Min/Max auf der Datumsspalte – zeigt dass die beiden auch mit t-type="date"
+  // arbeiten, Summe und Mittelwert dagegen nicht.
+  ['t-min', 't-max'].forEach(a => c[COL.datum].removeAttribute(a));
+  if (state.summarize !== 'off' && state.dateagg === 'on') {
+    c[COL.datum].setAttribute('t-min', state.labels === 'off' ? '-' : '');
+    c[COL.datum].setAttribute('t-max', state.labels === 'off' ? '-' : '');
+  }
+
+  // Gruppierung, Aufklapp-Zustand und Sticky fasst das Panel nicht an – die
+  // bedient der Nutzer direkt in der Tabelle.
+  state.search === 'off' ? table.removeAttribute('t-search')
+                         : table.setAttribute('t-search', '');
+
+  // WICHTIG: tableView beobachtet childList/subtree/characterData, aber keine
+  // Attribute. Nach einer Attributänderung also selbst neu rendern.
+  renderTable(table);
+
+  paintPanel();
+  showMarkup();
+}
+
+/* ── Panel ────────────────────────────────────────────────────────────────── */
+function paintPanel() {
+  panel.querySelectorAll('[data-set]').forEach(row => {
+    const key = row.dataset.set;
+    row.querySelectorAll('button').forEach(b =>
+      b.setAttribute('aria-pressed', String(state[key] === b.dataset.val)));
+  });
+  panel.querySelectorAll('[data-toggle="agg"] button').forEach(b =>
+    b.setAttribute('aria-pressed', String(state.agg.has(b.dataset.val))));
+}
+
+panel.addEventListener('click', e => {
+  const btn = e.target.closest('button');
+  if (!btn) return;
+
+  const row = btn.closest('[data-set], [data-toggle]');
+  if (row.dataset.toggle === 'agg') {
+    state.agg.has(btn.dataset.val) ? state.agg.delete(btn.dataset.val)
+                                   : state.agg.add(btn.dataset.val);
+    // Werte anwählen ohne aktive Zusammenfassung wäre wirkungslos
+    if (state.agg.size && state.summarize === 'off') state.summarize = 'bottom';
+  } else {
+    state[row.dataset.set] = btn.dataset.val;
+    if (row.dataset.set === 'icons') setIcons(`default-${btn.dataset.val}`);
+  }
+  apply();
+});
+
+/* ── Live-Ansicht des Markups ─────────────────────────────────────────────── */
+const esc = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;');
+
+function showMarkup() {
+  // t-open trägt nach dem ersten Render die interne Pfadliste – für die
+  // Vorschau ist das nur Rauschen.
+  const attrs = el => [...el.attributes]
+    .filter(a => a.name.startsWith('t-') && a.name !== 't-open')
+    .map(a => (a.value ? ` ${a.name}="${a.value}"` : ` ${a.name}`))
+    .join('');
+
+  // Spaltentitel ohne die von tableView eingehängten Icons
+  const title = c => {
+    const copy = c.cloneNode(true);
+    copy.querySelectorAll('.tv-icons, .tv-glyph').forEach(n => n.remove());
+    return copy.textContent.trim();
+  };
+
+  const out = [`<table${attrs(table)}>`]
+    .concat(cells().map(c => `  <th${attrs(c)}>${title(c)}</th>`))
+    .concat('</table>');
+
+  document.getElementById('tv-demo-markup').innerHTML = esc(out.join('\n'));
+}
+
+
+apply();
+</script>
