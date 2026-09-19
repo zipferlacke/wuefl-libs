@@ -161,6 +161,13 @@
     ],
     "tableview": [
       {
+        "version": "2.1.0",
+        "date": "2026-09-19",
+        "changes": [
+          "1. Neues Attribut `t-group-empty=\"inline\"`: Zeilen ohne Gruppenwert stehen direkt in der Gruppe darüber statt in einer Gruppe „—“ – damit lassen sich Ordnerpfade abbilden."
+        ]
+      },
+      {
         "version": "2.0.0",
         "date": "2026-09-15",
         "changes": [
@@ -207,6 +214,13 @@
     ]
   },
   "changelog": [
+    {
+      "version": "2.3.1",
+      "date": "2026-09-19",
+      "changes": [
+        "1. Tableview aktualisiert"
+      ]
+    },
     {
       "version": "2.3.0",
       "date": "2026-09-15",

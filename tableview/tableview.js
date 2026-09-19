@@ -10,6 +10,10 @@
  *   t-search            Suchfeld einblenden (erst ab >7 Datenzeilen sichtbar)
  *   t-summarize="bottom"  Position der Zusammenfassungszeile: "bottom" (Default) | "top"
  *   t-open="a|b"        (intern) offene Gruppenpfade
+ *   t-group-empty="inline"  Zeilen ohne Wert in einer Gruppenspalte bekommen
+ *                       keine eigene Gruppe „—“, sondern stehen direkt in der
+ *                       Gruppe darüber (nach deren Untergruppen) – wie Dateien
+ *                       neben Unterordnern. Default: "group"
  *
  * ── Attribute auf den Zellen der ersten Zeile (<th> oder <td>) ───────────────
  *   t-sort              Spalte sortierbar
@@ -766,7 +770,8 @@ function render(table) {
     const visibleCols = cells.filter((c, i) => !meta[i].grouped).length || 1;
 
     // ── 5. Gruppenbaum bauen, Ketten falten, sortieren ──────────────────────
-    const root = { children: collapseChains(buildTree(data, groups, 0, '', meta)) };
+    const inline = (table.getAttribute('t-group-empty') || '').trim().toLowerCase() === 'inline';
+    const root = { children: collapseChains(buildTree(data, groups, 0, '', meta, inline)) };
     sortTree(root, sortCol, sortCol >= 0 ? meta[sortCol].dir : 'none', meta);
 
     // Startzustand: t-open="2" heißt "die ersten zwei Ebenen offen". Wird beim
@@ -1037,9 +1042,11 @@ export function toggleBranch(table, path, want) {
     renderTable(table);
 }
 
-function buildTree(data, groups, depth, parentPath, meta) {
+const leafOf = rows => ({ leaf: true, rows, visible: rows.filter(d => !d.hidden).length });
+
+function buildTree(data, groups, depth, parentPath, meta, inline = false) {
     if (depth >= groups.length) {
-        return [{ leaf: true, rows: data, visible: data.filter(d => !d.hidden).length }];
+        return [leafOf(data)];
     }
 
     const col   = groups[depth];
@@ -1061,10 +1068,15 @@ function buildTree(data, groups, depth, parentPath, meta) {
         });
     });
 
+    // t-group-empty="inline": Zeilen ohne Wert stehen ohne eigene Gruppe
+    // hinter den Untergruppen (als Blatt der übergeordneten Gruppe).
+    const loose = inline ? map.get('') : null;
+    if (loose) map.delete('');
+
     const out = [];
     map.forEach((sub, key) => {
         const path     = parentPath ? `${parentPath}${SEP}${col}:${key}` : `${col}:${key}`;
-        const children = buildTree(sub, groups, depth + 1, path, meta);
+        const children = buildTree(sub, groups, depth + 1, path, meta, inline);
         out.push({
             leaf: false, depth, path,
             // trail = Kette aus [Spalte, Wert]; bei zusammengefalteten
@@ -1076,6 +1088,7 @@ function buildTree(data, groups, depth, parentPath, meta) {
             children
         });
     });
+    if (loose) out.push(leafOf(loose));
     return out;
 }
 
@@ -1129,10 +1142,13 @@ function sortTree(node, sortCol, dir, meta) {
         return;
     }
 
-    if (node.children.length && !node.children[0].leaf) {
-        const col  = node.children[0].trail[0].col;
+    const firstGroup = node.children.find(c => !c.leaf);
+    if (firstGroup) {
+        const col  = firstGroup.trail[0].col;
         const desc = sortCol === col && dir === 'desc';
+        // Lose Zeilen (t-group-empty="inline") bleiben hinter den Gruppen.
         node.children.sort((a, b) => {
+            if (a.leaf || b.leaf) return (a.leaf ? 1 : 0) - (b.leaf ? 1 : 0);
             const r = compare(a.trail[0].key, b.trail[0].key, meta[col].type);
             return desc ? -r : r;
         });
