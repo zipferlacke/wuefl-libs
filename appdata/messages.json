@@ -161,6 +161,13 @@
     ],
     "tableview": [
       {
+        "version": "2.1.1",
+        "date": "2026-09-19",
+        "changes": [
+          "1. BugFix: Mit `t-group-empty=\"inline\"` werden Zeilen ohne Wert auf einer Ebene in den tieferen Spalten weiter gruppiert, statt lose in der Gruppe darüber zu landen."
+        ]
+      },
+      {
         "version": "2.1.0",
         "date": "2026-09-19",
         "changes": [
@@ -214,6 +221,13 @@
     ]
   },
   "changelog": [
+    {
+      "version": "2.3.2",
+      "date": "2026-09-19",
+      "changes": [
+        "1. Tableview aktualisiert (Fehlerbehebung)"
+      ]
+    },
     {
       "version": "2.3.1",
       "date": "2026-09-19",
