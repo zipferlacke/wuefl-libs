@@ -44,6 +44,7 @@ Eine Spalte kann **sortierbar**, **gruppierbar**, **filterbar** und **zusammenfa
 | [`t-highlight`](#t-highlight) | Treffermarkierung | Standardmäßig an, `"false"` schaltet sie ab |
 | [`t-summarize`](#t-summarize) | Position der Zusammenfassungszeile | `bottom` (Default) oder `top` |
 | [`t-open`](#t-open) | Startzustand der Gruppen | Als Zahl gelesen: „die ersten n Ebenen offen" |
+| [`t-group-empty`](#t-group-empty) | Zeilen ohne Gruppenwert | `"inline"`: direkt in die Gruppe darüber statt in eine Gruppe „—“ |
 | [`t-sticky`](#t-sticky) | Gruppenköpfe bleiben beim Scrollen stehen | Standardmäßig an, `"false"` schaltet sie ab |
 | [`t-view`](#gespeicherte-ansichten) | Schlüssel der gespeicherten Ansicht | Optional — ohne das Attribut ergibt er sich selbst |
 
@@ -233,6 +234,22 @@ Als Zahl gelesen heißt `t-open` „die ersten n Ebenen offen":
 ```
 
 Beim ersten Render mit aktiver Gruppierung wird die Zahl in die interne Pfadliste übersetzt und danach normal weitergepflegt. Ohne `t-open` startet alles zugeklappt.
+
+### `t-group-empty`
+
+Hat eine Zeile in einer gruppierten Spalte keinen Wert, landet sie normalerweise in einer eigenen Gruppe „—“. Mit `t-group-empty="inline"` bekommt sie keine Gruppe, sondern steht direkt in der Gruppe darüber — hinter deren Untergruppen, so wie Dateien neben Unterordnern.
+
+Damit lassen sich Ordnerpfade abbilden: je Ebene eine gruppierte Spalte, tiefere Ebenen bleiben leer.
+
+```html
+<table t-group-empty="inline">
+  <tr><th t-group="active:0">Ordner</th><th t-group="active:1">Unterordner</th><th>Name</th></tr>
+  <tr><td>Bank</td><td></td><td>Sparkasse</td></tr>        <!-- direkt unter „Bank“ -->
+  <tr><td>Bank</td><td>Konten</td><td>Girokonto</td></tr>  <!-- in „Bank › Konten“ -->
+</table>
+```
+
+Ohne das Attribut (oder mit `"group"`) bleibt es bei der Gruppe „—“.
 
 ### `t-sticky`
 
