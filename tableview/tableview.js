@@ -1044,7 +1044,10 @@ export function toggleBranch(table, path, want) {
 
 const leafOf = rows => ({ leaf: true, rows, visible: rows.filter(d => !d.hidden).length });
 
-function buildTree(data, groups, depth, parentPath, meta, inline = false) {
+// `level` ist die Anzeigetiefe. Sie weicht von `depth` ab, wenn Zeilen ohne
+// Wert (t-group-empty="inline") eine Ebene überspringen: Ihre Untergruppen
+// stehen dann neben den Geschwistern, nicht eine Stufe tiefer.
+function buildTree(data, groups, depth, parentPath, meta, inline = false, level = depth) {
     if (depth >= groups.length) {
         return [leafOf(data)];
     }
@@ -1076,9 +1079,9 @@ function buildTree(data, groups, depth, parentPath, meta, inline = false) {
     const out = [];
     map.forEach((sub, key) => {
         const path     = parentPath ? `${parentPath}${SEP}${col}:${key}` : `${col}:${key}`;
-        const children = buildTree(sub, groups, depth + 1, path, meta, inline);
+        const children = buildTree(sub, groups, depth + 1, path, meta, inline, level + 1);
         out.push({
-            leaf: false, depth, path,
+            leaf: false, depth: level, path,
             // trail = Kette aus [Spalte, Wert]; bei zusammengefalteten
             // Einzelkind-Ketten stehen hier mehrere Einträge.
             trail:   [{ col, key }],
@@ -1088,7 +1091,11 @@ function buildTree(data, groups, depth, parentPath, meta, inline = false) {
             children
         });
     });
-    if (loose) out.push(leafOf(loose));
+    // Ohne Wert in dieser Spalte heißt nicht ohne Wert in der nächsten: Die
+    // Zeilen werden dort weiter gruppiert, nur ohne eigene Gruppe auf dieser
+    // Ebene. Sonst fiele etwa ein Eintrag mit mehreren Dateien, der direkt
+    // in einem Ordner mit Unterordnern liegt, als lose Zeilen auseinander.
+    if (loose) out.push(...buildTree(loose, groups, depth + 1, parentPath, meta, inline, level));
     return out;
 }
 
