@@ -42,6 +42,14 @@
     ],
     "datepicker": [
       {
+        "version": "2.1.3",
+        "date": "2026-09-24",
+        "changes": [
+          "Behoben: Am Handy ließ sich die Schnellwahl-Zeile nicht scrollen. Der Rumpf steht seit 2.1.1 auf `align-items: flex-start`, dadurch schrumpfte die Zeile auf ihre Inhaltsbreite und lief über den Rand hinaus, statt in sich zu scrollen",
+          "Lange Schnellwahl-Namen brechen in der Spalte jetzt um, statt an `--picker-quick-max` abgeschnitten zu werden; in der Zeile am Handy bleiben sie einzeilig, dafür wird dort gescrollt"
+        ]
+      },
+      {
         "version": "2.1.2",
         "date": "2026-09-24",
         "changes": [
@@ -259,6 +267,13 @@
     ]
   },
   "changelog": [
+    {
+      "version": "2.4.3",
+      "date": "2026-09-24",
+      "changes": [
+        "1. Datepicker: Schnellwahl am Handy wieder scrollbar, lange Namen brechen um"
+      ]
+    },
     {
       "version": "2.4.2",
       "date": "2026-09-24",
