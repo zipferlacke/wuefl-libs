@@ -42,6 +42,26 @@
     ],
     "datepicker": [
       {
+        "version": "2.1.1",
+        "date": "2026-09-24",
+        "changes": [
+          "Am Handy nimmt das Popover die volle Bildschirmbreite ein. Am Rechner kommt die Breite aus dem Inhalt: Kalenderblock mindestens `--picker-cal-min` (300px), Schnellwahl mit ihrer Inhaltsbreite daneben (höchstens `--picker-quick-max`), Schluss bei `--picker-max-width` (600px)",
+          "Schnellwahl steht am Rechner als Spalte links neben dem Kalender, am Handy als Zeile darüber – bei zu vielen Knöpfen scrollt sie für sich, ohne das Popover in die Länge zu ziehen",
+          "Kalender insgesamt eine Nummer größer: Schrift, Knopfhöhen und Auswahlkreis",
+          "Zeitraum: Jeder Klick auf der Von-Seite beginnt neu, statt Anfang und Ende abwechselnd zu verschieben. Wird nach dem ersten Klick gespeichert, gilt dieser eine Tag als Zeitraum",
+          "Der erste Klick zeigt nur noch den Auswahlkreis – der halbe Balken kommt erst, wenn auch ein Ende feststeht",
+          "`spanBlocked: false` (`data-tp-span-blocked`): Ein Zeitraum darf nichts Gesperrtes überspringen – nach dem ersten Klick endet der wählbare Bereich am nächsten gesperrten Tag. Überfahren lassen sich die Tage dahinter trotzdem, die Vorschau färbt sich dann rot (`--clr-picker-bad`); der Klick bleibt wirkungslos. Auch die Schnellwahl hält sich daran und nimmt aus ihrem Vorschlag den längsten freien Abschnitt. Fürs Buchen gedacht; beim Daten-Ansehen bleibt es beim Überspringen (Standard)",
+          "Am Handy standen zwischen den markierten Tagen Lücken, weil die neue Höhengrenze die Zellen mitschrumpfen ließ",
+          "Neue Schnellwahl-Regeln fürs Buchen: `'weekend'` (Freitag bis Sonntag, sonst das nächste), `'fullWeek'`/`'nextWeek'` (Montag bis Sonntag) und `{ nextDays: n }`, das im Gegensatz zu `{ days: n }` nach vorn zählt",
+          "Das Popover liegt linksbündig zum Trigger (rechtsbündig, wenn rechts kein Platz ist) statt zentriert, und der Trigger reserviert von Anfang an Platz für ein vollständiges Datum je Seite – vorher wanderte beim Auswählen beides",
+          "Behoben: Bei erzwungener JS-Positionierung rechnete `left` gegen den Anker statt gegen den Bildschirm, sobald die Anker-Positionierung überhaupt griff. Am Handy hing das Popover dadurch über den rechten Rand hinaus",
+          "Ein Zeitraum aus einem einzigen Tag zeigt nur noch den Punkt, nicht zwei halbe Balken",
+          "`allowSameDay: false` sperrt jetzt auch den Speichern-Knopf, solange nur der Anfang feststeht",
+          "Der Kalenderblock hat jetzt auch eine Höchstbreite (`--picker-cal-max`, 26rem) und sitzt am Handy mittig – auf breiten Geräten wurden die Tageszellen sonst albern groß. Unter 300px geht er nie",
+          "Behoben: Die Höhe der Schnellwahl-Spalte wurde zu früh gemessen. Die Tageszellen holen ihre Höhe über `aspect-ratio` aus der Spaltenbreite, direkt nach dem Einhängen war der Kalender deshalb nur so hoch wie seine Kopfzeile – von vier Knöpfen waren zwei zu sehen"
+        ]
+      },
+      {
         "version": "2.1.0",
         "date": "2026-09-24",
         "changes": [
@@ -232,6 +252,13 @@
     ]
   },
   "changelog": [
+    {
+      "version": "2.4.1",
+      "date": "2026-09-24",
+      "changes": [
+        "1. Datepicker: volle Breite am Handy, Schnellwahl als Spalte, Zeitraum beginnt bei jedem Klick neu, Zeiträume über Gesperrtes steuerbar"
+      ]
+    },
     {
       "version": "2.4.0",
       "date": "2026-09-24",

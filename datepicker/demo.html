@@ -108,7 +108,7 @@
 <div class="card dp-demo">
   <div class="card-head">
     <div class="dots"><span></span><span></span><span></span></div>
-    <span>Grenzen · Gesperrte Abschnitte · Schnellwahl</span>
+    <span>Wählbarer Zeitraum · Gesperrte Tage · Schnellwahl</span>
   </div>
 
   <div class="card-body">
@@ -125,10 +125,18 @@
       </div>
 
       <div class="grp">
-        <span class="lbl">Grenzen</span>
+        <span class="lbl">Wählbarer Zeitraum</span>
         <div class="row" data-set="grenzen">
-          <button data-val="off">keine</button>
-          <button data-val="on">min &amp; max</button>
+          <button data-val="off">alles</button>
+          <button data-val="on">nur von–bis</button>
+        </div>
+      </div>
+
+      <div class="grp">
+        <span class="lbl">Ein einzelner Tag</span>
+        <div class="row" data-set="einzeltag">
+          <button data-val="on">reicht</button>
+          <button data-val="off">zu wenig</button>
         </div>
       </div>
 
@@ -145,6 +153,14 @@
         <div class="row" data-set="blaettern">
           <button data-val="on">begrenzt</button>
           <button data-val="off">frei</button>
+        </div>
+      </div>
+
+      <div class="grp">
+        <span class="lbl">Über Gesperrtes</span>
+        <div class="row" data-set="ueberspringen">
+          <button data-val="on">erlaubt (Daten)</button>
+          <button data-val="off">gesperrt (Buchung)</button>
         </div>
       </div>
 
@@ -171,9 +187,18 @@
     <div class="dp-demo-out"  id="dp-demo-out">— noch nichts gewählt —</div>
 
     <p class="dp-demo-hint">
-      Die Grenzen liegen im Beispiel auf dem 11. des Vormonats bis heute – der
-      1. bis 10. ist damit gesperrt, obwohl der Monat sichtbar ist. Gesperrte
-      Tage nehmen keine Klicks an und zeigen das Verbotszeichen.
+      <em>Wählbarer Zeitraum</em> setzt <code>min</code> und <code>max</code> –
+      außerhalb davon lässt sich nichts anklicken.
+      Steht <em>Ein einzelner Tag</em> auf <em>zu wenig</em>, bleibt Speichern
+      aus, bis auch das Ende gesetzt ist – für Übernachtungen, wo ein Datum
+      allein keinen Aufenthalt ergibt.
+      Bei <em>Daten ansehen</em> reicht das Beispiel vom 11. des Vormonats bis
+      heute – der 1. bis 10. ist damit gesperrt, obwohl der Monat sichtbar ist.
+      Bei <em>Buchung</em> drehen sich die Grenzen um und zeigen nach vorn,
+      sonst gäbe „Wochenende" nichts her. Gesperrte Tage nehmen keine Klicks an
+      und zeigen das Verbotszeichen; bei <em>gesperrt (Buchung)</em> endet der
+      wählbare Bereich nach dem ersten Klick am nächsten gesperrten Tag –
+      alles dahinter wird blass.
     </p>
 
     <details class="dp-demo-code">
@@ -210,11 +235,26 @@ const SCHNELLWAHL = {
     { name: 'Alles',         rule: 'all' },
   ],
   buchung: [
-    { name: 'Heute Nacht',    rule: { days: 1 } },
-    { name: 'Wochenende',     rule: 'thisWeek' },
-    { name: 'Nächste Woche',  rule: { from: iso(tage(heute, 7)), to: iso(tage(heute, 14)) } },
+    { name: 'Heute',        rule: 'today' },
+    { name: '2 Nächte',     rule: { nextDays: 2 } },
+    { name: 'Wochenende',   rule: 'weekend' },
+    { name: 'Ganze Woche',  rule: 'fullWeek' },
+    { name: 'Nächste Woche', rule: 'nextWeek' },
   ],
 };
+
+/**
+ * Die Buchungs-Schnellwahl zeigt nach vorn, die Daten-Schnellwahl zurück –
+ * mit denselben Grenzen käme bei „Wochenende" nichts heraus, weil alles auf
+ * heute beschnitten würde. Das Beispiel dreht sie deshalb mit um.
+ */
+const GRENZEN = {
+  daten:   { min: vormonat,            max: heute,
+             sperre: [sperreVon, sperreBis], einzeln: tage(heute, -3) },
+  buchung: { min: heute,               max: tage(heute, 120),
+             sperre: [tage(heute, 9), tage(heute, 14)], einzeln: tage(heute, 3) },
+};
+const grenzen = () => GRENZEN[state.schnellwahl === 'buchung' ? 'buchung' : 'daten'];
 
 const state = {
   modus:       'range',
@@ -223,22 +263,27 @@ const state = {
   blaettern:   'on',
   schnellwahl: 'daten',
   uebernehmen: 'on',
+  ueberspringen: 'on',
+  einzeltag:   'on',
 };
 
 /* ── Zustand in Attribute übersetzen ──────────────────────────────────────── */
 function attrs() {
   const a = [];
+  const g = grenzen();
   if (state.grenzen === 'on') {
-    a.push(['data-tp-min', iso(vormonat)]);
-    a.push(['data-tp-max', iso(heute)]);
+    a.push(['data-tp-min', iso(g.min)]);
+    a.push(['data-tp-max', iso(g.max)]);
   }
   if (state.gesperrt === 'on') {
     a.push(['data-tp-disabled', JSON.stringify([
-      { from: iso(sperreVon), to: iso(sperreBis) },
-      iso(tage(heute, -3)),
+      { from: iso(g.sperre[0]), to: iso(g.sperre[1]) },
+      iso(g.einzeln),
     ])]);
   }
-  if (state.blaettern === 'off')   a.push(['data-tp-limit-view', 'false']);
+  if (state.blaettern === 'off')     a.push(['data-tp-limit-view', 'false']);
+  if (state.einzeltag === 'off')     a.push(['data-tp-same-day', 'false']);
+  if (state.ueberspringen === 'off') a.push(['data-tp-span-blocked', 'false']);
   if (state.uebernehmen === 'off') a.push(['data-tp-quick-apply', 'false']);
   if (state.schnellwahl !== 'off') {
     a.push(['data-tp-quick', JSON.stringify(SCHNELLWAHL[state.schnellwahl])]);
