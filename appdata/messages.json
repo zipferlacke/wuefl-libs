@@ -42,6 +42,17 @@
     ],
     "datepicker": [
       {
+        "version": "2.1.0",
+        "date": "2026-09-24",
+        "changes": [
+          "Gesperrte Tage: `min`, `max` und `disabled` sperren einzelne Tage und beliebig viele Abschnitte – nicht mehr nur ganze Monate. Gesperrte Tage bleiben sichtbar (durchgestrichen, blass), stehen aber auf `pointer-events: none` und zeigen das Verbotszeichen",
+          "`limitView` (Standard an, sobald min/max gesetzt sind): Blättern endet am Rand des Bereichs, die Jahresliste zeigt nur Jahre mit wählbaren Tagen",
+          "Schnellwahl: `quick: [{ name, rule }]` zeigt Knöpfe über dem Kalender – Standard aus, damit jede Anwendung eigene Vorschläge setzen kann. Regeln als Name ('today', 'lastMonth', 'last7' …), Objekt ({ days: 7 } / { from, to }) oder Funktion; immer auf min/max beschnitten",
+          "`quickApply: false`: Schnellwahl wählt nur aus, statt zu speichern und zu schließen",
+          "Neue Attribute für die Auto-Init: `data-tp-min`, `data-tp-max`, `data-tp-disabled`, `data-tp-limit-view`, `data-tp-quick`, `data-tp-quick-apply`; ohne eigene Angabe gelten auch `min`/`max` des Inputs"
+        ]
+      },
+      {
         "version": "2.0.1",
         "date": "2026-08-08",
         "changes": [
@@ -221,6 +232,13 @@
     ]
   },
   "changelog": [
+    {
+      "version": "2.4.0",
+      "date": "2026-09-24",
+      "changes": [
+        "1. Datepicker: gesperrte Tage und Abschnitte, begrenztes Blättern, frei definierbare Schnellwahl"
+      ]
+    },
     {
       "version": "2.3.2",
       "date": "2026-09-19",

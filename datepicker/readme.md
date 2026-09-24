@@ -50,6 +50,63 @@ Wenn die DOM-Reihenfolge nicht eindeutig ist, kann die Rolle explizit mit `+` (v
 | `data-tp-format="native\|iso\|ms\|locale"` | Format des gespeicherten Werts (siehe unten). Standard: `native`. |
 | `data-tp-same-day="false"` | Bei Range: gleicher Tag als Von+Bis nicht erlaubt. Standard: erlaubt. |
 | `data-tp-position="js"` | JS-Positionierung erzwingen statt CSS Anchor Positioning. |
+| `data-tp-min="2026-08-11"` | Frühestes wählbares Datum. Ohne Angabe gilt auch `min` des Inputs. |
+| `data-tp-max="2026-09-24"` | Spätestes wählbares Datum. Ohne Angabe gilt auch `max` des Inputs. |
+| `data-tp-disabled='[…]'` | Gesperrte Abschnitte als JSON, siehe unten. |
+| `data-tp-limit-view="false"` | Blättern über `min`/`max` hinaus wieder erlauben. |
+| `data-tp-quick='[…]'` | Schnellwahl als JSON, siehe unten. |
+| `data-tp-quick-apply="false"` | Schnellwahl wählt nur aus, statt zu speichern und zu schließen. |
+
+## Gesperrte Tage
+
+`min`, `max` und `disabled` sperren einzelne Tage — nicht nur ganze Monate. Gesperrte Tage bleiben sichtbar (durchgestrichen und blass), nehmen aber weder Klick noch Hover an: Sie stehen auf `pointer-events: none`, der Zeiger über ihnen ist das Verbotszeichen.
+
+```js
+dp.create([von, bis], {
+  min: '2026-08-11',                 // davor gibt es keine Daten
+  max: '2026-09-24',                 // heute
+  disabled: [
+    { from: '2026-08-20', to: '2026-08-25' },  // Abschnitt
+    '2026-09-03',                              // einzelner Tag
+  ],
+});
+```
+
+Erlaubt sind `'YYYY-MM-DD'`, `Date` und Millisekunden.
+
+Mit `limitView` (Standard **an**, sobald `min`/`max` gesetzt sind) endet auch das Blättern: Der Pfeil zum Vormonat ist am ersten Monat ausgegraut, der zum Folgemonat am letzten, und die Jahresliste zeigt nur Jahre, in denen es überhaupt etwas zu wählen gibt. Mit `limitView: false` bleibt das Blättern frei, die Tage bleiben trotzdem gesperrt.
+
+## Schnellwahl
+
+Standardmäßig aus. Wird eine Liste übergeben, erscheint über dem Kalender je Eintrag ein Knopf. So bekommt eine Datenauswahl andere Knöpfe als eine Hotelbuchung.
+
+```js
+dp.create([von, bis], {
+  quick: [
+    { name: 'Heute',         rule: 'today' },
+    { name: 'Letzte 7 Tage', rule: { days: 7 } },
+    { name: 'Letzter Monat', rule: 'lastMonth' },
+    { name: 'Alles',         rule: 'all' },
+    { name: 'Quartal',       rule: () => [new Date(2026, 6, 1), new Date(2026, 8, 30)] },
+  ],
+});
+```
+
+| Regel | Zeitraum |
+|---|---|
+| `'today'` / `'yesterday'` | Heute bzw. gestern |
+| `'thisWeek'` / `'lastWeek'` | Diese Woche ab Montag bzw. die ganze Vorwoche |
+| `'thisMonth'` / `'lastMonth'` | Dieser Monat bis heute bzw. der ganze Vormonat |
+| `'thisYear'` / `'lastYear'` | Dieses Jahr bis heute bzw. das ganze Vorjahr |
+| `'last7'` / `'last30'` | Die letzten 7 bzw. 30 Tage inklusive heute |
+| `'all'` | `min` bis `max` |
+| `{ days: n }` / `{ months: n }` | Die letzten n Tage bzw. Monate bis heute |
+| `{ from, to }` | Fester Zeitraum |
+| `() => [von, bis]` | Eigene Funktion |
+
+Der Zeitraum wird immer auf `min`/`max` beschnitten — „letzte 30 Tage" bei zwölf Tagen Daten endet also nicht im Leeren. `name` darf auch ein Sprachobjekt sein (`{ de: 'Heute', en: 'Today' }`).
+
+Mit `quickApply: false` wird nur ausgewählt und der Kalender bleibt offen; Standard ist übernehmen und schließen.
 
 ## Beispiele
 
@@ -131,6 +188,11 @@ const picker = dp.create(document.getElementById('meinInput'), { showTime: true 
 | `outputFormat` | `'native'\|'locale'\|'ms'\|'iso'` | `'native'` | Format des gespeicherten Werts. |
 | `allowSameDay` | `boolean` | `true` | Range: gleicher Tag als Start+Ende erlaubt. |
 | `forceJsPosition` | `boolean` | `false` | JS-Positionierung erzwingen. |
+| `min` / `max` | `string\|Date\|number` | `null` | Frühestes / spätestes wählbares Datum. |
+| `disabled` | `Array` | `[]` | Gesperrte Tage und Abschnitte. |
+| `limitView` | `boolean` | `true` | Blättern und Jahresliste auf `min`/`max` begrenzen. |
+| `quick` | `Array` | `[]` | Schnellwahl-Knöpfe `{ name, rule }`. |
+| `quickApply` | `boolean` | `true` | Schnellwahl speichert und schließt. |
 
 > `create()` wird intern auch von der Attribut-Steuerung verwendet — beide Wege erzeugen dieselbe Picker-Instanz.
 
