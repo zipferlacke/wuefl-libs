@@ -55,7 +55,7 @@ Wenn die DOM-Reihenfolge nicht eindeutig ist, kann die Rolle explizit mit `+` (v
 | `data-tp-disabled='[…]'` | Gesperrte Abschnitte als JSON, siehe unten. |
 | `data-tp-limit-view="false"` | Blättern über `min`/`max` hinaus wieder erlauben. |
 | `data-tp-quick='[…]'` | Schnellwahl als JSON, siehe unten. |
-| `data-tp-quick-apply="false"` | Schnellwahl wählt nur aus, statt zu speichern und zu schließen. |
+| `data-tp-quick-apply="true"` | Schnellwahl speichert und schließt sofort, statt nur auszuwählen. |
 | `data-tp-span-blocked="false"` | Ein Zeitraum darf nichts Gesperrtes überspringen. |
 
 ## Gesperrte Tage
@@ -112,7 +112,7 @@ dp.create([von, bis], {
 
 Der Zeitraum wird immer auf `min`/`max` beschnitten — „letzte 30 Tage" bei zwölf Tagen Daten endet also nicht im Leeren. `name` darf auch ein Sprachobjekt sein (`{ de: 'Heute', en: 'Today' }`).
 
-Mit `quickApply: false` wird nur ausgewählt und der Kalender bleibt offen; Standard ist übernehmen und schließen.
+Standardmäßig wird nur ausgewählt und der Kalender bleibt offen — so lässt sich der Vorschlag noch nachbessern, bevor er gilt. Mit `quickApply: true` wird stattdessen gleich übernommen und geschlossen.
 
 ## Zeiträume über gesperrte Tage
 
@@ -240,7 +240,7 @@ const picker = dp.create(document.getElementById('meinInput'), { showTime: true 
 | `disabled` | `Array` | `[]` | Gesperrte Tage und Abschnitte. |
 | `limitView` | `boolean` | `true` | Blättern und Jahresliste auf `min`/`max` begrenzen. |
 | `quick` | `Array` | `[]` | Schnellwahl-Knöpfe `{ name, rule }`. |
-| `quickApply` | `boolean` | `true` | Schnellwahl speichert und schließt. |
+| `quickApply` | `boolean` | `false` | Schnellwahl speichert und schließt sofort. |
 | `spanBlocked` | `boolean` | `true` | Zeitraum darf über gesperrte Tage hinweggehen. |
 
 > `create()` wird intern auch von der Attribut-Steuerung verwendet — beide Wege erzeugen dieselbe Picker-Instanz.

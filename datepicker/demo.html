@@ -176,8 +176,8 @@
       <div class="grp">
         <span class="lbl">Schnellwahl übernimmt</span>
         <div class="row" data-set="uebernehmen">
-          <button data-val="on">sofort</button>
           <button data-val="off">nur auswählen</button>
+          <button data-val="on">sofort</button>
         </div>
       </div>
 
@@ -262,7 +262,7 @@ const state = {
   gesperrt:    'on',
   blaettern:   'on',
   schnellwahl: 'daten',
-  uebernehmen: 'on',
+  uebernehmen: 'off',
   ueberspringen: 'on',
   einzeltag:   'on',
 };
@@ -284,7 +284,7 @@ function attrs() {
   if (state.blaettern === 'off')     a.push(['data-tp-limit-view', 'false']);
   if (state.einzeltag === 'off')     a.push(['data-tp-same-day', 'false']);
   if (state.ueberspringen === 'off') a.push(['data-tp-span-blocked', 'false']);
-  if (state.uebernehmen === 'off') a.push(['data-tp-quick-apply', 'false']);
+  if (state.uebernehmen === 'on')  a.push(['data-tp-quick-apply', 'true']);
   if (state.schnellwahl !== 'off') {
     a.push(['data-tp-quick', JSON.stringify(SCHNELLWAHL[state.schnellwahl])]);
   }

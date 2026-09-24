@@ -42,6 +42,13 @@
     ],
     "datepicker": [
       {
+        "version": "2.1.2",
+        "date": "2026-09-24",
+        "changes": [
+          "`quickApply` ist jetzt standardmäßig **aus**: Ein Schnellwahl-Knopf wählt nur aus, der Kalender bleibt offen und wartet auf „Speichern“. So lässt sich der Vorschlag noch nachbessern, bevor er gilt. Für das alte Verhalten `quickApply: true` bzw. `data-tp-quick-apply=\"true\"` setzen"
+        ]
+      },
+      {
         "version": "2.1.1",
         "date": "2026-09-24",
         "changes": [
@@ -252,6 +259,13 @@
     ]
   },
   "changelog": [
+    {
+      "version": "2.4.2",
+      "date": "2026-09-24",
+      "changes": [
+        "1. Datepicker: Schnellwahl wählt standardmäßig nur aus, statt sofort zu speichern"
+      ]
+    },
     {
       "version": "2.4.1",
       "date": "2026-09-24",
