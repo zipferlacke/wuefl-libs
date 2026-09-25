@@ -427,8 +427,8 @@ export function skalierung(von, nach) {
 }
 
 /** CSS-Variablen auflösen, damit auch der Tooltip die echte Farbe kennt. */
-function farbe(el, wert) {
-  if (!wert) return '#888888';
+function farbe(el, wert, rueckfall = '#888888') {
+  if (!wert) return rueckfall;
   let c = String(wert).trim();
   let tiefe = 0;
   while (c.startsWith('var(') && tiefe < 5) {
@@ -735,12 +735,11 @@ export class Diagramm {
     const cfg = this.#cfg;
     this.#els.title.textContent = cfg.title ?? '';
     this.#els.tools.replaceChildren();
-    // Platzhalter für die Chips – befüllt werden sie erst mit den Daten
-    for (const c of this.#chipsAus(cfg)) {
+    // Platzhalter für die Chips – Farbe und Inhalt kommen mit den Daten
+    for (const _ of this.#chipsAus(cfg)) {
       const chip = document.createElement('span');
       chip.className = 'dg_chip';
       chip.hidden = true;
-      if (c.color) chip.style.setProperty('--dg-chip-color', c.color);
       this.#els.tools.appendChild(chip);
     }
     if (cfg.fullscreen !== false) {
@@ -770,7 +769,11 @@ export class Diagramm {
       if (!el) return;
       const wert = c.value !== undefined ? Number(c.value) : this.#chipWert(c, zeilen);
       if (wert === null || !Number.isFinite(wert)) { el.hidden = true; return; }
-      const einheit = c.unit ?? achsen[0]?.unit ?? '';
+      // Ohne eigene Angabe trägt ein Chip die Farbe der Reihe, zu der er
+      // gehört – ein Chip zum Netzbezug soll aussehen wie der Netzbezug.
+      const reihe = this.#reihen.find((r) => r.key === c.key);
+      el.style.setProperty('--dg-chip-color', farbe(this.#host, c.color, reihe?.farbe ?? ''));
+      const einheit = c.unit ?? reihe?.einheit ?? achsen[0]?.unit ?? '';
       el.hidden = false;
       el.innerHTML = (c.label ? `<span class="dg_chip_label">${html(c.label)}</span>` : '')
         + `${html(nf(wert, c.decimals ?? 2))}${einheit ? ` ${html(einheit)}` : ''}`;
