@@ -308,14 +308,14 @@
   },
   "changelog": [
     {
-      "version": "2.6.1",
+      "version": "2.5.2",
       "date": "2026-09-25",
       "changes": [
         "1. Diagramm: Übersicht als Regler mit Kurve, Umschalter im Stil der Bibliothek, Kachel abschaltbar, Kalender in der Demo"
       ]
     },
     {
-      "version": "2.6.0",
+      "version": "2.5.1",
       "date": "2026-09-25",
       "changes": [
         "1. Diagramm: Zeitraum-Picker mit Übersicht, verknüpfbare Diagramme, gemeinsame X-Achse, Zoomen per Geste"
