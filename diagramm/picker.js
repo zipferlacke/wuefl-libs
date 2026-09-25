@@ -381,6 +381,9 @@ export class Zeitpicker {
     const seq = ++this.#seq;
     const von = this.#min ?? new Date(Date.now() - 365 * 86_400_000);
     const bis = this.#max ?? new Date();
+    // Ohne Bezeichner gibt es nichts zu zeigen – dann auch keinen leeren
+    // Streifen, der nur Platz wegnimmt.
+    if (!cfg.keys?.length) { this.#els.ov.hidden = true; return; }
     this.#els.ov.hidden = false;
     if (cfg.height) this.#els.ov.style.setProperty('--dgp-ov-height', `${cfg.height}px`);
 
@@ -388,8 +391,7 @@ export class Zeitpicker {
       this.#ovGriff = this.#renderer.mount(this.#els.ov);
       this.#renderer.on?.(this.#ovGriff, 'datazoom', () => this.#ausFenster());
     }
-    const keys = cfg.keys ?? [];
-    if (!keys.length) return;          // ohne Bezeichner gibt es nichts zu zeigen
+    const keys = cfg.keys;
     const daten = await getData(this.#source, keys, von, bis, 86_400_000);
     if (seq !== this.#seq) return;
 
