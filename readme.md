@@ -17,6 +17,7 @@ Eine Sammlung von wiederverwendbaren Web-Komponenten und Utilities. Jede Kompone
 | Modul | Beschreibung |
 | :--- | :--- |
 | [DatePicker](./datepicker/readme.md) | Datum- und Zeitpicker, Single- und Range-Modus |
+| [Diagramm](./diagramm/readme.md) | Zeitreihen-Diagramm mit Titel, Chips, Legende und Vollbild; Renderer und Datenquelle austauschbar. |
 | [SelectPicker](./selectpicker/readme.md) | Macht ein Select mordern und durchsuchbar, Single- und Multiselect. |
 | [Tableview](./tableview/readme.md) | Macht statische Tabellen sortier-, gruppier- und durchsuchbar. |
 | [Banner](./banner/readme.md) | Pop-up-Benachrichtigungen (`info`/`success`/`warning`/`error`). |

@@ -264,9 +264,31 @@
           "Initiale Veröffentlichung"
         ]
       }
+    ],
+    "diagramm": [
+      {
+        "version": "1.0.0",
+        "date": "2026-09-25",
+        "changes": [
+          "Neu: Zeitreihen-Diagramm mit Titel, beliebig vielen Chips, klickbarer Legende und Vollbild",
+          "Renderer austauschbar – ECharts wird übergeben, nicht mitgeliefert; Projekte mit eigener Zeichenschicht schreiben nur diese eine Datei neu",
+          "Quelle austauschbar: (keys, von, bis, stufe) → Zeilen. Passt auf SQL genauso wie auf die Langzeitstatistik von Home Assistant",
+          "Auflösung wird erfragt statt geschätzt: von fein nach grob, bis eine Stufe den Zeitraum wirklich abdeckt – gemessen an der Abdeckung, nicht daran ob überhaupt Zeilen kamen",
+          "Vollbild zeigt dasselbe Diagramm statt einer Kopie; Titel und Chips bleiben, die Zeichenfläche füllt die Höhe, an der alten Stelle hält ein Platzhalter das Layout",
+          "Konfiguration als Objekt, JSON oder – mit angemeldetem Parser – YAML",
+          "Icons wie im Tableview: UTF-8 als Default, eigene Map jederzeit einsetzbar"
+        ]
+      }
     ]
   },
   "changelog": [
+    {
+      "version": "2.5.0",
+      "date": "2026-09-25",
+      "changes": [
+        "1. Neues Paket Diagramm: Zeitreihen mit Titel, Chips, Legende und Vollbild – Renderer und Datenquelle austauschbar"
+      ]
+    },
     {
       "version": "2.4.3",
       "date": "2026-09-24",
