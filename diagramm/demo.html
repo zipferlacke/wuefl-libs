@@ -38,7 +38,12 @@
     <option value="nurTag">Quelle: nur Tageswerte</option>
   </select>
   <button id="neu">Neu laden</button>
+  <button id="zoom">Zoomen: nach Klick</button>
 </div>
+<p class="lead"><b>Zoomen:</b> mit dem Mausrad oder zwei Fingern im Diagramm, Ziehen verschiebt.
+  Standardmäßig wird das erst nach einem Klick ins Diagramm scharf – sonst bleibt auf dem Handy
+  jede Wischbewegung hängen, statt die Seite zu scrollen. Ein scharfes Diagramm bekommt einen
+  dünnen Rahmen. Das breite Diagramm unten steht auf <code>zoom: true</code> und geht sofort.</p>
 
 <div class="raster">
   <div class="karte" id="d1"></div>
@@ -134,6 +139,7 @@ const cfg3 = {
   aggregation: '1d',
   type: 'bar',
   bar_overlap: true,
+  zoom: true,
   y_axes: [{ unit: 'kWh' }],
   legend: { position: 'top-center' },
   chips: [
@@ -165,6 +171,12 @@ document.getElementById('raster').onchange = (e) => {
   [d1, d2, d3].forEach((d) => d.refresh());
 };
 document.getElementById('neu').onclick = () => [d1, d2, d3].forEach((d) => d.refresh());
+document.getElementById('zoom').onclick = (e) => {
+  const an = !cfg1.zoom;
+  cfg1.zoom = cfg2.zoom = an ? true : undefined;
+  e.target.textContent = an ? 'Zoomen: immer an' : 'Zoomen: nach Klick';
+  d1.setConfig(cfg1); d2.setConfig(cfg2);
+};
 document.getElementById('anwenden').onclick = () => {
   try { d3.setConfig(document.getElementById('json').value); }
   catch (err) { alert(err.message); }
