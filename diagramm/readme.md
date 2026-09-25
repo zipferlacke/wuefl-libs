@@ -133,13 +133,18 @@ immer oben rechts – auch im Vollbild.
 
 ```js
 chips: [
-  { key: 'pv', label: 'Erzeugt', calc: 'sum',  unit: 'kWh', color: '#f5b301' },
-  { key: 'soc', label: 'Jetzt',  calc: 'last', unit: '%',   decimals: 0 },
+  { key: 'pv', icon: '☀', label: 'Erzeugt', calc: 'sum', unit: 'kWh' },
+  { key: 'soc', icon: '<span class="msr">battery_full</span>', calc: 'last', unit: '%', decimals: 0 },
   { value: 32.4, label: 'Ziel', unit: 'kWh' },     // fester Wert
 ]
 ```
 
 `calc`: `sum` (Standard), `mean`, `max`, `min`, `last`.
+
+`icon` wird als **Markup** eingesetzt – ein UTF-8-Zeichen genauso wie
+`<span class="msr">bolt</span>` oder `<ha-icon icon="mdi:flash">`. `label` bleibt
+dagegen Text: Steht dort ein Name aus den Daten, soll er nichts ausführen können.
+Ohne eigene `color` trägt der Chip die Farbe seiner Reihe.
 
 ## Zoomen
 
@@ -173,11 +178,26 @@ const p = new Zeitpicker(document.querySelector('#leiste'), {
   datePicker: DatePicker,        // Klasse oder fertige Instanz; ohne ihn
                                  // bleiben zwei <input type="date">
   min: new Date('2024-01-01'),   // nicht weiter zurück
+  disabled: [{ from: '2024-06-01', to: '2024-06-30' }],
+  granularities: ['day', 'week', 'month'],   // Jahr ausblenden
 });
 ```
 
 Ohne `datePicker` bleiben es die Datumsfelder des Browsers – vollständig bedienbar,
-nur schlichter. Der Picker blättert nie in die Zukunft und nicht vor `min`.
+nur schlichter. Mit Kalender sitzt sein Auslöser durchsichtig über dem Knopf zwischen
+den Pfeilen; sichtbar bleibt der Knopf.
+
+`granularities` blendet Stufen aus – bleibt nur eine übrig, verschwindet der Umschalter
+ganz. Der Picker blättert nie in die Zukunft und nicht vor `min`.
+
+### Gesperrte Bereiche
+
+`disabled: [{ from, to }, …]` wird an den Kalender weitergereicht, der die Tage ausgraut.
+Beim Blättern wird ein Zeitraum übersprungen, wenn er **ganz** gesperrt ist: in der
+Tagesansicht reicht dafür ein gesperrter Tag, in der Wochenansicht muss die ganze Woche
+gesperrt sein, bei Monat und Jahr entsprechend. Sonst gäbe es dort ja noch etwas zu sehen.
+Gibt es in einer Richtung nichts Freies mehr, wird der Pfeil abgeschaltet.
+Nachreichbar mit `p.setDisabled(liste)`.
 
 ### Diagramme anhängen
 
@@ -199,6 +219,7 @@ einmal, nicht zweimal.
 | `p.setGranularity('month')` | Stufe wechseln, Anker bleibt |
 | `p.setBounds(min, max)` | Grenzen nachreichen, z. B. sobald bekannt |
 | `p.setOverviewKeys(keys)` | Reihen der Übersicht nachreichen |
+| `p.setDisabled(liste)` | gesperrte Bereiche nachreichen |
 | `p.on(cb)` / `p.off(cb)` | eigene Hörer |
 | `p.destroy()` | abmelden und aufräumen |
 | `getPicker(id)` / `onPicker(id, cb)` | von außen andocken |
@@ -254,7 +275,8 @@ und lässt sich im Betrieb nicht umstellen; zum Wechseln das Diagramm neu aufset
 ## Icons
 
 Default sind reine UTF-8-Zeichen, keine Icon-Schrift nötig. Verwendete Schlüssel:
-`fullscreen`, `fullscreenExit`.
+`fullscreen`, `fullscreenExit`, `kalender`, `zurueck`, `vor` – die letzten drei nutzt
+der Zeitraum-Picker.
 
 ```js
 import { setIcons } from './diagramm.js';

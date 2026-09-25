@@ -267,6 +267,17 @@
     ],
     "diagramm": [
       {
+        "version": "1.3.0",
+        "date": "2026-09-25",
+        "changes": [
+          "Picker: gesperrte Bereiche (`disabled`). Beim Blättern wird ein Zeitraum übersprungen, wenn er ganz gesperrt ist – in der Tagesansicht reicht ein Tag, in der Wochenansicht muss die ganze Woche gesperrt sein, bei Monat und Jahr entsprechend. Gibt es in einer Richtung nichts Freies mehr, wird der Pfeil abgeschaltet",
+          "Picker: `granularities` blendet Stufen aus; bleibt eine übrig, verschwindet der Umschalter ganz",
+          "Picker: der Auslöser sitzt jetzt zwischen den Pfeilen statt daneben, mit Kalender-Icon und im Stil der Eingabefelder. Der Kalender legt seinen Auslöser durchsichtig darüber",
+          "Icons: kalender, zurueck und vor kommen dazu – auch sie über setIcons() austauschbar",
+          "Chips: `icon` wird als Markup vor die Zahl gesetzt – UTF-8-Zeichen, Icon-Schrift oder eigenes Element. `label` bleibt Text"
+        ]
+      },
+      {
         "version": "1.2.0",
         "date": "2026-09-25",
         "changes": [
@@ -307,6 +318,13 @@
     ]
   },
   "changelog": [
+    {
+      "version": "2.5.3",
+      "date": "2026-09-25",
+      "changes": [
+        "1. Diagramm: gesperrte Zeiträume im Picker, ausblendbare Stufen, Auslöser zwischen den Pfeilen, Icons in den Chips"
+      ]
+    },
     {
       "version": "2.5.2",
       "date": "2026-09-25",
