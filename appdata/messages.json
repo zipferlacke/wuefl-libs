@@ -267,6 +267,16 @@
     ],
     "diagramm": [
       {
+        "version": "1.4.0",
+        "date": "2026-09-25",
+        "changes": [
+          "Farben kommen jetzt wirklich beim Diagramm an: Eine Variable liefert getComputedStyle nur als Text zurück – ECharts bekam wörtlich \"light-dark(#e0e0e0, #3a3f46)\" und nahm still seine eigenen Farben. Aufgelöst wird jetzt über ein unsichtbares Element, das löst in einem Aufwasch auch var(), color-mix(), hsl() und Farbnamen",
+          "`color-scheme: light dark` auf .dg und .dgp – ohne das entscheidet light-dark() gar nicht, sondern nimmt immer den hellen Wert",
+          "Neues Token --dg-grid für das Gitter, getrennt von --dg-line für Ränder und Achsenlinien: hellgrau, damit es hinter den Kurven verschwindet",
+          "--dg-text ist light-dark(#000, #fff); die Legende hängt ausdrücklich daran"
+        ]
+      },
+      {
         "version": "1.3.0",
         "date": "2026-09-25",
         "changes": [
@@ -318,6 +328,13 @@
     ]
   },
   "changelog": [
+    {
+      "version": "2.5.4",
+      "date": "2026-09-25",
+      "changes": [
+        "1. Diagramm: Farben folgen hell und dunkel richtig, eigenes Token fürs Gitter"
+      ]
+    },
     {
       "version": "2.5.3",
       "date": "2026-09-25",

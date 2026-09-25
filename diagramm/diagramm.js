@@ -434,19 +434,35 @@ export function skalierung(von, nach) {
   return a && b ? a / b : 1;
 }
 
-/** CSS-Variablen auflösen, damit auch der Tooltip die echte Farbe kennt. */
+/**
+ * Eine Farbangabe zu einem Wert machen, den auch ECharts versteht.
+ *
+ * Der Umweg über ein unsichtbares Element ist nötig, weil eine
+ * Benutzervariable nur als Text zurückkommt: getPropertyValue('--dg-line')
+ * liefert wörtlich "light-dark(#e0e0e0, #3a3f46)" – damit kann ECharts
+ * nichts anfangen, und es nahm still seine eigenen Farben. Erst wenn der
+ * Wert an einer echten Eigenschaft steht, rechnet der Browser ihn aus; dann
+ * lesen wir das fertige rgb() zurück. Das löst in einem Aufwasch auch
+ * var(), color-mix(), hsl() und Farbnamen.
+ */
 function farbe(el, wert, rueckfall = '#888888') {
   if (!wert) return rueckfall;
-  let c = String(wert).trim();
-  let tiefe = 0;
-  while (c.startsWith('var(') && tiefe < 5) {
-    const name = c.slice(4, c.indexOf(',') > -1 ? c.indexOf(',') : -1).trim();
-    const gelesen = getComputedStyle(el).getPropertyValue(name).trim();
-    if (!gelesen) { c = c.includes(',') ? c.slice(c.indexOf(',') + 1, -1).trim() : '#888888'; break; }
-    c = gelesen; tiefe += 1;
+  try {
+    const sonde = document.createElement('span');
+    sonde.style.cssText = 'display:none;position:absolute';
+    sonde.style.color = String(wert);
+    if (!sonde.style.color) return rueckfall;       // gar keine gültige Angabe
+    el.appendChild(sonde);
+    const c = getComputedStyle(sonde).color;
+    sonde.remove();
+    return c || rueckfall;
+  } catch {
+    return rueckfall;
   }
-  return c || '#888888';
 }
+
+/** Farbe aus einer Variablen des Diagramms, fertig ausgerechnet. */
+const tokenFarbe = (el, name, rueckfall) => farbe(el, `var(${name}, ${rueckfall})`, rueckfall);
 
 /** Farbe mit Deckkraft – über canvas, damit auch Namen, hsl() und oklch() gehen. */
 export function mitAlpha(c, alpha) {
@@ -530,8 +546,9 @@ export function buildOption(reihen, achsen, start, end, raster, cfg, host, zusta
     };
   });
 
-  const textFarbe = getComputedStyle(host).getPropertyValue('--dg-text-soft').trim() || '#777';
-  const linienFarbe = getComputedStyle(host).getPropertyValue('--dg-line').trim() || '#e0e0e0';
+  const textFarbe = tokenFarbe(host, '--dg-text-soft', '#5f6368');
+  const achsenFarbe = tokenFarbe(host, '--dg-line', '#e0e0e0');
+  const gitterFarbe = tokenFarbe(host, '--dg-grid', '#e8eaed');
   const ueberJahre = start.getFullYear() !== end.getFullYear();
 
   return {
@@ -546,9 +563,10 @@ export function buildOption(reihen, achsen, start, end, raster, cfg, host, zusta
       : { left: 8, right: 8, top: achsen.some((a) => a.unit) ? 28 : 12, bottom: 4, containLabel: true },
     xAxis: [{
       type: 'time', min: +start, max: +end,
-      axisLine: { lineStyle: { color: linienFarbe } },
+      axisLine: { lineStyle: { color: achsenFarbe } },
+      axisTick: { lineStyle: { color: achsenFarbe } },
       axisLabel: { color: textFarbe, hideOverlap: true, formatter: zeitFormat(raster, ueberJahre) },
-      splitLine: { show: raster.ms >= TAG, lineStyle: { color: linienFarbe, opacity: .6 } },
+      splitLine: { show: raster.ms >= TAG, lineStyle: { color: gitterFarbe } },
     }],
     yAxis: achsen.map((ax, i) => ({
       type: 'value', name: ax.unit || '',
@@ -559,7 +577,7 @@ export function buildOption(reihen, achsen, start, end, raster, cfg, host, zusta
       nameLocation: 'end', nameGap: 12,
       nameTextStyle: { color: textFarbe, align: i === 1 ? 'right' : 'left', padding: [0, 0, 0, 0] },
       axisLabel: { color: textFarbe },
-      splitLine: { show: i === 0, lineStyle: { color: linienFarbe, opacity: .6 } },
+      splitLine: { show: i === 0, lineStyle: { color: gitterFarbe } },
     })),
     // Zoomen und Schieben per Geste erst nach einem Klick ins Diagramm –
     // sonst bleibt auf dem Handy jede Wischbewegung hängen, statt die Seite

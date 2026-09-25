@@ -295,12 +295,25 @@ Alles hängt an CSS-Variablen auf `.dg`:
 
 ```css
 .dg {
-  --dg-text: #1c1c1c;        --dg-text-soft: #5f6368;
-  --dg-bg: #fff;             --dg-line: #e0e0e0;
+  color-scheme: light dark;              /* sonst greift light-dark() nicht */
+
+  --dg-text: light-dark(#000, #fff);     /* Titel, Legende */
+  --dg-text-soft: light-dark(#5f6368, #a5a8ad);  /* Achsen, Hinweise */
+  --dg-bg: light-dark(#fff, #1c1f24);
+  --dg-line: light-dark(#d4d6d9, #3a3f46);       /* Ränder, Achsenlinien */
+  --dg-grid: light-dark(#e8eaed, #2c3036);       /* Gitter im Diagramm */
+
   --dg-title-size: 1.25rem;  --dg-chip-size: .875rem;
   --dg-legend-size: .75rem;  --dg-min-height: 180px;
 }
 ```
+
+Gitter und Ränder sind getrennt: Das Gitter ist heller, damit es hinter den Kurven
+verschwindet, ohne dass man aufhört, Werte ablesen zu können.
+
+Die Werte dürfen `light-dark()`, `color-mix()`, `var()` oder Farbnamen sein – auch
+dort, wo sie an ECharts gehen. Ausgerechnet werden sie über ein unsichtbares Element
+im Diagramm, denn eine Variable kommt sonst nur als Text zurück.
 
 ## Eigener Renderer
 
