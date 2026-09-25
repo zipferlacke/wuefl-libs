@@ -516,6 +516,7 @@ const nf = (v, stellen = 2) => Number(v).toLocaleString(undefined, { maximumFrac
  */
 export function buildOption(reihen, achsen, start, end, raster, cfg, host, zustand = {}) {
   const { voll = false, zoom = false } = zustand;
+  const xWert = wertAchse(cfg);
   const gesamt = reihen.length;
   const balken = reihen.some((s) => (s.type || cfg.type || 'line') === 'bar');
 
@@ -570,7 +571,7 @@ export function buildOption(reihen, achsen, start, end, raster, cfg, host, zusta
   const textFarbe = tokenFarbe(host, '--dg-text-soft', '#5f6368');
   const achsenFarbe = tokenFarbe(host, '--dg-line', '#e0e0e0');
   const gitterFarbe = tokenFarbe(host, '--dg-grid', '#e8eaed');
-  const ueberJahre = start.getFullYear() !== end.getFullYear();
+  const ueberJahre = !xWert && start.getFullYear() !== end.getFullYear();
 
   return {
     animation: false,
@@ -582,7 +583,13 @@ export function buildOption(reihen, achsen, start, end, raster, cfg, host, zusta
     grid: cfg.axis_width
       ? { left: cfg.axis_width, right: 8, top: achsen.some((a) => a.unit) ? 28 : 12, bottom: 22 }
       : { left: 8, right: 8, top: achsen.some((a) => a.unit) ? 28 : 12, bottom: 4, containLabel: true },
-    xAxis: [{
+    xAxis: [xWert ? {
+      type: 'value', min: +start, max: +end,
+      axisLine: { lineStyle: { color: achsenFarbe } },
+      axisTick: { lineStyle: { color: achsenFarbe } },
+      axisLabel: { color: textFarbe, hideOverlap: true, formatter: (v) => wertText(v, xWert) },
+      splitLine: { show: !!xWert.grid, lineStyle: { color: gitterFarbe } },
+    } : {
       type: 'time', min: +start, max: +end,
       axisLine: { lineStyle: { color: achsenFarbe } },
       axisTick: { lineStyle: { color: achsenFarbe } },
@@ -619,9 +626,37 @@ export function buildOption(reihen, achsen, start, end, raster, cfg, host, zusta
             punkt[1] > h / 2 ? 0 : Math.max(0, h - kh)];
         },
       }),
-      formatter: (params) => tooltip(params, reihen, raster, achsen),
+      formatter: (params) => tooltip(params, reihen, raster, achsen, xWert),
     },
     series,
+  };
+}
+
+/**
+ * Werte-Achse statt Zeit – etwa Kilometer unter einem Höhenprofil.
+ *
+ * `x_axis: { type: 'value', unit: 'km' }` schaltet um. Die Reihen bringen
+ * ihre Punkte dann als `data: [[x, wert], …]` selbst mit; eine Quelle wird
+ * dafür nicht gefragt, Töpfe gibt es keine.
+ */
+const wertAchse = (cfg) => (cfg?.x_axis?.type === 'value' ? cfg.x_axis : null);
+
+const wertText = (v, achse) => `${nf(v, achse.decimals ?? 1)}${achse.unit ? ` ${achse.unit}` : ''}`;
+
+/** Spanne der Werte-Achse: feste Grenzen oder das, was die Reihen belegen. */
+function wertSpanne(cfg) {
+  const achse = wertAchse(cfg);
+  let min = Infinity, max = -Infinity;
+  for (const s of cfg.series ?? []) {
+    for (const [x] of s.data ?? []) {
+      if (!Number.isFinite(x)) continue;
+      if (x < min) min = x;
+      if (x > max) max = x;
+    }
+  }
+  return {
+    start: achse.min ?? (Number.isFinite(min) ? min : 0),
+    end: achse.max ?? (Number.isFinite(max) ? max : 1),
   };
 }
 
@@ -634,26 +669,31 @@ function zeitFormat(raster, ueberJahre) {
 }
 
 /** Tooltip mit Zeitspanne des Topfs und Summe darunter. */
-function tooltip(params, reihen, raster, achsen) {
+function tooltip(params, reihen, raster, achsen, xWert = null) {
   const liste = Array.isArray(params) ? params : [params];
   if (!liste.length) return '';
   const t = liste[0].value?.[0] ?? liste[0].axisValue;
-  const von = new Date(t);
-  const bis = new Date(naechsterTopf(+von, raster));
-  const lang = raster.ms >= TAG;
-  const kopf = lang
-    ? (raster.unit === 'm'
-      ? von.toLocaleDateString(undefined, { month: 'long', year: 'numeric' })
-      : von.toLocaleDateString(undefined, { weekday: 'short', day: '2-digit', month: '2-digit', year: 'numeric' }))
-    : `${von.toLocaleString(undefined, { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })} – `
-      + `${bis.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })}`;
+  let kopf;
+  if (xWert) {
+    kopf = wertText(t, { ...xWert, decimals: xWert.decimals ?? 2 });
+  } else {
+    const von = new Date(t);
+    const bis = new Date(naechsterTopf(+von, raster));
+    const lang = raster.ms >= TAG;
+    kopf = lang
+      ? (raster.unit === 'm'
+        ? von.toLocaleDateString(undefined, { month: 'long', year: 'numeric' })
+        : von.toLocaleDateString(undefined, { weekday: 'short', day: '2-digit', month: '2-digit', year: 'numeric' }))
+      : `${von.toLocaleString(undefined, { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })} – `
+        + `${bis.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })}`;
+  }
 
   const zeilen = liste.filter((p) => p.value?.[1] !== null && p.value?.[1] !== undefined).map((p) => {
     const s = reihen.find((r) => (r.legend_group || r.name || r.key) === p.seriesName);
     const einheit = s?.einheit ?? achsen[s?.y_axis || 0]?.unit ?? '';
     const punkt = `<span style="display:inline-block;margin-right:6px;border-radius:50%;width:9px;height:9px;background:${p.color}"></span>`;
     return `<div style="display:flex;gap:10px;justify-content:space-between">
-      <span>${punkt}${p.seriesName}</span><b>${nf(Math.abs(p.value[1]))} ${einheit}</b></div>`;
+      <span>${punkt}${p.seriesName}</span><b>${nf(Math.abs(p.value[1]), s?.decimals ?? 2)} ${einheit}</b></div>`;
   });
   return `<div style="font-weight:600;margin-bottom:4px">${kopf}</div>${zeilen.join('')}`;
 }
@@ -772,7 +812,8 @@ export class Diagramm {
     const cfg = this.#cfg;
     if (!cfg?.series?.length) return;
 
-    const { start, end } = this.#pickerRange ?? zeitraum(cfg.range, cfg.start, cfg.end);
+    const { start, end } = wertAchse(cfg) ? wertSpanne(cfg)
+      : (this.#pickerRange ?? zeitraum(cfg.range, cfg.start, cfg.end));
     const wunsch = rasterAus(cfg.aggregation, cfg.range);
     const achsen = Array.isArray(cfg.y_axes) && cfg.y_axes.length
       ? cfg.y_axes : [{ unit: cfg.y_axis_unit || '' }];
@@ -818,6 +859,16 @@ export class Diagramm {
 
   /** Läuft das Diagramm gerade im Vollbild? */
   get fullscreen() { return this.#voll; }
+
+  /**
+   * Ereignis der Zeichenfläche abonnieren, z. B. 'updateAxisPointer' – so
+   * kann eine Karte die Stelle zeigen, über der gerade der Zeiger steht.
+   * Braucht einen Renderer mit `on()`; sonst geschieht nichts.
+   */
+  on(name, cb) { this.#renderer.on?.(this.#griff, name, cb); return this; }
+
+  /** Die Zeicheninstanz selbst, sofern der Renderer sie herausgibt. */
+  get instance() { return this.#renderer.instance?.(this.#griff) ?? null; }
 
   destroy() {
     this.#seq += 1;

@@ -125,6 +125,7 @@ d.setConfig(yamlText);
 | `unit` `multiplier` | Einheit der Quelle bzw. fester Faktor |
 | `data` | fertige Punkte `[[ms, wert], …]` statt einer Abfrage |
 | `background` | hinter die anderen Reihen legen |
+| `decimals` | Nachkommastellen im Tooltip (Vorgabe 2) |
 
 ### `chips`
 
@@ -147,6 +148,41 @@ gibt es bewusst nicht. Was dort hineingeht, schreibt die Konfiguration; käme es
 Daten, müsste der Aufrufer es vorher entschärfen.
 
 Ohne eigene `color` trägt der Chip die Farbe seiner Reihe.
+
+## Werte-Achse statt Zeit
+
+Nicht jede X-Achse ist eine Zeit – ein Höhenprofil läuft über Kilometer.
+
+```js
+d.setConfig({
+  card: false, legend: { hidden: true },
+  x_axis: { type: 'value', unit: 'km', decimals: 1, grid: false },
+  y_axes: [{ unit: 'm', min: 100, max: 600 }],
+  series: [{ key: 'hoehe', name: 'Höhe', data: [[0, 148], [0.03, 149.2], …],
+             fill: 'gradient', color: 'green', decimals: 0 }],
+});
+```
+
+| Feld | Bedeutung |
+| :--- | :--- |
+| `type` | `value` schaltet um, sonst bleibt es eine Zeitachse |
+| `unit` | hängt an Achse und Tooltip |
+| `decimals` | Nachkommastellen für Achse und Tooltip-Kopf (ohne Angabe: Achse 1, Tooltip 2) |
+| `min` `max` | feste Grenzen; ohne sie reicht die Achse über alle Punkte |
+| `grid` | senkrechte Gitterlinien |
+
+Die Reihen bringen ihre Punkte als `data` mit, eine Quelle wird nicht gefragt.
+`range`, `picker` und `aggregation` gelten hier nicht.
+
+## Ereignisse
+
+```js
+d.on('updateAxisPointer', (e) => zeigeStelle(e.axesInfo?.[0]?.value));
+d.instance?.dispatchAction({ type: 'showTip', seriesIndex: 0, dataIndex: 42 });
+```
+
+`on()` reicht an den Renderer durch, `instance` gibt die Zeicheninstanz heraus –
+beides nur, wenn der Renderer es kann (`echartsRenderer` kann es).
 
 ## Zoomen
 
@@ -360,7 +396,7 @@ export const meinRenderer = {
 
 | Name | Zweck |
 | :--- | :--- |
-| `Diagramm` | die Klasse |
+| `Diagramm` | die Klasse (`on()`, `instance` für Ereignisse) |
 | `setIcons` `getIcons` `ICON_SETS` | Icons |
 | `parseConfig` `setYamlParser` | Konfiguration |
 | `getData` `STUFEN` | Auflösungsleiter |
