@@ -198,6 +198,7 @@ einmal, nicht zweimal.
 | `p.setRange(a, b)` | Zeitraum von außen setzen |
 | `p.setGranularity('month')` | Stufe wechseln, Anker bleibt |
 | `p.setBounds(min, max)` | Grenzen nachreichen, z. B. sobald bekannt |
+| `p.setOverviewKeys(keys)` | Reihen der Übersicht nachreichen |
 | `p.on(cb)` / `p.off(cb)` | eigene Hörer |
 | `p.destroy()` | abmelden und aufräumen |
 | `getPicker(id)` / `onPicker(id, cb)` | von außen andocken |

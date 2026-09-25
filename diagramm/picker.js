@@ -197,6 +197,18 @@ export class Zeitpicker {
     this.#melden();
   }
 
+  /**
+   * Welche Reihen die Übersicht zeigt – nachreichbar.
+   *
+   * Oft steht erst nach einer Abfrage fest, welche Bezeichner es überhaupt
+   * gibt. Ohne Übersicht in den Optionen tut die Methode nichts.
+   */
+  setOverviewKeys(keys) {
+    if (!this.#ovCfg) return;
+    this.#ovCfg = { ...this.#ovCfg, keys: [...(keys ?? [])] };
+    this.#uebersicht();
+  }
+
   /** Grenzen nachreichen, z. B. sobald bekannt ist, ab wann es Daten gibt. */
   setBounds(min, max) {
     this.#min = min ? new Date(min) : null;
@@ -377,6 +389,7 @@ export class Zeitpicker {
       this.#renderer.on?.(this.#ovGriff, 'datazoom', () => this.#ausFenster());
     }
     const keys = cfg.keys ?? [];
+    if (!keys.length) return;          // ohne Bezeichner gibt es nichts zu zeigen
     const daten = await getData(this.#source, keys, von, bis, 86_400_000);
     if (seq !== this.#seq) return;
 
