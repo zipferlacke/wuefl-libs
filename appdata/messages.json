@@ -273,7 +273,8 @@
           "Farben kommen jetzt wirklich beim Diagramm an: Eine Variable liefert getComputedStyle nur als Text zurück – ECharts bekam wörtlich \"light-dark(#e0e0e0, #3a3f46)\" und nahm still seine eigenen Farben. Aufgelöst wird jetzt über ein unsichtbares Element, das löst in einem Aufwasch auch var(), color-mix(), hsl() und Farbnamen",
           "`color-scheme: light dark` auf .dg und .dgp – ohne das entscheidet light-dark() gar nicht, sondern nimmt immer den hellen Wert",
           "Neues Token --dg-grid für das Gitter, getrennt von --dg-line für Ränder und Achsenlinien: hellgrau, damit es hinter den Kurven verschwindet",
-          "--dg-text ist light-dark(#000, #fff); die Legende hängt ausdrücklich daran"
+          "--dg-text ist light-dark(#000, #fff); die Legende hängt ausdrücklich daran",
+          "Mit color-mix() gemischte Farben werden auf rgba() gebracht – der Browser gibt sie als color(srgb …) zurück, und das verwirft die Zeichenbibliothek still"
         ]
       },
       {

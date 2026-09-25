@@ -455,10 +455,31 @@ function farbe(el, wert, rueckfall = '#888888') {
     el.appendChild(sonde);
     const c = getComputedStyle(sonde).color;
     sonde.remove();
-    return c || rueckfall;
+    return normFarbe(c) || rueckfall;
   } catch {
     return rueckfall;
   }
+}
+
+/**
+ * Auf rgb()/rgba() bringen.
+ *
+ * Der Browser gibt eine mit color-mix() gemischte Farbe als
+ * "color(srgb 0.87 0.87 0.87 / 0.55)" zurück. Das ist gültiges CSS, aber die
+ * Zeichenbibliothek kennt nur die alten Schreibweisen und verwirft es still –
+ * dann fehlt das Gitter. Deshalb hier einmal umgerechnet.
+ */
+function normFarbe(c) {
+  const t = String(c ?? '').trim();
+  if (!t || t.startsWith('rgb') || t.startsWith('#')) return t;
+  const m = t.match(/^color\(srgb\s+([\d.]+)\s+([\d.]+)\s+([\d.]+)(?:\s*\/\s*([\d.]+%?))?\s*\)$/i);
+  if (m) {
+    const [r, g, b] = m.slice(1, 4).map((v) => Math.round(Math.min(1, Math.max(0, parseFloat(v))) * 255));
+    const a = m[4] === undefined ? 1
+      : (m[4].endsWith('%') ? parseFloat(m[4]) / 100 : parseFloat(m[4]));
+    return a >= 1 ? `rgb(${r}, ${g}, ${b})` : `rgba(${r}, ${g}, ${b}, ${a})`;
+  }
+  return t;
 }
 
 /** Farbe aus einer Variablen des Diagramms, fertig ausgerechnet. */
