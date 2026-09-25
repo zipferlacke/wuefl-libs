@@ -33,7 +33,9 @@
 /**
  * @param {object} echarts  Das ECharts-Modul (echarts.init, echarts.dispose …)
  * @param {object} [opts]
- * @param {string} [opts.renderer='canvas']  'canvas' oder 'svg'
+ * @param {string} [opts.renderer='canvas']  'canvas' oder 'svg'. SVG ist
+ *        gestochen scharf und druckbar, canvas bei sehr vielen Punkten
+ *        flüssiger – bis ein paar tausend Punkte nimmt sich das nichts.
  * @param {string|object} [opts.theme]       ECharts-Theme
  */
 export function echartsRenderer(echarts, opts = {}) {

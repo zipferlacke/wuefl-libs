@@ -267,6 +267,18 @@
     ],
     "diagramm": [
       {
+        "version": "1.2.0",
+        "date": "2026-09-25",
+        "changes": [
+          "Übersicht im Picker ist jetzt nur noch der Regler selbst – er zeichnet die Kurve als Schatten in seinem Hintergrund, die zweite Kurve darüber war dieselbe Linie doppelt. `overview.height` steuert die Höhe",
+          "Umschalter und Datumsfelder benutzen dieselben Variablen wie die Eingabefelder von wuefl-libs (--bg-input, --br-input, --fs-input, --clr-primary-*) und fügen sich damit von selbst ein; ohne die Bibliothek greifen Rückfallwerte",
+          "`card: false` nimmt dem Diagramm Hintergrund, Rand und Innenabstand",
+          "Der Picker nimmt DatePicker als Klasse oder als fertige Instanz; ohne ihn bleiben zwei Datumsfelder, der Trennstrich verschwindet mit ihnen",
+          "Demo bindet den Kalender aus wuefl-libs ein und kann Renderer (canvas/svg) und Kachel umschalten",
+          "mitAlpha() wird exportiert"
+        ]
+      },
+      {
         "version": "1.1.0",
         "date": "2026-09-25",
         "changes": [
@@ -295,6 +307,13 @@
     ]
   },
   "changelog": [
+    {
+      "version": "2.6.1",
+      "date": "2026-09-25",
+      "changes": [
+        "1. Diagramm: Übersicht als Regler mit Kurve, Umschalter im Stil der Bibliothek, Kachel abschaltbar, Kalender in der Demo"
+      ]
+    },
     {
       "version": "2.6.0",
       "date": "2026-09-25",

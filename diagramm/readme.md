@@ -89,6 +89,7 @@ d.setConfig(yamlText);
   y_axes: [{ unit: 'kWh', min: 0, max: 50 }],
   legend: { position: 'top-right', hidden: false },
   zoom: undefined,              // true immer, false nie, sonst nach Klick
+  card: true,                   // false: ohne Hintergrund, Rand und Innenabstand
   chips: [ … ],
   series: [ … ],
 }
@@ -169,7 +170,8 @@ import { DatePicker } from '../datepicker/datepicker.js';   // optional
 const p = new Zeitpicker(document.querySelector('#leiste'), {
   id: 'oben',
   granularity: 'week',
-  datePicker: DatePicker,        // ohne ihn: zwei <input type="date">
+  datePicker: DatePicker,        // Klasse oder fertige Instanz; ohne ihn
+                                 // bleiben zwei <input type="date">
   min: new Date('2024-01-01'),   // nicht weiter zurück
 });
 ```
@@ -197,6 +199,7 @@ einmal, nicht zweimal.
 | `p.setGranularity('month')` | Stufe wechseln, Anker bleibt |
 | `p.setBounds(min, max)` | Grenzen nachreichen, z. B. sobald bekannt |
 | `p.on(cb)` / `p.off(cb)` | eigene Hörer |
+| `p.destroy()` | abmelden und aufräumen |
 | `getPicker(id)` / `onPicker(id, cb)` | von außen andocken |
 
 ### Übersicht mit Ausschnitt
@@ -205,13 +208,17 @@ einmal, nicht zweimal.
 new Zeitpicker(box, {
   id: 'oben',
   overview: { keys: ['pv'], renderer: echartsRenderer(echarts), source: quelle,
-              color: '#f5b301', height: 70 },
+              color: '#f5b301', height: 72 },
 });
 ```
 
-Zeichnet den ganzen Zeitraum zwischen `min` und `max` grob als Kurve und legt den
-aktuellen Ausschnitt als helles Fenster darüber. Das Fenster lässt sich ziehen und an
-den Rändern aufziehen; alle angehängten Diagramme folgen.
+Zeichnet den ganzen Zeitraum zwischen `min` und `max` grob als Kurve und hebt den
+aktuellen Ausschnitt darin hervor. Der Ausschnitt lässt sich ziehen und an den Rändern
+aufziehen; alle angehängten Diagramme folgen.
+
+`height` ist die Höhe des Streifens in Pixeln (Vorgabe 64) und bestimmt zugleich die
+Höhe des Reglers. Die Kurve steckt im Regler selbst – eine zweite darüber wäre
+dieselbe Linie doppelt.
 
 ## Gemeinsame X-Achse
 
@@ -226,6 +233,22 @@ Zwei Angaben, die zusammengehören:
 Diagramm nach der Breite seiner eigenen Zahlen und die Achsen stehen um ein paar Pixel
 versetzt. Zusammen mit demselben `picker` stehen mehrere Diagramme dann wirklich
 untereinander bündig.
+
+## Mit oder ohne Kachel
+
+`card: false` nimmt dem Diagramm Hintergrund, Rand und Innenabstand. Es sitzt dann
+nackt in dem, was es umgibt – nützlich, wenn schon eine Karte drumherum ist oder
+mehrere Diagramme in einem gemeinsamen Rahmen stehen sollen.
+
+## SVG statt Canvas
+
+```js
+echartsRenderer(echarts, { renderer: 'svg' })
+```
+
+SVG ist gestochen scharf und druckbar, Canvas bei sehr vielen Punkten flüssiger – bis
+ein paar tausend Punkte nimmt sich das nichts. Der Renderer wird beim Anlegen gewählt
+und lässt sich im Betrieb nicht umstellen; zum Wechseln das Diagramm neu aufsetzen.
 
 ## Icons
 

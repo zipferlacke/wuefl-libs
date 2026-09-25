@@ -26,7 +26,7 @@
  * folgen alle angehängten Diagramme.
  */
 
-import { getData } from './diagramm.js';
+import { getData, mitAlpha } from './diagramm.js';
 
 /* ══════════════════════════════════════════════════════════════════════════
    Verzeichnis: wer hört auf welche id
@@ -117,6 +117,15 @@ export function beschriftung(stufe, start, end) {
 const html = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 
 export class Zeitpicker {
+  /** Eine DatePicker-Instanz je Klasse, für alle Picker der Seite. */
+  static #instanzen = new WeakMap();
+  static #instanz(Klasse) {
+    if (!Zeitpicker.#instanzen.has(Klasse)) {
+      try { Zeitpicker.#instanzen.set(Klasse, new Klasse()); } catch { return null; }
+    }
+    return Zeitpicker.#instanzen.get(Klasse);
+  }
+
   #host; #els = {}; #hoerer = new Set();
   #stufe = 'day'; #anker = new Date(); #start; #end;
   #min = null; #max = null;
@@ -264,9 +273,15 @@ export class Zeitpicker {
     von.addEventListener('change', uebernehmen);
     zu.addEventListener('change', uebernehmen);
 
-    if (this.#datePicker?.create) {
+    // Übergeben werden darf beides: die Klasse DatePicker oder eine fertige
+    // Instanz davon. create() ist eine Methode der Instanz, also wird die
+    // Klasse hier einmal angelegt – eine pro Seite reicht.
+    const bausatz = this.#datePicker?.create
+      ? this.#datePicker
+      : (typeof this.#datePicker === 'function' ? Zeitpicker.#instanz(this.#datePicker) : null);
+    if (bausatz) {
       try {
-        this.#dp = this.#datePicker.create([von, zu], {
+        this.#dp = bausatz.create([von, zu], {
           outputFormat: 'iso', showDate: true, showTime: false,
           min: this.#min, max: this.#max,
         });
@@ -332,9 +347,11 @@ export class Zeitpicker {
   /**
    * Die kleine Kurve über den ganzen Zeitraum, mit dem Ausschnitt als Fenster.
    *
-   * Gezeichnet wird mit demselben Renderer wie die großen Diagramme – das
-   * Fenster ist ECharts' Schieberegler, der kann ziehen und aufziehen von
-   * Haus aus. Was er meldet, geht als neuer Zeitraum an alle Hörer.
+   * Der Schieberegler von ECharts zeichnet die Kurve selbst als Schatten in
+   * seinem Hintergrund – eine zweite Kurve darüber wäre dieselbe Linie
+   * doppelt. Die eigentliche Reihe bleibt deshalb unsichtbar und liefert nur
+   * die Zahlen für den Schatten. Der Regler füllt den ganzen Streifen; seine
+   * Höhe kommt aus `overview.height`.
    */
   async #uebersicht() {
     const cfg = this.#ovCfg;
@@ -363,21 +380,30 @@ export class Zeitpicker {
     }
     punkte.sort((a, b) => a[0] - b[0]);
 
+    const hoehe = cfg.height ?? 64;
+    const f = cfg.color ?? '#888';
     this.#renderer.draw(this.#ovGriff, {
       animation: false,
-      grid: { left: 2, right: 2, top: 4, bottom: 20 },
-      xAxis: [{ type: 'time', min: +von, max: +bis, axisLabel: { show: false },
-        axisTick: { show: false }, axisLine: { show: false } }],
+      grid: { left: 0, right: 0, top: 0, bottom: 0, height: 0 },
+      xAxis: [{ type: 'time', min: +von, max: +bis, show: false }],
       yAxis: [{ type: 'value', show: false, min: 0 }],
       tooltip: { show: false },
       dataZoom: [{
         type: 'slider', xAxisIndex: 0, showDetail: false, brushSelect: false,
-        height: 18, bottom: 0, borderColor: 'transparent',
+        showDataShadow: true, top: 2, height: hoehe - 4,
+        borderColor: 'transparent', backgroundColor: 'transparent',
+        fillerColor: mitAlpha(f, 0.22),
+        dataBackground: { lineStyle: { color: f, width: 1, opacity: .7 },
+          areaStyle: { color: f, opacity: .22 } },
+        selectedDataBackground: { lineStyle: { color: f, width: 1.5 },
+          areaStyle: { color: f, opacity: .5 } },
+        handleStyle: { color: f, borderColor: f },
+        moveHandleStyle: { color: f, opacity: .5 },
         startValue: +this.#start, endValue: +this.#end,
       }],
-      series: [{ type: 'line', data: punkte, symbol: 'none', smooth: true,
-        lineStyle: { width: 1, color: cfg.color ?? '#888' },
-        areaStyle: { color: cfg.color ?? '#888', opacity: 0.2 } }],
+      // Unsichtbar – sie liefert nur die Zahlen für den Schatten im Regler
+      series: [{ type: 'line', data: punkte, symbol: 'none', silent: true,
+        lineStyle: { opacity: 0 }, itemStyle: { opacity: 0 } }],
     });
     this.#renderer.resize?.(this.#ovGriff);
   }

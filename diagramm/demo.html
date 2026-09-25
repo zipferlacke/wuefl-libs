@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Diagramm – Demo</title>
+<link rel="stylesheet" href="../css/import.css">
+<link rel="stylesheet" href="../datepicker/datepicker.css">
 <link rel="stylesheet" href="./diagramm.css">
 <style>
   :root { color-scheme: light dark; --fg: light-dark(#1c1c1c, #e7e7e7); --bg: light-dark(#f6f7f9, #14171b);
@@ -41,6 +43,8 @@
   </select>
   <button id="neu">Neu laden</button>
   <button id="zoom">Zoomen: nach Klick</button>
+  <button id="svg">Renderer: canvas</button>
+  <button id="kachel">Kachel: an</button>
 </div>
 <p class="lead"><b>Picker:</b> Tag/Woche/Monat/Jahr, vor und zurück, freier Zeitraum. Darunter die
   Übersicht über alles – das helle Fenster lässt sich ziehen und aufziehen. Die beiden Diagramme
@@ -73,6 +77,7 @@ import * as echarts from 'https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.es
 import { Diagramm, setIcons } from './diagramm.js';
 import { Zeitpicker } from './picker.js';
 import { echartsRenderer } from './renderer-echarts.js';
+import { DatePicker } from '../datepicker/datepicker.js';
 
 /* ── Eine erfundene Quelle ────────────────────────────────────────────────
    Genau die Schnittstelle, die auch eine SQL-Abfrage oder Home Assistant
@@ -114,7 +119,8 @@ async function quelle(keys, start, end, stufe) {
   return out;
 }
 
-const renderer = () => echartsRenderer(echarts);
+let malArt = 'canvas';
+const renderer = () => echartsRenderer(echarts, { renderer: malArt });
 
 /* ── Drei Diagramme, drei Ausbaustufen ──────────────────────────────────── */
 
@@ -201,8 +207,9 @@ document.getElementById('anwenden').onclick = () => {
 const p1 = new Zeitpicker(document.getElementById('p1'), {
   id: 'oben',
   granularity: 'week',
+  datePicker: DatePicker,          // der Kalender aus wuefl-libs
   min: new Date(Date.now() - 120 * 86400000),
-  overview: { keys: ['pv'], renderer: renderer(), source: quelle, color: '#f5b301', height: 70 },
+  overview: { keys: ['pv'], renderer: renderer(), source: quelle, color: '#f5b301', height: 72 },
 });
 
 const gemeinsam = { picker: 'oben', group: 'oben', axis_width: 56, aggregation: '2h' };
@@ -216,6 +223,30 @@ g2.setConfig({ ...gemeinsam, title: 'Ladestand', y_axes: [{ unit: '%', min: 0, m
   legend: { hidden: true },
   chips: [{ key: 'soc', label: 'Ø', calc: 'mean', unit: '%', decimals: 0 }],
   series: [{ key: 'soc', name: 'Ladestand', color: '#2e9e6b', stat_type: 'mean', fill: 'gradient' }] });
+
+/* ── Umschalter für Renderer und Kachel ─────────────────────────────────── */
+const alle = () => [[d1, cfg1], [d2, cfg2], [d3, cfg3]];
+document.getElementById('svg').onclick = (e) => {
+  malArt = malArt === 'canvas' ? 'svg' : 'canvas';
+  e.target.textContent = `Renderer: ${malArt}`;
+  // Renderer wechselt man nicht im Betrieb – neu aufsetzen
+  for (const [d] of alle()) d.destroy();
+  neu();
+};
+document.getElementById('kachel').onclick = (e) => {
+  const an = cfg1.card !== false;
+  e.target.textContent = `Kachel: ${an ? 'aus' : 'an'}`;
+  for (const [d, c] of alle()) { c.card = an ? false : undefined; d.setConfig(c); }
+};
+
+let d1b = d1, d2b = d2, d3b = d3;
+function neu() {
+  d1b = new Diagramm(document.getElementById('d1'), { renderer: renderer(), source: quelle });
+  d2b = new Diagramm(document.getElementById('d2'), { renderer: renderer(), source: quelle });
+  d3b = new Diagramm(document.getElementById('d3'), { renderer: renderer(), source: quelle });
+  d1b.setConfig(cfg1); d2b.setConfig(cfg2); d3b.setConfig(cfg3);
+  window.__demo.d1 = d1b; window.__demo.d2 = d2b; window.__demo.d3 = d3b;
+}
 
 window.__demo = { d1, d2, d3, g1, g2, p1 };
 </script>
