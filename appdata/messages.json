@@ -267,6 +267,17 @@
     ],
     "diagramm": [
       {
+        "version": "1.5.0",
+        "date": "2026-09-25",
+        "changes": [
+          "Die Kachel zeichnet das Diagramm jetzt selbst – Hintergrund, Rand, Radius und Innenabstand. Vorher kam der Rahmen aus dem umgebenden Element und `card: false` sah aus, als täte es nichts",
+          "Übersicht zeigt alle Kurven, die der Picker steuert, in ihren eigenen Farben: Jedes angehängte Diagramm meldet seine Reihen. `keys` legt es weiterhin fest",
+          "Übersicht bekommt eine grobe Zeitskala. Der Regler hängt an einer eigenen, unsichtbaren Achse – sonst zoomte er die Übersicht mit und zeigte genau den Ausschnitt, den er einordnen soll",
+          "Übersicht lädt nur bei geändertem Zeitraum oder geänderten Reihen neu; das Verschieben des Fensters allein lädt nichts nach",
+          "Neu: `bounds` fragt beim Hintergrund, von wann bis wann es Daten gibt – einmal beim Start und danach alle `boundsInterval` ms, aber nur solange der Tab sichtbar ist"
+        ]
+      },
+      {
         "version": "1.4.0",
         "date": "2026-09-25",
         "changes": [
@@ -329,6 +340,13 @@
     ]
   },
   "changelog": [
+    {
+      "version": "2.5.5",
+      "date": "2026-09-25",
+      "changes": [
+        "1. Diagramm: Kachel wirklich abschaltbar, Übersicht mit allen Kurven und Zeitskala, Grenzen dynamisch nachgefragt"
+      ]
+    },
     {
       "version": "2.5.4",
       "date": "2026-09-25",

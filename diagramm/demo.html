@@ -14,7 +14,9 @@
   h1 { font-size: 1.4rem; margin: 0 0 4px; }
   p.lead { color: light-dark(#5f6368, #a5a8ad); margin: 0 0 20px; max-width: 70ch; }
   .raster { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); }
-  .karte { background: var(--karte); border: 1px solid var(--linie); border-radius: 12px; height: 320px; }
+  /* Kein eigener Rahmen – den zeichnet das Diagramm selbst, damit
+     "Kachel aus" auch wirklich zu sehen ist. */
+  .karte { height: 320px; }
   .picker { background: var(--karte); border: 1px solid var(--linie); border-radius: 12px; grid-column: 1 / -1; }
   .gekoppelt { grid-column: 1 / -1; height: 220px; }
   .breit { grid-column: 1 / -1; height: 380px; }
@@ -213,28 +215,32 @@ const p1 = new Zeitpicker(document.getElementById('p1'), {
   // in der Wochenansicht die ganzen Wochen, im Monat nichts – der Monat ist
   // ja nicht vollständig gesperrt.
   disabled: [{ from: new Date(Date.now() - 35 * 86400000), to: new Date(Date.now() - 22 * 86400000) }],
-  overview: { keys: ['pv'], renderer: renderer(), source: quelle, color: '#f5b301', height: 72 },
+  // Keine festen Bezeichner: Die Übersicht nimmt, was die angehängten
+  // Diagramme melden – hier also PV und Ladestand in ihren Farben.
+  overview: { renderer: renderer(), source: quelle, height: 80 },
 });
 
 const gemeinsam = { picker: 'oben', group: 'oben', axis_width: 56, aggregation: '2h' };
-const g1 = new Diagramm(document.getElementById('g1'), { renderer: renderer(), source: quelle });
-const g2 = new Diagramm(document.getElementById('g2'), { renderer: renderer(), source: quelle });
-g1.setConfig({ ...gemeinsam, title: 'Erzeugung', y_axes: [{ unit: 'kWh' }],
+const cfgG1 = { ...gemeinsam, title: 'Erzeugung', y_axes: [{ unit: 'kWh' }],
   legend: { hidden: true },
   chips: [{ key: 'pv', label: '☀ Summe', calc: 'sum', unit: 'kWh' }],
-  series: [{ key: 'pv', name: 'PV', color: '#f5b301', fill: 'gradient' }] });
-g2.setConfig({ ...gemeinsam, title: 'Ladestand', y_axes: [{ unit: '%', min: 0, max: 100 }],
+  series: [{ key: 'pv', name: 'PV', color: '#f5b301', fill: 'gradient' }] };
+const cfgG2 = { ...gemeinsam, title: 'Ladestand', y_axes: [{ unit: '%', min: 0, max: 100 }],
   legend: { hidden: true },
-  chips: [{ key: 'soc', label: 'Ø', calc: 'mean', unit: '%', decimals: 0 }],
-  series: [{ key: 'soc', name: 'Ladestand', color: '#2e9e6b', stat_type: 'mean', fill: 'gradient' }] });
+  chips: [{ key: 'soc', label: '🔋 Ø', calc: 'mean', unit: '%', decimals: 0 }],
+  series: [{ key: 'soc', name: 'Ladestand', color: '#2e9e6b', stat_type: 'mean', fill: 'gradient' }] };
+const g1 = new Diagramm(document.getElementById('g1'), { renderer: renderer(), source: quelle });
+const g2 = new Diagramm(document.getElementById('g2'), { renderer: renderer(), source: quelle });
+g1.setConfig(cfgG1); g2.setConfig(cfgG2);
 
 /* ── Umschalter für Renderer und Kachel ─────────────────────────────────── */
-const alle = () => [[d1, cfg1], [d2, cfg2], [d3, cfg3]];
+const paare = () => [[d1, cfg1], [d2, cfg2], [d3, cfg3]];
+const alle = () => [...paare(), [g1, cfgG1], [g2, cfgG2]];
 document.getElementById('svg').onclick = (e) => {
   malArt = malArt === 'canvas' ? 'svg' : 'canvas';
   e.target.textContent = `Renderer: ${malArt}`;
   // Renderer wechselt man nicht im Betrieb – neu aufsetzen
-  for (const [d] of alle()) d.destroy();
+  for (const [d] of paare()) d.destroy();
   neu();
 };
 document.getElementById('kachel').onclick = (e) => {

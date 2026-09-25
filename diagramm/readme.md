@@ -222,6 +222,7 @@ einmal, nicht zweimal.
 | `p.setBounds(min, max)` | Grenzen nachreichen, z. B. sobald bekannt |
 | `p.setOverviewKeys(keys)` | Reihen der Übersicht nachreichen |
 | `p.setDisabled(liste)` | gesperrte Bereiche nachreichen |
+| `p.meldeReihen(wer, liste)` | Reihen für die Übersicht melden (machen Diagramme selbst) |
 | `p.on(cb)` / `p.off(cb)` | eigene Hörer |
 | `p.destroy()` | abmelden und aufräumen |
 | `getPicker(id)` / `onPicker(id, cb)` | von außen andocken |
@@ -231,18 +232,36 @@ einmal, nicht zweimal.
 ```js
 new Zeitpicker(box, {
   id: 'oben',
-  overview: { keys: ['pv'], renderer: echartsRenderer(echarts), source: quelle,
-              color: '#f5b301', height: 72 },
+  overview: { renderer: echartsRenderer(echarts), source: quelle, height: 80 },
 });
 ```
 
-Zeichnet den ganzen Zeitraum zwischen `min` und `max` grob als Kurve und hebt den
-aktuellen Ausschnitt darin hervor. Der Ausschnitt lässt sich ziehen und an den Rändern
-aufziehen; alle angehängten Diagramme folgen.
+Zeichnet den ganzen Zeitraum zwischen `min` und `max` grob und hebt den aktuellen
+Ausschnitt darin hervor. Der Ausschnitt lässt sich ziehen und an den Rändern aufziehen;
+alle angehängten Diagramme folgen. Unten steht eine grobe Zeitskala, damit man sieht,
+von wann bis wann es überhaupt Daten gibt.
 
-`height` ist die Höhe des Streifens in Pixeln (Vorgabe 64) und bestimmt zugleich die
-Höhe des Reglers. Die Kurve steckt im Regler selbst – eine zweite darüber wäre
-dieselbe Linie doppelt.
+**Gezeigt wird, was der Picker steuert.** Jedes angehängte Diagramm meldet seine Reihen,
+und die Übersicht zeichnet sie in denselben Farben. Mit `keys: [...]` legt man stattdessen
+fest, was zu sehen ist.
+
+`height` ist die Höhe des Streifens in Pixeln (Vorgabe 72). Neu geholt wird nur, wenn
+sich Zeitraum oder Reihen ändern – das Verschieben des Fensters allein lädt nichts nach.
+
+### Grenzen dynamisch
+
+```js
+new Zeitpicker(box, {
+  bounds: async () => ({ min: await erstesDatum(), max: new Date() }),
+  boundsInterval: 300000,      // Vorgabe 5 Minuten, 0 = nur einmal
+});
+```
+
+Alles auf einmal zu laden wäre bei Jahren an Daten unsinnig. Gefragt wird nur, von wann
+bis wann es überhaupt etwas gibt; was davon gezeichnet wird, entscheidet danach der
+Ausschnitt. Wer die Seite lange offen lässt, bekommt neu hinzugekommene Daten trotzdem
+mit – nachgefragt wird aber nur, solange der Tab sichtbar ist und das Element im
+Dokument hängt.
 
 ## Gemeinsame X-Achse
 
@@ -260,9 +279,13 @@ untereinander bündig.
 
 ## Mit oder ohne Kachel
 
-`card: false` nimmt dem Diagramm Hintergrund, Rand und Innenabstand. Es sitzt dann
-nackt in dem, was es umgibt – nützlich, wenn schon eine Karte drumherum ist oder
-mehrere Diagramme in einem gemeinsamen Rahmen stehen sollen.
+Die Kachel – Hintergrund, Rand, Radius und Innenabstand – zeichnet das Diagramm selbst.
+`card: false` nimmt alles davon weg; es sitzt dann nackt in dem, was es umgibt. Nützlich,
+wenn schon eine Karte drumherum ist oder mehrere Diagramme in einem gemeinsamen Rahmen
+stehen sollen. Die Einstellung gilt je Diagramm.
+
+Ein Rahmen, der trotz `card: false` bleibt, kommt nicht aus dem Paket, sondern aus dem
+Element, in das es gezeichnet wird.
 
 ## SVG statt Canvas
 
