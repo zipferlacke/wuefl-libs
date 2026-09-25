@@ -261,6 +261,11 @@ export class Zeitpicker {
     if (this.#ovCfg && !this.#ovCfg.keys?.length) this.#uebersicht();
   }
 
+  /** Hat sich schon ein Diagramm mit seinen Reihen gemeldet? */
+  hatReihen() {
+    return [...this.#fremdReihen.values()].some((l) => l?.length);
+  }
+
   /**
    * Welche Reihen die Übersicht zeigt – nachreichbar.
    *

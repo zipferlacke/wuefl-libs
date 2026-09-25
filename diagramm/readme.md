@@ -223,6 +223,7 @@ einmal, nicht zweimal.
 | `p.setOverviewKeys(keys)` | Reihen der Übersicht nachreichen |
 | `p.setDisabled(liste)` | gesperrte Bereiche nachreichen |
 | `p.meldeReihen(wer, liste)` | Reihen für die Übersicht melden (machen Diagramme selbst) |
+| `p.hatReihen()` | hat sich schon ein Diagramm gemeldet? |
 | `p.on(cb)` / `p.off(cb)` | eigene Hörer |
 | `p.destroy()` | abmelden und aufräumen |
 | `getPicker(id)` / `onPicker(id, cb)` | von außen andocken |
