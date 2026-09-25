@@ -157,6 +157,76 @@ Kopie. Titel, Chips und Legende sind dort deshalb zwangsläufig dieselben, und d
 Zeichenfläche füllt die volle Höhe, weil nach jedem Umzug neu gemessen wird. An der
 alten Stelle bleibt so lange ein Platzhalter, damit nichts darunter wegspringt.
 
+## Zeitraum-Picker
+
+`picker.js` bringt die Bedienung mit: Tag / Woche / Monat / Jahr, vor und zurück, ein
+Feld für den freien Zeitraum und wahlweise eine Übersicht mit verschiebbarem Ausschnitt.
+
+```js
+import { Zeitpicker } from './picker.js';
+import { DatePicker } from '../datepicker/datepicker.js';   // optional
+
+const p = new Zeitpicker(document.querySelector('#leiste'), {
+  id: 'oben',
+  granularity: 'week',
+  datePicker: DatePicker,        // ohne ihn: zwei <input type="date">
+  min: new Date('2024-01-01'),   // nicht weiter zurück
+});
+```
+
+Ohne `datePicker` bleiben es die Datumsfelder des Browsers – vollständig bedienbar,
+nur schlichter. Der Picker blättert nie in die Zukunft und nicht vor `min`.
+
+### Diagramme anhängen
+
+```js
+d1.setConfig({ picker: 'oben', series: [...] });
+d2.setConfig({ picker: 'oben', series: [...] });
+d3.setConfig({ picker: 'unten', series: [...] });   // anderer Picker
+```
+
+Steht `picker` in der Konfiguration, kommt der Zeitraum von dort und `range`/`start`/`end`
+werden übergangen. Die Reihenfolge beim Bauen ist egal: Ein Diagramm, das sich an eine
+noch nicht gebaute id hängt, wird benachrichtigt, sobald es sie gibt – und lädt genau
+einmal, nicht zweimal.
+
+| Methode | Zweck |
+| :--- | :--- |
+| `p.range` | `{ start, end }` |
+| `p.setRange(a, b)` | Zeitraum von außen setzen |
+| `p.setGranularity('month')` | Stufe wechseln, Anker bleibt |
+| `p.setBounds(min, max)` | Grenzen nachreichen, z. B. sobald bekannt |
+| `p.on(cb)` / `p.off(cb)` | eigene Hörer |
+| `getPicker(id)` / `onPicker(id, cb)` | von außen andocken |
+
+### Übersicht mit Ausschnitt
+
+```js
+new Zeitpicker(box, {
+  id: 'oben',
+  overview: { keys: ['pv'], renderer: echartsRenderer(echarts), source: quelle,
+              color: '#f5b301', height: 70 },
+});
+```
+
+Zeichnet den ganzen Zeitraum zwischen `min` und `max` grob als Kurve und legt den
+aktuellen Ausschnitt als helles Fenster darüber. Das Fenster lässt sich ziehen und an
+den Rändern aufziehen; alle angehängten Diagramme folgen.
+
+## Gemeinsame X-Achse
+
+Zwei Angaben, die zusammengehören:
+
+```js
+{ group: 'oben', axis_width: 56 }
+```
+
+`group` koppelt die Diagramme: Fadenkreuz, Tooltip und Zoom laufen gemeinsam.
+`axis_width` gibt der Y-Achse eine feste Breite in Pixeln – ohne sie richtet sich jedes
+Diagramm nach der Breite seiner eigenen Zahlen und die Achsen stehen um ein paar Pixel
+versetzt. Zusammen mit demselben `picker` stehen mehrere Diagramme dann wirklich
+untereinander bündig.
+
 ## Icons
 
 Default sind reine UTF-8-Zeichen, keine Icon-Schrift nötig. Verwendete Schlüssel:
@@ -213,3 +283,5 @@ export const meinRenderer = {
 | `prepareRows` `bucketize` | Zeilen aufbereiten und zusammenfassen |
 | `skalierung` | Einheiten umrechnen |
 | `buildOption` | ECharts-Option bauen |
+| `Zeitpicker` `getPicker` `onPicker` | Zeitraumauswahl (aus `picker.js`) |
+| `spanne` `verschiebe` `beschriftung` | Kalenderrechnung (aus `picker.js`) |
