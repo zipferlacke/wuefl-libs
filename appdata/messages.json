@@ -264,9 +264,124 @@
           "Initiale Veröffentlichung"
         ]
       }
+    ],
+    "diagramm": [
+      {
+        "version": "1.5.0",
+        "date": "2026-09-25",
+        "changes": [
+          "Die Kachel zeichnet das Diagramm jetzt selbst – Hintergrund, Rand, Radius und Innenabstand. Vorher kam der Rahmen aus dem umgebenden Element und `card: false` sah aus, als täte es nichts",
+          "Übersicht zeigt alle Kurven, die der Picker steuert, in ihren eigenen Farben: Jedes angehängte Diagramm meldet seine Reihen. `keys` legt es weiterhin fest",
+          "Übersicht bekommt eine grobe Zeitskala. Der Regler hängt an einer eigenen, unsichtbaren Achse – sonst zoomte er die Übersicht mit und zeigte genau den Ausschnitt, den er einordnen soll",
+          "Übersicht lädt nur bei geändertem Zeitraum oder geänderten Reihen neu; das Verschieben des Fensters allein lädt nichts nach",
+          "Neu: `bounds` fragt beim Hintergrund, von wann bis wann es Daten gibt – einmal beim Start und danach alle `boundsInterval` ms, aber nur solange der Tab sichtbar ist"
+        ]
+      },
+      {
+        "version": "1.4.0",
+        "date": "2026-09-25",
+        "changes": [
+          "Farben kommen jetzt wirklich beim Diagramm an: Eine Variable liefert getComputedStyle nur als Text zurück – ECharts bekam wörtlich \"light-dark(#e0e0e0, #3a3f46)\" und nahm still seine eigenen Farben. Aufgelöst wird jetzt über ein unsichtbares Element, das löst in einem Aufwasch auch var(), color-mix(), hsl() und Farbnamen",
+          "`color-scheme: light dark` auf .dg und .dgp – ohne das entscheidet light-dark() gar nicht, sondern nimmt immer den hellen Wert",
+          "Neues Token --dg-grid für das Gitter, getrennt von --dg-line für Ränder und Achsenlinien: hellgrau, damit es hinter den Kurven verschwindet",
+          "--dg-text ist light-dark(#000, #fff); die Legende hängt ausdrücklich daran",
+          "Mit color-mix() gemischte Farben werden auf rgba() gebracht – der Browser gibt sie als color(srgb …) zurück, und das verwirft die Zeichenbibliothek still"
+        ]
+      },
+      {
+        "version": "1.3.0",
+        "date": "2026-09-25",
+        "changes": [
+          "Picker: gesperrte Bereiche (`disabled`). Beim Blättern wird ein Zeitraum übersprungen, wenn er ganz gesperrt ist – in der Tagesansicht reicht ein Tag, in der Wochenansicht muss die ganze Woche gesperrt sein, bei Monat und Jahr entsprechend. Gibt es in einer Richtung nichts Freies mehr, wird der Pfeil abgeschaltet",
+          "Picker: `granularities` blendet Stufen aus; bleibt eine übrig, verschwindet der Umschalter ganz",
+          "Picker: der Auslöser sitzt jetzt zwischen den Pfeilen statt daneben, mit Kalender-Icon und im Stil der Eingabefelder. Der Kalender legt seinen Auslöser durchsichtig darüber",
+          "Icons: kalender, zurueck und vor kommen dazu – auch sie über setIcons() austauschbar",
+          "Chips: die Beschriftung wird als Markup eingesetzt – ein Icon steckt damit einfach mit im `label`, ein eigenes Feld dafür gibt es nicht"
+        ]
+      },
+      {
+        "version": "1.2.0",
+        "date": "2026-09-25",
+        "changes": [
+          "Übersicht im Picker ist jetzt nur noch der Regler selbst – er zeichnet die Kurve als Schatten in seinem Hintergrund, die zweite Kurve darüber war dieselbe Linie doppelt. `overview.height` steuert die Höhe",
+          "Umschalter und Datumsfelder benutzen dieselben Variablen wie die Eingabefelder von wuefl-libs (--bg-input, --br-input, --fs-input, --clr-primary-*) und fügen sich damit von selbst ein; ohne die Bibliothek greifen Rückfallwerte",
+          "`card: false` nimmt dem Diagramm Hintergrund, Rand und Innenabstand",
+          "Der Picker nimmt DatePicker als Klasse oder als fertige Instanz; ohne ihn bleiben zwei Datumsfelder, der Trennstrich verschwindet mit ihnen",
+          "Demo bindet den Kalender aus wuefl-libs ein und kann Renderer (canvas/svg) und Kachel umschalten",
+          "mitAlpha() wird exportiert"
+        ]
+      },
+      {
+        "version": "1.1.0",
+        "date": "2026-09-25",
+        "changes": [
+          "Neu: Zeitraum-Picker (picker.js) mit Tag/Woche/Monat/Jahr, vor und zurück, freiem Zeitraum – der Kalender aus wuefl-libs wird übergeben, ohne ihn bleiben zwei Datumsfelder",
+          "Diagramme hängen sich mit `picker: '<id>'` an einen Picker; ein Picker steuert beliebig viele, mehrere Picker steuern verschiedene Gruppen. Die Reihenfolge beim Bauen ist egal",
+          "Übersicht im Picker: der ganze Zeitraum grob als Kurve, der Ausschnitt als verschiebbares und aufziehbares Fenster",
+          "Gemeinsame X-Achse über `group` (Fadenkreuz, Tooltip und Zoom laufen zusammen) und `axis_width` (feste Achsenbreite, damit die Diagramme bündig stehen)",
+          "Chips erben die Farbe ihrer Reihe, wenn keine eigene angegeben ist",
+          "Zoomen per Geste – erst nach einem Klick ins Diagramm, damit auf dem Handy das Scrollen nicht hängen bleibt; `zoom: true` schaltet es sofort scharf",
+          "Renderer kennt drei freiwillige Methoden mehr: on() für Ereignisse, link() fürs Koppeln, instance() für Feinarbeit"
+        ]
+      },
+      {
+        "version": "1.0.0",
+        "date": "2026-09-25",
+        "changes": [
+          "Neu: Zeitreihen-Diagramm mit Titel, beliebig vielen Chips, klickbarer Legende und Vollbild",
+          "Renderer austauschbar – ECharts wird übergeben, nicht mitgeliefert; Projekte mit eigener Zeichenschicht schreiben nur diese eine Datei neu",
+          "Quelle austauschbar: (keys, von, bis, stufe) → Zeilen. Passt auf SQL genauso wie auf die Langzeitstatistik von Home Assistant",
+          "Auflösung wird erfragt statt geschätzt: von fein nach grob, bis eine Stufe den Zeitraum wirklich abdeckt – gemessen an der Abdeckung, nicht daran ob überhaupt Zeilen kamen",
+          "Vollbild zeigt dasselbe Diagramm statt einer Kopie; Titel und Chips bleiben, die Zeichenfläche füllt die Höhe, an der alten Stelle hält ein Platzhalter das Layout",
+          "Konfiguration als Objekt, JSON oder – mit angemeldetem Parser – YAML",
+          "Icons wie im Tableview: UTF-8 als Default, eigene Map jederzeit einsetzbar"
+        ]
+      }
     ]
   },
   "changelog": [
+    {
+      "version": "2.5.5",
+      "date": "2026-09-25",
+      "changes": [
+        "1. Diagramm: Kachel wirklich abschaltbar, Übersicht mit allen Kurven und Zeitskala, Grenzen dynamisch nachgefragt"
+      ]
+    },
+    {
+      "version": "2.5.4",
+      "date": "2026-09-25",
+      "changes": [
+        "1. Diagramm: Farben folgen hell und dunkel richtig, eigenes Token fürs Gitter"
+      ]
+    },
+    {
+      "version": "2.5.3",
+      "date": "2026-09-25",
+      "changes": [
+        "1. Diagramm: gesperrte Zeiträume im Picker, ausblendbare Stufen, Auslöser zwischen den Pfeilen, Icons in den Chips"
+      ]
+    },
+    {
+      "version": "2.5.2",
+      "date": "2026-09-25",
+      "changes": [
+        "1. Diagramm: Übersicht als Regler mit Kurve, Umschalter im Stil der Bibliothek, Kachel abschaltbar, Kalender in der Demo"
+      ]
+    },
+    {
+      "version": "2.5.1",
+      "date": "2026-09-25",
+      "changes": [
+        "1. Diagramm: Zeitraum-Picker mit Übersicht, verknüpfbare Diagramme, gemeinsame X-Achse, Zoomen per Geste"
+      ]
+    },
+    {
+      "version": "2.5.0",
+      "date": "2026-09-25",
+      "changes": [
+        "1. Neues Paket Diagramm: Zeitreihen mit Titel, Chips, Legende und Vollbild – Renderer und Datenquelle austauschbar"
+      ]
+    },
     {
       "version": "2.4.3",
       "date": "2026-09-24",

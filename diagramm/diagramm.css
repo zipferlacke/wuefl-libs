@@ -1,0 +1,336 @@
+/* ==========================================================================
+   diagramm.css – Rahmen um die Zeichenfläche
+   --------------------------------------------------------------------------
+   Alles Sichtbare hängt an CSS-Variablen mit Rückfallwert. Wer nichts setzt,
+   bekommt ein neutrales helles/dunkles Bild; wer sein Design hat, überschreibt
+   die Variablen und muss keine Regel anfassen.
+   ========================================================================== */
+
+.dg {
+  /* Ohne color-scheme entscheidet light-dark() gar nicht, sondern nimmt immer
+     den hellen Wert. Die Variablen hier sind also nur wirksam, weil diese
+     Zeile steht. Wer ein Thema erzwingen will, setzt color-scheme selbst. */
+  color-scheme: light dark;
+
+  --dg-text: light-dark(#000, #fff);
+  --dg-text-soft: light-dark(#5f6368, #a5a8ad);
+  --dg-bg: light-dark(#fff, #1c1f24);
+  /* Rand und Trennlinien … */
+  --dg-line: light-dark(#d4d6d9, #3a3f46);
+  /* … und getrennt davon das Gitter im Diagramm: hell genug, um hinter den
+     Kurven zu verschwinden, dunkel genug, um Werte ablesen zu können. */
+  --dg-grid: light-dark(#e8eaed, #2c3036);
+  --dg-radius: 12px;
+  --dg-gap: 8px;
+  --dg-title-size: 1.25rem;
+  --dg-chip-size: .875rem;
+  --dg-legend-size: .75rem;
+  --dg-min-height: 180px;
+
+  /* Die Kachel: Hintergrund, Rand, Radius. `card: false` nimmt alles davon
+     weg – dann sitzt das Diagramm nackt in dem, was es umgibt. */
+  background: var(--dg-bg);
+  border: 1px solid var(--dg-line);
+  border-radius: var(--dg-radius);
+  box-sizing: border-box;
+  color: var(--dg-text);
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: var(--dg-min-height);
+  overflow: hidden;
+}
+
+.dg *, .dg *::before, .dg *::after { box-sizing: inherit; }
+
+/* ── Kopf: Titel links, Chips und Vollbild rechts ─────────────────────────── */
+
+.dg_head {
+  align-items: flex-start;
+  display: flex;
+  flex-shrink: 0;
+  gap: var(--dg-gap);
+  justify-content: space-between;
+  padding: 12px 16px 0;
+}
+.dg_head:empty, .dg_head[hidden] { display: none; }
+
+.dg_title {
+  font-size: var(--dg-title-size);
+  font-weight: 500;
+  line-height: 1.3;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.dg_title:empty { display: none; }
+
+.dg_tools {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  justify-content: flex-end;
+  margin-left: auto;
+}
+
+/* Chips: beliebig viele, jeder in seiner Farbe */
+.dg_chip {
+  --_c: var(--dg-chip-color, var(--dg-text-soft));
+  align-items: center;
+  background: color-mix(in srgb, var(--_c) 12%, transparent);
+  border: 1px solid var(--_c);
+  border-radius: 999px;
+  color: var(--_c);
+  display: inline-flex;
+  font-size: var(--dg-chip-size);
+  font-weight: 600;
+  gap: .35em;
+  line-height: 1.4;
+  padding: 3px 11px;
+  white-space: nowrap;
+}
+.dg_chip_label { align-items: center; display: inline-flex; font-weight: 500; gap: .3em; opacity: .85; }
+
+.dg_btn {
+  align-items: center;
+  background: none;
+  border: 0;
+  border-radius: 50%;
+  color: var(--dg-text-soft);
+  cursor: pointer;
+  display: inline-flex;
+  font: inherit;
+  height: 32px;
+  justify-content: center;
+  line-height: 1;
+  padding: 0;
+  width: 32px;
+}
+.dg_btn:hover { background: color-mix(in srgb, currentColor 12%, transparent); color: var(--dg-text); }
+.dg_btn:focus-visible { outline: 2px solid var(--_c, currentColor); outline-offset: 2px; }
+.dg_glyph { display: inline-flex; font-size: 1.25rem; line-height: 1; }
+
+/* ── Legende ──────────────────────────────────────────────────────────────── */
+
+.dg_legend {
+  align-items: center;
+  display: flex;
+  flex-shrink: 0;
+  flex-wrap: wrap;
+  gap: 6px 16px;
+  padding: 6px 16px;
+  user-select: none;
+}
+.dg_legend:empty { display: none; }
+.dg_legend[data-pos*="center"] { justify-content: center; }
+.dg_legend[data-pos*="right"] { justify-content: flex-end; }
+
+.dg_legend.dg_inner {
+  backdrop-filter: blur(4px);
+  background: color-mix(in srgb, var(--dg-bg) 85%, transparent);
+  border: 1px solid var(--dg-line);
+  border-radius: 8px;
+  padding: 6px 12px;
+  pointer-events: auto;
+  position: absolute;
+  z-index: 2;
+}
+.dg_legend.dg_inner[data-pos*="top"] { top: 8px; }
+.dg_legend.dg_inner[data-pos*="bottom"] { bottom: 8px; }
+.dg_legend.dg_inner[data-pos*="left"] { left: 12px; }
+.dg_legend.dg_inner[data-pos*="right"] { right: 12px; }
+
+.dg_item {
+  align-items: center;
+  background: none;
+  border: 0;
+  color: var(--dg-text);
+  cursor: pointer;
+  display: inline-flex;
+  font: inherit;
+  font-size: var(--dg-legend-size);
+  gap: 6px;
+  padding: 0;
+  transition: opacity .2s;
+}
+.dg_item[aria-pressed="false"] { opacity: .35; text-decoration: line-through; }
+.dg_dot { border-radius: 50%; flex-shrink: 0; height: 10px; width: 10px; }
+
+/* ── Zeichenfläche ────────────────────────────────────────────────────────── */
+
+.dg_plot {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+  padding: 0 8px 4px;
+  position: relative;
+}
+.dg_canvas { flex: 1; min-height: 0; width: 100%; }
+
+.dg_note {
+  color: var(--dg-text-soft);
+  font-size: var(--dg-legend-size);
+  padding: 4px 16px 8px;
+}
+.dg_note:empty { display: none; }
+.dg_error { color: light-dark(#c5221f, #f28b82); padding: 16px; }
+
+/* ── Vollbild ─────────────────────────────────────────────────────────────── */
+
+.dg_fs {
+  background: var(--dg-bg);
+  border: 0;
+  color: var(--dg-text);
+  display: none;
+  flex-direction: column;
+  height: 100dvh;
+  margin: 0;
+  max-height: none;
+  max-width: none;
+  padding: 0;
+  width: 100vw;
+}
+.dg_fs[open] { display: flex; }
+.dg_fs::backdrop { background: rgb(0 0 0 / .5); }
+
+/* Im Vollbild steckt dasselbe Diagramm – es soll die Höhe wirklich ausfüllen.
+   Darum hier eine feste Kette aus Flex-Elementen bis zur Zeichenfläche und
+   keine Prozenthöhe, die sich an einer unbekannten Elternhöhe misst. */
+.dg_fs > .dg { border-radius: 0; flex: 1; height: auto; min-height: 0; }
+.dg_fs > .dg .dg_plot { padding-bottom: 12px; }
+
+/* Scharf geschaltetes Diagramm: Zoomen per Geste ist aktiv. Dezent, aber
+   sichtbar – sonst rätselt man, warum das Wischen mal scrollt und mal zoomt. */
+.dg.dg_aktiv .dg_plot { box-shadow: inset 0 0 0 1px color-mix(in srgb, currentColor 18%, transparent); border-radius: 8px; }
+
+/* ==========================================================================
+   Zeitraum-Picker
+   ========================================================================== */
+
+.dgp {
+  color-scheme: light dark;
+  --dgp-ov-height: 64px;
+  background: var(--dg-bg, light-dark(#fff, #1c1f24));
+  box-sizing: border-box;
+  color: var(--dg-text, light-dark(#1c1c1c, #e7e7e7));
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px 12px;
+}
+.dgp *, .dgp *::before, .dgp *::after { box-sizing: inherit; }
+
+.dgp_leiste {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+  justify-content: space-between;
+}
+
+/* Der Umschalter benutzt dieselben Variablen wie die Eingabefelder von
+   wuefl-libs (css/components/_inputs.css). Ist das Stilblatt der Bibliothek
+   geladen, fügt er sich von selbst ein; ohne sie greifen die Rückfallwerte
+   und er sieht trotzdem ordentlich aus. */
+.dgp_stufen { display: flex; gap: 2px; }
+.dgp_stufe {
+  appearance: none;
+  background-color: var(--bg-input, color-mix(in srgb, currentColor 7%, transparent));
+  border: 0;
+  color: inherit;
+  cursor: pointer;
+  font: inherit;
+  font-size: var(--fs-input, .875rem);
+  height: clamp(min-content, var(--input-height, auto), 100%);
+  outline: none;
+  padding: .25rem 1rem;
+  text-align: center;
+}
+.dgp_stufe:first-child { border-radius: var(--br-input, 999px) 0 0 var(--br-input, 999px); }
+.dgp_stufe:last-child { border-radius: 0 var(--br-input, 999px) var(--br-input, 999px) 0; }
+.dgp_stufe:hover { background-color: var(--clr-primary-100, color-mix(in srgb, currentColor 14%, transparent)); }
+.dgp_stufe:focus-visible { outline: 1px solid var(--clr-primary-900, currentColor); }
+.dgp_stufe[aria-pressed="true"] {
+  background-color: var(--clr-primary-400, color-mix(in srgb, currentColor 20%, transparent));
+  font-weight: 600;
+}
+.dgp_stufe[aria-pressed="true"]:hover { background-color: var(--clr-primary-300, color-mix(in srgb, currentColor 24%, transparent)); }
+
+.dgp_nav { align-items: center; display: flex; flex: 1; gap: 4px; justify-content: center; }
+
+/* Der Auslöser sitzt zwischen den Pfeilen. Der Kalender legt seinen eigenen
+   durchsichtig darüber – deshalb braucht es hier die Bezugsposition. */
+.dgp_ausloeser { display: inline-flex; position: relative; }
+.dgp_btn {
+  background: none; border: 0; border-radius: 50%; color: var(--dg-text-soft, #5f6368);
+  cursor: pointer; font: inherit; font-size: 1.25rem; height: 32px; line-height: 1; width: 32px;
+}
+.dgp_btn:hover:not(:disabled) { background: color-mix(in srgb, currentColor 12%, transparent); }
+.dgp_btn:disabled { cursor: default; opacity: .3; }
+
+.dgp_label {
+  align-items: center;
+  appearance: none;
+  background-color: var(--bg-input, color-mix(in srgb, currentColor 7%, transparent));
+  border: 0;
+  border-radius: var(--br-input, 999px);
+  color: inherit;
+  cursor: pointer;
+  display: inline-flex;
+  font: inherit;
+  font-size: var(--fs-input, .9375rem);
+  font-weight: 600;
+  gap: .5em;
+  justify-content: center;
+  min-width: 14ch;
+  padding: .35rem 1rem;
+  white-space: nowrap;
+}
+.dgp_label:hover { background-color: var(--clr-primary-100, color-mix(in srgb, currentColor 14%, transparent)); }
+.dgp_glyph { display: inline-flex; font-size: 1.1em; line-height: 1; opacity: .8; }
+.dgp_glyph:empty { display: none; }
+
+/* Ohne Kalender stehen hier zwei Datumsfelder, mit Kalender nur sein
+   unsichtbarer Auslöser über dem Knopf. */
+.dgp_felder { align-items: center; display: flex; gap: 6px; }
+.dgp_felder:not(.dgp_schlicht) { inset: 0; position: absolute; }
+.dgp_felder:not(.dgp_schlicht) input { display: none; }
+.dgp_stufen[hidden] { display: none; }
+.dgp_felder input {
+  appearance: none;
+  background-color: var(--bg-input, color-mix(in srgb, currentColor 7%, transparent));
+  border: 0;
+  border-radius: var(--br-input, 8px);
+  color: inherit;
+  font: inherit;
+  font-size: var(--fs-input, .875rem);
+  height: clamp(min-content, var(--input-height, auto), 100%);
+  outline: none;
+  padding: .25rem 1rem;
+  text-align: center;
+}
+.dgp_felder input:hover { background-color: var(--clr-primary-100, color-mix(in srgb, currentColor 14%, transparent)); }
+.dgp_bis { color: var(--dg-text-soft, #5f6368); }
+/* Übernimmt der Kalender die Felder, bringt er seinen eigenen Auslöser mit –
+   unser Trennstrich zwischen den beiden Feldern hat dann nichts mehr zu
+   trennen. Nur ohne Kalender bleibt er stehen. */
+.dgp_felder:not(.dgp_schlicht) .dgp_bis { display: none; }
+/* Hängt der Kalender aus wuefl-libs daran, versteckt er die Felder selbst.
+   Ohne ihn bleiben sie sichtbar – schlicht, aber vollständig bedienbar. */
+
+.dgp_ov { height: var(--dgp-ov-height); width: 100%; }
+.dgp_ov[hidden] { display: none; }
+.dgp_ov .dg_canvas { height: 100%; width: 100%; }
+
+/* Ohne Kachel: kein Hintergrund, kein Rand, kein Radius, kein Innenabstand. */
+.dg.dg_nackt {
+  background: none;
+  border: 0;
+  border-radius: 0;
+}
+.dg.dg_nackt > .dg_head { padding: 0 0 4px; }
+.dg.dg_nackt > .dg_legend { padding: 4px 0; }
+.dg.dg_nackt > .dg_plot { padding: 0; }
+.dg.dg_nackt > .dg_note { padding: 4px 0 0; }
+

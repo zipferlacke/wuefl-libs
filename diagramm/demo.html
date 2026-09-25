@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Diagramm – Demo</title>
+<link rel="stylesheet" href="../css/import.css">
+<link rel="stylesheet" href="../datepicker/datepicker.css">
+<link rel="stylesheet" href="./diagramm.css">
+<style>
+  :root { color-scheme: light dark; --fg: light-dark(#1c1c1c, #e7e7e7); --bg: light-dark(#f6f7f9, #14171b);
+          --karte: light-dark(#fff, #1c1f24); --linie: light-dark(#e0e0e0, #3a3f46); }
+  body { background: var(--bg); color: var(--fg); font: 15px/1.5 system-ui, sans-serif; margin: 0; padding: 16px; }
+  h1 { font-size: 1.4rem; margin: 0 0 4px; }
+  p.lead { color: light-dark(#5f6368, #a5a8ad); margin: 0 0 20px; max-width: 70ch; }
+  .raster { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); }
+  /* Kein eigener Rahmen – den zeichnet das Diagramm selbst, damit
+     "Kachel aus" auch wirklich zu sehen ist. */
+  .karte { height: 320px; }
+  .picker { background: var(--karte); border: 1px solid var(--linie); border-radius: 12px; grid-column: 1 / -1; }
+  .gekoppelt { grid-column: 1 / -1; height: 220px; }
+  .breit { grid-column: 1 / -1; height: 380px; }
+  .werkzeug { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 16px; }
+  button, select { background: var(--karte); border: 1px solid var(--linie); border-radius: 8px;
+                   color: inherit; cursor: pointer; font: inherit; padding: 6px 12px; }
+  textarea { background: var(--karte); border: 1px solid var(--linie); border-radius: 8px; color: inherit;
+             font: 13px/1.5 ui-monospace, monospace; padding: 10px; width: 100%; }
+  details { margin-top: 20px; }
+  summary { cursor: pointer; }
+</style>
+</head>
+<body>
+<h1>Diagramm</h1>
+<p class="lead">Titel, beliebig viele Chips, Legende und Vollbild sind immer derselbe Rahmen.
+  Gezeichnet wird über einen austauschbaren Renderer – hier ECharts –, die Zahlen kommen aus einer
+  austauschbaren Quelle. Das Vollbild zeigt <em>dasselbe</em> Diagramm, nicht eine Kopie.</p>
+
+<div class="werkzeug">
+  <button id="icons-utf8">Icons: UTF-8</button>
+  <button id="icons-msr">Icons: Material</button>
+  <select id="raster">
+    <option value="grob">Quelle: alle Stufen</option>
+    <option value="nurStunde">Quelle: nur Stundenwerte</option>
+    <option value="nurTag">Quelle: nur Tageswerte</option>
+  </select>
+  <button id="neu">Neu laden</button>
+  <button id="zoom">Zoomen: nach Klick</button>
+  <button id="svg">Renderer: canvas</button>
+  <button id="kachel">Kachel: an</button>
+</div>
+<p class="lead"><b>Picker:</b> Tag/Woche/Monat/Jahr, vor und zurück, freier Zeitraum. Darunter die
+  Übersicht über alles – das helle Fenster lässt sich ziehen und aufziehen. Die beiden Diagramme
+  gleich darunter hängen mit <code>picker: 'oben'</code> daran und teilen über <code>group</code>
+  Fadenkreuz und Zoom; <code>axis_width</code> macht sie bündig. Die drei weiter unten hängen an
+  keinem Picker und bleiben davon unberührt.</p>
+<p class="lead"><b>Zoomen:</b> mit dem Mausrad oder zwei Fingern im Diagramm, Ziehen verschiebt.
+  Standardmäßig wird das erst nach einem Klick ins Diagramm scharf – sonst bleibt auf dem Handy
+  jede Wischbewegung hängen, statt die Seite zu scrollen. Ein scharfes Diagramm bekommt einen
+  dünnen Rahmen. Das breite Diagramm unten steht auf <code>zoom: true</code> und geht sofort.</p>
+
+<div class="raster">
+  <div class="picker" id="p1"></div>
+  <div class="karte gekoppelt" id="g1"></div>
+  <div class="karte gekoppelt" id="g2"></div>
+  <div class="karte" id="d1"></div>
+  <div class="karte" id="d2"></div>
+  <div class="karte breit" id="d3"></div>
+</div>
+
+<details>
+  <summary>Konfiguration als JSON bearbeiten (gilt für das breite Diagramm)</summary>
+  <p>YAML geht genauso, sobald ein Parser angemeldet ist: <code>setYamlParser(jsyaml.load)</code>.</p>
+  <textarea id="json" rows="18" spellcheck="false"></textarea>
+  <div class="werkzeug" style="margin-top:8px"><button id="anwenden">Anwenden</button></div>
+</details>
+
+<script type="module">
+import * as echarts from 'https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.esm.min.js';
+import { Diagramm, setIcons } from './diagramm.js';
+import { Zeitpicker } from './picker.js';
+import { echartsRenderer } from './renderer-echarts.js';
+import { DatePicker } from '../datepicker/datepicker.js';
+
+/* ── Eine erfundene Quelle ────────────────────────────────────────────────
+   Genau die Schnittstelle, die auch eine SQL-Abfrage oder Home Assistant
+   bedient: Bezeichner, Von, Bis, Stufe → Zeilen je Bezeichner.            */
+const MS = { '5minute': 300000, hour: 3600000, day: 86400000, month: 30 * 86400000 };
+let erlaubt = new Set(['5minute', 'hour', 'day', 'month']);
+
+// Tageslauf mal Jahreszeit. Der Tagesanteil wird bei groben Stufen durch den
+// Mittelwert ersetzt – sonst stünde in einem Tages-Topf der Wert von 0 Uhr,
+// und die Sonne schiene nachts nie.
+const tagesMittel = (f) => { let s = 0; for (let h = 0; h < 24; h++) s += f(h); return s / 24; };
+const jahr = (d) => 0.45 + 0.55 * Math.sin((d.getMonth() + d.getDate() / 30 - 2.5) / 12 * Math.PI * 2);
+const bogen = (h) => Math.max(0, Math.sin((h - 6) / 12 * Math.PI));
+
+const kurven = {
+  pv:    (d, grob) => (grob ? tagesMittel(bogen) : bogen(d.getHours() + d.getMinutes() / 60)) * 7 * jahr(d),
+  bezug: (d, grob) => (grob ? 0.55 : (d.getHours() < 7 || d.getHours() > 19 ? 1.2 : 0.3)),
+  haus:  (d, grob) => (grob ? 0.65 : 0.4 + 0.5 * Math.abs(Math.sin(d.getHours() / 3))),
+  soc:   (d) => 50 + 45 * Math.sin((d.getHours() - 8) / 24 * 2 * Math.PI),
+};
+
+async function quelle(keys, start, end, stufe) {
+  await new Promise((r) => setTimeout(r, 60));          // so tun, als käme es übers Netz
+  const out = {};
+  if (!erlaubt.has(stufe)) { for (const k of keys) out[k] = []; return out; }
+  const schritt = MS[stufe];
+  for (const k of keys) {
+    const rows = [];
+    for (let t = +start; t < +end; t += schritt) {
+      const d = new Date(t);
+      const basis = (kurven[k] ?? (() => 1))(d, schritt >= 86400000);
+      const jitter = 0.85 + 0.3 * Math.abs(Math.sin(t / 7e6));
+      rows.push(k === 'soc'
+        ? { start: new Date(t).toISOString(), mean: Math.min(100, Math.max(0, basis * jitter)) }
+        : { start: new Date(t).toISOString(), change: basis * jitter * (schritt / 3600000) });
+    }
+    out[k] = rows;
+  }
+  return out;
+}
+
+let malArt = 'canvas';
+const renderer = () => echartsRenderer(echarts, { renderer: malArt });
+
+/* ── Drei Diagramme, drei Ausbaustufen ──────────────────────────────────── */
+
+const cfg1 = {
+  title: 'Ladestand',
+  range: '1w',
+  aggregation: '2h',
+  y_axes: [{ unit: '%', min: 0, max: 100 }],
+  legend: { hidden: true },
+  chips: [{ key: 'soc', label: '🔋', calc: 'last', unit: '%', color: '#2e9e6b', decimals: 0 }],
+  series: [{ key: 'soc', name: 'Ladestand', color: '#2e9e6b', stat_type: 'mean', fill: 'gradient' }],
+};
+
+const cfg2 = {
+  title: 'Heute',
+  range: '1d',
+  aggregation: '10min',
+  y_axes: [{ unit: 'kWh' }],
+  legend: { position: 'top-right' },
+  chips: [
+    { key: 'pv', label: '☀ PV', calc: 'sum', unit: 'kWh' },
+    { key: 'bezug', label: '⚡ Netz', calc: 'sum', unit: 'kWh' },
+  ],
+  series: [
+    { key: 'pv', name: 'Erzeugung', color: '#f5b301', fill: 'gradient' },
+    { key: 'bezug', name: 'Netzbezug', color: '#2196f3', fill: 'gradient' },
+  ],
+};
+
+const cfg3 = {
+  title: 'Verteilung',
+  range: '1m',
+  aggregation: '1d',
+  type: 'bar',
+  bar_overlap: true,
+  zoom: true,
+  y_axes: [{ unit: 'kWh' }],
+  legend: { position: 'top-center' },
+  chips: [
+    { key: 'pv', label: 'Erzeugt', calc: 'sum', unit: 'kWh', color: '#f5b301' },
+    { key: 'haus', label: 'Verbraucht', calc: 'sum', unit: 'kWh', color: '#e5534b' },
+    { key: 'soc', label: 'Ø Ladestand', calc: 'mean', unit: '%', color: '#2e9e6b', decimals: 0 },
+  ],
+  series: [
+    { key: 'pv', name: 'Erzeugung', color: '#f5b301', stack: 'auf', only_positive: true },
+    { key: 'haus', name: 'Haushalt', color: '#e5534b', stack: 'ab', sign: -1, only_positive: true },
+    { key: 'bezug', name: 'Netzbezug', color: '#2196f3', stack: 'auf', only_positive: true },
+  ],
+};
+
+const d1 = new Diagramm(document.getElementById('d1'), { renderer: renderer(), source: quelle });
+const d2 = new Diagramm(document.getElementById('d2'), { renderer: renderer(), source: quelle });
+const d3 = new Diagramm(document.getElementById('d3'), { renderer: renderer(), source: quelle });
+d1.setConfig(cfg1); d2.setConfig(cfg2); d3.setConfig(cfg3);
+
+document.getElementById('json').value = JSON.stringify(cfg3, null, 2);
+
+/* ── Bedienung der Demo ─────────────────────────────────────────────────── */
+document.getElementById('icons-utf8').onclick = () => setIcons('default-utf8');
+document.getElementById('icons-msr').onclick = () => setIcons('default-msr');
+document.getElementById('raster').onchange = (e) => {
+  erlaubt = e.target.value === 'nurStunde' ? new Set(['hour', 'day', 'month'])
+    : e.target.value === 'nurTag' ? new Set(['day', 'month'])
+    : new Set(['5minute', 'hour', 'day', 'month']);
+  [d1, d2, d3].forEach((d) => d.refresh());
+};
+document.getElementById('neu').onclick = () => [d1, d2, d3].forEach((d) => d.refresh());
+document.getElementById('zoom').onclick = (e) => {
+  const an = !cfg1.zoom;
+  cfg1.zoom = cfg2.zoom = an ? true : undefined;
+  e.target.textContent = an ? 'Zoomen: immer an' : 'Zoomen: nach Klick';
+  d1.setConfig(cfg1); d2.setConfig(cfg2);
+};
+document.getElementById('anwenden').onclick = () => {
+  try { d3.setConfig(document.getElementById('json').value); }
+  catch (err) { alert(err.message); }
+};
+
+/* ── Ein Picker steuert zwei gekoppelte Diagramme ────────────────────────
+   Beide hängen mit `picker: 'oben'` daran und teilen über `group` das
+   Fadenkreuz. `axis_width` gibt beiden dieselbe Achsenbreite, damit sie
+   untereinander bündig stehen. Der Kalender aus wuefl-libs wird hier nicht
+   übergeben – es bleiben die zwei Felder des Browsers.                    */
+const p1 = new Zeitpicker(document.getElementById('p1'), {
+  id: 'oben',
+  granularity: 'week',
+  datePicker: DatePicker,          // der Kalender aus wuefl-libs
+  min: new Date(Date.now() - 120 * 86400000),
+  // Zwei gesperrte Wochen: in der Tagesansicht werden die Tage übersprungen,
+  // in der Wochenansicht die ganzen Wochen, im Monat nichts – der Monat ist
+  // ja nicht vollständig gesperrt.
+  disabled: [{ from: new Date(Date.now() - 35 * 86400000), to: new Date(Date.now() - 22 * 86400000) }],
+  // Keine festen Bezeichner: Die Übersicht nimmt, was die angehängten
+  // Diagramme melden – hier also PV und Ladestand in ihren Farben.
+  overview: { renderer: renderer(), source: quelle, height: 80 },
+});
+
+const gemeinsam = { picker: 'oben', group: 'oben', axis_width: 56, aggregation: '2h' };
+const cfgG1 = { ...gemeinsam, title: 'Erzeugung', y_axes: [{ unit: 'kWh' }],
+  legend: { hidden: true },
+  chips: [{ key: 'pv', label: '☀ Summe', calc: 'sum', unit: 'kWh' }],
+  series: [{ key: 'pv', name: 'PV', color: '#f5b301', fill: 'gradient' }] };
+const cfgG2 = { ...gemeinsam, title: 'Ladestand', y_axes: [{ unit: '%', min: 0, max: 100 }],
+  legend: { hidden: true },
+  chips: [{ key: 'soc', label: '🔋 Ø', calc: 'mean', unit: '%', decimals: 0 }],
+  series: [{ key: 'soc', name: 'Ladestand', color: '#2e9e6b', stat_type: 'mean', fill: 'gradient' }] };
+const g1 = new Diagramm(document.getElementById('g1'), { renderer: renderer(), source: quelle });
+const g2 = new Diagramm(document.getElementById('g2'), { renderer: renderer(), source: quelle });
+g1.setConfig(cfgG1); g2.setConfig(cfgG2);
+
+/* ── Umschalter für Renderer und Kachel ─────────────────────────────────── */
+const paare = () => [[d1, cfg1], [d2, cfg2], [d3, cfg3]];
+const alle = () => [...paare(), [g1, cfgG1], [g2, cfgG2]];
+document.getElementById('svg').onclick = (e) => {
+  malArt = malArt === 'canvas' ? 'svg' : 'canvas';
+  e.target.textContent = `Renderer: ${malArt}`;
+  // Renderer wechselt man nicht im Betrieb – neu aufsetzen
+  for (const [d] of paare()) d.destroy();
+  neu();
+};
+document.getElementById('kachel').onclick = (e) => {
+  const an = cfg1.card !== false;
+  e.target.textContent = `Kachel: ${an ? 'aus' : 'an'}`;
+  for (const [d, c] of alle()) { c.card = an ? false : undefined; d.setConfig(c); }
+};
+
+let d1b = d1, d2b = d2, d3b = d3;
+function neu() {
+  d1b = new Diagramm(document.getElementById('d1'), { renderer: renderer(), source: quelle });
+  d2b = new Diagramm(document.getElementById('d2'), { renderer: renderer(), source: quelle });
+  d3b = new Diagramm(document.getElementById('d3'), { renderer: renderer(), source: quelle });
+  d1b.setConfig(cfg1); d2b.setConfig(cfg2); d3b.setConfig(cfg3);
+  window.__demo.d1 = d1b; window.__demo.d2 = d2b; window.__demo.d3 = d3b;
+}
+
+window.__demo = { d1, d2, d3, g1, g2, p1 };
+</script>
+</body>
+</html>
