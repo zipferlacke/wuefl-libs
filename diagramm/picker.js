@@ -129,7 +129,7 @@ export class Zeitpicker {
   #host; #els = {}; #hoerer = new Set();
   #stufe = 'day'; #anker = new Date(); #start; #end;
   #min = null; #max = null;
-  #dp = null; #datePicker = null;
+  #dp = null; #datePicker = null; #dpOpts = null;
   #ov = null; #ovGriff = null; #ovCfg = null; #renderer = null; #source = null;
   #id = null; #seq = 0;
 
@@ -137,7 +137,10 @@ export class Zeitpicker {
    * @param {Element} host
    * @param {object}  opts
    * @param {string}  opts.id                Name, unter dem Diagramme sich anhängen
-   * @param {object}  [opts.datePicker]      DatePicker aus wuefl-libs (optional)
+   * @param {object}  [opts.datePicker]      DatePicker aus wuefl-libs (Klasse
+   *        oder Instanz, optional)
+   * @param {object}  [opts.datePickerOptions] wird an dessen create() gereicht –
+   *        etwa eine eigene Schnellwahl (`quick`)
    * @param {string}  [opts.granularity]     day | week | month | year
    * @param {Date}    [opts.min] [opts.max]  Grenzen der Auswahl
    * @param {object}  [opts.overview]        { keys, renderer, source, height, color }
@@ -147,6 +150,7 @@ export class Zeitpicker {
     this.#host = host;
     this.#id = opts.id ?? null;
     this.#datePicker = opts.datePicker ?? null;
+    this.#dpOpts = opts.datePickerOptions ?? null;
     this.#stufe = opts.granularity ?? 'day';
     this.#min = opts.min ? new Date(opts.min) : null;
     this.#max = opts.max ? new Date(opts.max) : null;
@@ -197,6 +201,11 @@ export class Zeitpicker {
   setBounds(min, max) {
     this.#min = min ? new Date(min) : null;
     this.#max = max ? new Date(max) : null;
+    // Der Kalender bekommt die Grenzen erst beim Erstellen mit – kommen sie
+    // später, muss er sie nachgereicht bekommen.
+    if (this.#dp) {
+      try { this.#dp.min = this.#min; this.#dp.max = this.#max; } catch { /* ältere Fassung */ }
+    }
     this.#klemmen();
     this.#zeichnen();
     if (this.#ovCfg) this.#uebersicht();
@@ -284,6 +293,7 @@ export class Zeitpicker {
         this.#dp = bausatz.create([von, zu], {
           outputFormat: 'iso', showDate: true, showTime: false,
           min: this.#min, max: this.#max,
+          ...this.#dpOpts,
         });
       } catch { this.#dp = null; }   // dann eben die Felder des Browsers
     }
