@@ -469,7 +469,8 @@ const nf = (v, stellen = 2) => Number(v).toLocaleString(undefined, { maximumFrac
  * Bewusst getrennt vom Rest: Wer einen anderen Renderer schreibt, bekommt
  * genau dieses Objekt und entscheidet selbst, was er damit macht.
  */
-export function buildOption(reihen, achsen, start, end, raster, cfg, host) {
+export function buildOption(reihen, achsen, start, end, raster, cfg, host, zustand = {}) {
+  const { voll = false, zoom = false } = zustand;
   const gesamt = reihen.length;
   const balken = reihen.some((s) => (s.type || cfg.type || 'line') === 'bar');
 
@@ -547,9 +548,25 @@ export function buildOption(reihen, achsen, start, end, raster, cfg, host) {
       axisLabel: { color: textFarbe },
       splitLine: { show: i === 0, lineStyle: { color: linienFarbe, opacity: .6 } },
     })),
+    // Zoomen und Schieben per Geste erst nach einem Klick ins Diagramm –
+    // sonst bleibt auf dem Handy jede Wischbewegung hängen, statt die Seite
+    // zu scrollen.
+    dataZoom: [{ type: 'inside', disabled: !zoom, filterMode: 'none' }],
     tooltip: {
       trigger: 'axis',
+      confine: true,
       axisPointer: { type: balken ? 'shadow' : 'line' },
+      // In einer Karte ist wenig Platz: Der Kasten sitzt an der Linie am
+      // oberen oder unteren Rand – auf der Seite, wo der Finger nicht ist.
+      // Im Vollbild ist Platz genug, dort folgt er dem Zeiger.
+      ...(voll ? {} : {
+        position: (punkt, params, dom, rect, groesse) => {
+          const [b, h] = groesse.viewSize;
+          const [kb, kh] = groesse.contentSize;
+          return [Math.min(Math.max(punkt[0] - kb / 2, 0), Math.max(0, b - kb)),
+            punkt[1] > h / 2 ? 0 : Math.max(0, h - kh)];
+        },
+      }),
       formatter: (params) => tooltip(params, reihen, raster, achsen),
     },
     series,
@@ -598,7 +615,7 @@ const html = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '
 export class Diagramm {
   #host; #renderer; #source; #els = {}; #griff = null;
   #cfg = {}; #reihen = []; #aus = new Set(); #seq = 0; #ro = null; #fs = null; #heimat = null;
-  #voll = false;
+  #voll = false; #zoomAn = false; #ausserhalb = null;
 
   /**
    * @param {Element} host      Element, in das gezeichnet wird
@@ -638,6 +655,10 @@ export class Diagramm {
       plot: q('.dg_plot'), note: q('.dg_note'),
     };
     this.#griff = this.#renderer.mount(this.#els.plot);
+
+    el.addEventListener('click', () => this.#zoom(true));
+    this.#ausserhalb = (e) => { if (!e.composedPath().includes(el)) this.#zoom(false); };
+    window.addEventListener('pointerdown', this.#ausserhalb);
 
     // Jede Größenänderung erreicht den Renderer – das ist der Unterschied
     // zwischen „Vollbild sieht richtig aus“ und „Diagramm klebt oben“.
@@ -698,7 +719,8 @@ export class Diagramm {
       this.#legende();
       this.#chips(zeilen, start, end, achsen);
       this.#renderer.draw(this.#griff,
-        buildOption(this.#reihen, achsen, start, end, raster, cfg, this.#host));
+        buildOption(this.#reihen, achsen, start, end, raster, cfg, this.#host,
+        { voll: this.#voll, zoom: this.#zoomBereit() }));
       this.#renderer.resize?.(this.#griff);
     } catch (err) {
       if (alt()) return;
@@ -719,6 +741,7 @@ export class Diagramm {
   destroy() {
     this.#seq += 1;
     this.#ro?.disconnect();
+    if (this.#ausserhalb) window.removeEventListener('pointerdown', this.#ausserhalb);
     this.#renderer.destroy?.(this.#griff);
     this.#fs?.remove();
     this.#host.replaceChildren();
@@ -915,6 +938,26 @@ export class Diagramm {
       btn.onclick = () => this.toggleFullscreen(true);
     }
     this.#nachmessen();
+  }
+
+  /**
+   * Darf gerade gezoomt werden?
+   *
+   * `zoom: false` schaltet es ganz ab, `zoom: true` immer an. Ohne Angabe
+   * erst nach einem Klick ins Diagramm – im Vollbild sofort, da ist die
+   * Geste eindeutig.
+   */
+  #zoomBereit() {
+    if (this.#cfg.zoom === false) return false;
+    if (this.#cfg.zoom === true) return true;
+    return this.#voll || this.#zoomAn;
+  }
+
+  #zoom(an) {
+    if (this.#cfg.zoom !== undefined || this.#zoomAn === an) return;
+    this.#zoomAn = an;
+    this.#host.classList.toggle('dg_aktiv', an);
+    this.refresh();
   }
 
   /**
