@@ -133,17 +133,19 @@ immer oben rechts – auch im Vollbild.
 
 ```js
 chips: [
-  { key: 'pv', icon: '☀', label: 'Erzeugt', calc: 'sum', unit: 'kWh' },
-  { key: 'soc', icon: '<span class="msr">battery_full</span>', calc: 'last', unit: '%', decimals: 0 },
+  { key: 'pv', label: '☀ Erzeugt', calc: 'sum', unit: 'kWh' },
+  { key: 'soc', label: '<span class="msr">battery_full</span>', calc: 'last', unit: '%', decimals: 0 },
   { value: 32.4, label: 'Ziel', unit: 'kWh' },     // fester Wert
 ]
 ```
 
 `calc`: `sum` (Standard), `mean`, `max`, `min`, `last`.
 
-`icon` wird als **Markup** eingesetzt – ein UTF-8-Zeichen genauso wie
-`<span class="msr">bolt</span>` oder `<ha-icon icon="mdi:flash">`. `label` bleibt
-dagegen Text: Steht dort ein Name aus den Daten, soll er nichts ausführen können.
+`label` wird als **Markup** eingesetzt – ein Icon steckt damit einfach mit drin, als
+UTF-8-Zeichen, als Icon-Schrift oder als eigenes Element. Ein zusätzliches Feld dafür
+gibt es bewusst nicht. Was dort hineingeht, schreibt die Konfiguration; käme es aus den
+Daten, müsste der Aufrufer es vorher entschärfen.
+
 Ohne eigene `color` trägt der Chip die Farbe seiner Reihe.
 
 ## Zoomen

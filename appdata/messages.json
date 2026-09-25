@@ -274,7 +274,7 @@
           "Picker: `granularities` blendet Stufen aus; bleibt eine übrig, verschwindet der Umschalter ganz",
           "Picker: der Auslöser sitzt jetzt zwischen den Pfeilen statt daneben, mit Kalender-Icon und im Stil der Eingabefelder. Der Kalender legt seinen Auslöser durchsichtig darüber",
           "Icons: kalender, zurueck und vor kommen dazu – auch sie über setIcons() austauschbar",
-          "Chips: `icon` wird als Markup vor die Zahl gesetzt – UTF-8-Zeichen, Icon-Schrift oder eigenes Element. `label` bleibt Text"
+          "Chips: die Beschriftung wird als Markup eingesetzt – ein Icon steckt damit einfach mit im `label`, ein eigenes Feld dafür gibt es nicht"
         ]
       },
       {

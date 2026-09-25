@@ -130,7 +130,7 @@ const cfg1 = {
   aggregation: '2h',
   y_axes: [{ unit: '%', min: 0, max: 100 }],
   legend: { hidden: true },
-  chips: [{ key: 'soc', icon: '🔋', calc: 'last', unit: '%', color: '#2e9e6b', decimals: 0 }],
+  chips: [{ key: 'soc', label: '🔋', calc: 'last', unit: '%', color: '#2e9e6b', decimals: 0 }],
   series: [{ key: 'soc', name: 'Ladestand', color: '#2e9e6b', stat_type: 'mean', fill: 'gradient' }],
 };
 
@@ -141,8 +141,8 @@ const cfg2 = {
   y_axes: [{ unit: 'kWh' }],
   legend: { position: 'top-right' },
   chips: [
-    { key: 'pv', icon: '☀', label: 'PV', calc: 'sum', unit: 'kWh' },
-    { key: 'bezug', icon: '⚡', label: 'Netz', calc: 'sum', unit: 'kWh' },
+    { key: 'pv', label: '☀ PV', calc: 'sum', unit: 'kWh' },
+    { key: 'bezug', label: '⚡ Netz', calc: 'sum', unit: 'kWh' },
   ],
   series: [
     { key: 'pv', name: 'Erzeugung', color: '#f5b301', fill: 'gradient' },
@@ -221,7 +221,7 @@ const g1 = new Diagramm(document.getElementById('g1'), { renderer: renderer(), s
 const g2 = new Diagramm(document.getElementById('g2'), { renderer: renderer(), source: quelle });
 g1.setConfig({ ...gemeinsam, title: 'Erzeugung', y_axes: [{ unit: 'kWh' }],
   legend: { hidden: true },
-  chips: [{ key: 'pv', icon: '☀', label: 'Summe', calc: 'sum', unit: 'kWh' }],
+  chips: [{ key: 'pv', label: '☀ Summe', calc: 'sum', unit: 'kWh' }],
   series: [{ key: 'pv', name: 'PV', color: '#f5b301', fill: 'gradient' }] });
 g2.setConfig({ ...gemeinsam, title: 'Ladestand', y_axes: [{ unit: '%', min: 0, max: 100 }],
   legend: { hidden: true },
