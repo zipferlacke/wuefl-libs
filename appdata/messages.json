@@ -267,6 +267,15 @@
     ],
     "diagramm": [
       {
+        "version": "1.6.0",
+        "date": "2026-09-26",
+        "changes": [
+          "Neu: Werte-Achse statt Zeit – `x_axis: { type: 'value', unit: 'km' }`, z. B. für Höhenprofile. Die Reihen bringen ihre Punkte als `data` mit, Grenzen per `min`/`max` oder aus den Daten",
+          "Neu: `decimals` je Reihe für den Tooltip, `decimals` der Werte-Achse für Achse und Tooltip-Kopf",
+          "Neu: `d.on(name, cb)` reicht Ereignisse des Renderers durch (z. B. 'updateAxisPointer'), `d.instance` gibt die Zeicheninstanz heraus – etwa um eine Stelle auf einer Karte mitzuzeigen"
+        ]
+      },
+      {
         "version": "1.5.0",
         "date": "2026-09-25",
         "changes": [
@@ -340,6 +349,13 @@
     ]
   },
   "changelog": [
+    {
+      "version": "2.5.6",
+      "date": "2026-09-26",
+      "changes": [
+        "1. Diagramm: Werte-Achse (z. B. Kilometer) statt Zeit, Ereignisse und Zeicheninstanz nach außen, Nachkommastellen im Tooltip je Reihe"
+      ]
+    },
     {
       "version": "2.5.5",
       "date": "2026-09-25",
