@@ -3,22 +3,56 @@
         overflow:hidden;
     }
 
+    /*
+     * Position: data-pos (Rechner) und data-pos-mobile (Handy, ≤ 700px) –
+     * center | top | bottom | left | right. Standard: Rechner mittig, Handy
+     * von unten. Jede Position setzt nur Variablen; unten werden sie benutzt.
+     */
+    .userDialog{
+        --uD-margin: auto;
+        --uD-radius: 1.5rem;
+        --uD-width: max-content;
+        --uD-min-width: min(500px, 90vw);
+        --uD-max-width: min(900px, 100vw);
+        --uD-height: fit-content;
+        --uD-max-height: 90dvh;
+        --uD-anim: inp-fade-in;
+    }
+    @media screen and (min-width: 701px) {
+        .userDialog[data-pos="top"]    { --uD-margin: 0 auto auto; --uD-radius: 0 0 1.5rem 1.5rem; --uD-anim: uD-from-top; }
+        .userDialog[data-pos="bottom"] { --uD-margin: auto auto 0; --uD-radius: 1.5rem 1.5rem 0 0; --uD-anim: uD-from-bottom; }
+        .userDialog[data-pos="left"]   { --uD-margin: 0 auto 0 0; --uD-radius: 0 1.5rem 1.5rem 0; --uD-width: min(32rem, 92vw); --uD-min-width: 0; --uD-height: 100dvh; --uD-max-height: 100dvh; --uD-anim: uD-from-left; }
+        .userDialog[data-pos="right"]  { --uD-margin: 0 0 0 auto; --uD-radius: 1.5rem 0 0 1.5rem; --uD-width: min(32rem, 92vw); --uD-min-width: 0; --uD-height: 100dvh; --uD-max-height: 100dvh; --uD-anim: uD-from-right; }
+    }
+    @media screen and (max-width: 700px) {
+        .userDialog:not([data-pos-mobile]), .userDialog[data-pos-mobile="bottom"] {
+            --uD-margin: auto auto 0; --uD-radius: 1.5rem 1.5rem 0 0; --uD-width: 100vw; --uD-min-width: 0; --uD-max-width: 100vw; --uD-anim: uD-from-bottom;
+        }
+        .userDialog[data-pos-mobile="top"]   { --uD-margin: 0 auto auto; --uD-radius: 0 0 1.5rem 1.5rem; --uD-width: 100vw; --uD-min-width: 0; --uD-max-width: 100vw; --uD-anim: uD-from-top; }
+        .userDialog[data-pos-mobile="center"] { --uD-width: 92vw; --uD-min-width: 0; }
+        .userDialog[data-pos-mobile="left"]  { --uD-margin: 0 auto 0 0; --uD-radius: 0 1.5rem 1.5rem 0; --uD-width: 88vw; --uD-min-width: 0; --uD-height: 100dvh; --uD-max-height: 100dvh; --uD-anim: uD-from-left; }
+        .userDialog[data-pos-mobile="right"] { --uD-margin: 0 0 0 auto; --uD-radius: 1.5rem 0 0 1.5rem; --uD-width: 88vw; --uD-min-width: 0; --uD-height: 100dvh; --uD-max-height: 100dvh; --uD-anim: uD-from-right; }
+    }
+
     .userDialog{
         position: fixed;
         z-index: 1000;
-        place-self: center;
-        min-width: min(500px, 90vw);
-        max-width: min(900px, 100vw);
-        width: max-content;
-        max-height: 90dvh;
+        inset: 0;
+        margin: var(--uD-margin);
+        min-width: var(--uD-min-width);
+        max-width: var(--uD-max-width);
+        width: var(--uD-width);
+        height: var(--uD-height);
+        max-height: var(--uD-max-height);
         border: none;
         padding: 1rem;
         padding-right: 0.5rem;
-        border-radius: 1.5rem;
+        border-radius: var(--uD-radius);
         
-        background-color: var(--clr-neutral-50);
-        box-shadow: 0 0 2rem -1rem var(--clr-neutral-400);
-        animation: inp-fade-in 0.2s ease-out;
+        background-color: var(--clr-neutral-50, #fff);
+        color: var(--clr-neutral-900, #1b1b1f);
+        box-shadow: 0 0 2rem -1rem var(--clr-neutral-400, rgb(0 0 0 / .45));
+        animation: var(--uD-anim) 0.2s ease-out;
 
         
         box-sizing: border-box;
@@ -26,7 +60,7 @@
         overflow: hidden;
 
         &::backdrop{
-            background-color: color-mix(in hsl, var(--clr-neutral-50) 80%, transparent);
+            background-color: color-mix(in hsl, var(--clr-neutral-50, #fff) 80%, transparent);
             backdrop-filter: blur(1px);
         }
 
@@ -35,8 +69,10 @@
             display: grid;
             grid-template-columns: 1fr;
             grid-template-rows: 1fr min-content;
+            &.uD-no-footer { grid-template-rows: 1fr; }
             gap: var(--dialog-gap);
-            max-height:calc(90dvh - 2em);
+            max-height:calc(var(--uD-max-height) - 2em);
+            height: 100%;
 
             & .content{
                 display: grid;
@@ -46,11 +82,20 @@
                 overflow-y: auto;
                 padding-right: 0.5rem;
 
+                /* Leiste: links Zurück, Titel, rechts Schließen – Knöpfe frei belegbar */
                 & header{
                     grid-area: header;
+                    display: grid;
+                    grid-template-columns: auto 1fr auto;
+                    align-items: center;
+                    gap: 0.5rem;
                     font-size: var(--fs-800);
                     font-weight: bold;
                     p{font-size:var(--fs-300);}
+                    .uD-title { min-width: 0; }
+                    .uD-bar-btn { width: 2.5rem; height: 2.5rem; flex-shrink: 0; .msr { font-size: 1.5rem; } }
+                    .uD-bar-space { width: 0; }
+                    &:has(.uD-bar-left) .uD-title { text-align: center; }
                 }
                 
                 & main{
@@ -90,7 +135,8 @@
             }
         }
 
-        &:not([data-dialog-type="normal"]){
+        /* Nur echte Hinweis-Dialoge – ein eigener <dialog class="userDialog"> ohne Typ bleibt schlicht */
+        &[data-dialog-type]:not([data-dialog-type="normal"]){
             --dialog-gap: clamp(0.5rem, 2vh, 3rem);
             border-top: calc(var(--dialog-gap)*2) solid var(--clr-info-type);
             
@@ -136,13 +182,6 @@
                 }
             }
         }
-        @media screen and (max-width:525px) {
-            &{
-                min-width: min(450px, 100vw);
-                align-self:start;
-                border-radius: 0 0 1rem 1rem;
-            }
-        }
 
         @keyframes inp-fade-in {
             from {
@@ -158,4 +197,61 @@
     }
 
     
+}
+
+/* Einblenden je Position (auf oberster Ebene – in Regeln verschachtelt gelten @keyframes nicht überall) */
+@keyframes uD-from-bottom { from { transform: translateY(100%); } to { transform: none; } }
+@keyframes uD-from-top    { from { transform: translateY(-100%); } to { transform: none; } }
+@keyframes uD-from-left   { from { transform: translateX(-100%); } to { transform: none; } }
+@keyframes uD-from-right  { from { transform: translateX(100%); } to { transform: none; } }
+@keyframes inp-fade-in    { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+
+/*
+ * Seitenleiste zum Ziehen (sheet() in userDialog.js): kein Hintergrund, die
+ * Seite dahinter bleibt bedienbar. Der Griff liegt über die ganze Kante;
+ * eingeklappt bleibt nur er stehen. Größe über --uD-sheet-size (setzt das JS).
+ */
+@layer components {
+    .userDialog.uD-sheet {
+        --uD-grip: 1rem;
+        overflow: hidden;
+        transition: translate .25s ease;
+        &.uD-dragging { transition: none; user-select: none; }
+        &::backdrop { display: none; }
+    }
+    .uD-grip {
+        position: absolute; z-index: 5;
+        display: grid; place-items: center;
+        touch-action: none;
+        outline: none;
+        span { border-radius: 999px; background: var(--clr-neutral-400, #9aa0a6); transition: background .15s, transform .15s; }
+        &:hover span, &:focus-visible span { background: var(--clr-primary-400, #1a73e8); }
+    }
+    @media screen and (min-width: 701px) {
+        .userDialog.uD-sheet:is([data-pos="left"], [data-pos="right"]) {
+            width: var(--uD-sheet-size, var(--uD-width));
+            min-width: 0; max-width: none;
+            .uD-grip { top: 0; bottom: 0; width: var(--uD-grip); cursor: ew-resize; span { width: .3rem; height: 3.5rem; } }
+        }
+        .userDialog.uD-sheet[data-pos="left"] {
+            padding-right: calc(var(--uD-grip) + .25rem);
+            .uD-grip { right: 0; }
+            &.uD-collapsed { translate: calc(-100% + var(--uD-grip)) 0; }
+        }
+        .userDialog.uD-sheet[data-pos="right"] {
+            padding-left: calc(var(--uD-grip) + .25rem);
+            .uD-grip { left: 0; }
+            &.uD-collapsed { translate: calc(100% - var(--uD-grip)) 0; }
+        }
+    }
+    @media screen and (max-width: 700px) {
+        .userDialog.uD-sheet:is(:not([data-pos-mobile]), [data-pos-mobile="bottom"]) {
+            --uD-grip: 1.5rem;
+            height: var(--uD-sheet-size, var(--uD-height));
+            max-height: none;
+            padding-top: var(--uD-grip);
+            .uD-grip { left: 0; right: 0; top: 0; height: var(--uD-grip); cursor: ns-resize; span { width: 2.8rem; height: .3rem; } }
+            &.uD-collapsed { translate: 0 calc(100% - var(--uD-grip)); }
+        }
+    }
 }

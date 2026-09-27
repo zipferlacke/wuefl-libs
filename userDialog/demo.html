@@ -6,6 +6,11 @@
       <button class="btn-dl" id="dlg-warning">Warning</button>
       <button class="btn-dl" id="dlg-error">Error</button>
       <button class="btn-dl outline" id="dlg-upload">Upload</button>
+      <button class="btn-dl outline" data-pos="left">Links (Seitenleiste)</button>
+      <button class="btn-dl outline" data-pos="right">Rechts</button>
+      <button class="btn-dl outline" data-pos="top">Oben</button>
+      <button class="btn-dl outline" data-pos="bottom">Unten</button>
+      <button class="btn-dl outline" id="dlg-sheet">Seitenleiste zum Ziehen</button>
     </div>
     <div class="log" id="dlg-log" style="margin-top:1rem;">— Noch keine Aktion —</div>
   </div>
@@ -30,6 +35,32 @@ document.getElementById('dlg-warning').addEventListener('click', async () => {
 document.getElementById('dlg-error').addEventListener('click', async () => {
   const result = await userDialog({ title: "Fehler", content: "Die Aktion konnte nicht ausgeführt werden.", confirmText: "OK", type: "error", onlyConfirm: true });
   log(result.submit ? 'Bestätigt.' : 'Abgebrochen.');
+});
+
+document.querySelectorAll('[data-pos]').forEach((btn) => btn.addEventListener('click', async () => {
+  const pos = btn.dataset.pos;
+  let step = 1;
+  const result = await userDialog({
+    title: `Position „${pos}“`,
+    content: `<p>Oben links geht es zurück (bleibt offen), oben rechts schließt.</p><p class="step">Schritt ${step}</p>`,
+    position: { desktop: pos, mobile: pos === 'left' || pos === 'right' ? 'bottom' : pos },
+    modal: pos === 'center',
+    onBack: (dlg) => { step += 1; dlg.querySelector('.step').textContent = `Zurück gedrückt (${step})`; },
+    confirmText: pos === 'bottom' ? 'Übernehmen' : undefined,
+  });
+  log(`${pos}: ${result.action}`);
+}));
+
+document.getElementById('dlg-sheet').addEventListener('click', async () => {
+  const result = await userDialog({
+    title: 'Seitenleiste',
+    content: `<p>Am Rechner links in voller Höhe, am Handy unten. Den Griff an der Kante ziehen
+      ändert die Größe; weiter als das Minimum klappt sie ein – antippen klappt sie wieder auf.
+      Die Seite dahinter bleibt bedienbar.</p>${'<p>Inhalt …</p>'.repeat(12)}`,
+    position: { desktop: 'left', mobile: 'bottom' },
+    sheet: { min: 280, key: 'demo', onChange: (s) => log(`Seitenleiste: ${s.collapsed ? 'eingeklappt' : `${Math.round(s.size)} px`}`) },
+  });
+  log(`Seitenleiste: ${result.action}`);
 });
 
 document.getElementById('dlg-upload').addEventListener('click', async () => {
