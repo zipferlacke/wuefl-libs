@@ -1,0 +1,40 @@
+# Macht aus jedem neuen Tag (v1.2.3) einen GitHub-Release – ohne Build,
+# der Code bleibt, wie er ist. GitHub hängt ihn von selbst als ZIP und
+# tar.gz an. Als Text kommt die Nachricht des Tags bzw. seines Commits
+# („Version 2.6.0 …“), dazu die Liste der Änderungen seit dem letzten Tag.
+#
+# Gibt es den Release schon (von Hand angelegt), passiert nichts.
+
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Release anlegen
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.ref_name }}
+        run: |
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            echo "Release $TAG gibt es schon."
+            exit 0
+          fi
+          # Nachricht des Tags (annotiert), sonst die des Commits
+          if [ "$(git cat-file -t "$TAG")" = "tag" ]; then
+            git tag -l --format='%(contents)' "$TAG" > notes.md
+          else
+            git log -1 --format=%B "$TAG" > notes.md
+          fi
+          gh release create "$TAG" --title "$TAG" --notes-file notes.md --generate-notes --verify-tag --latest
