@@ -232,7 +232,11 @@ export function sheet(dialog, { min, max, key = null, onChange = () => {} } = {}
 
     let drag = null;
     grip.addEventListener("pointerdown", (e) => {
-        drag = { x: e.clientX, y: e.clientY, moved: false, was: state.collapsed };
+        if (e.button !== 0) return;
+        // Keine Textauswahl und kein natives Ziehen – beides hielt in WebKit
+        // die Maus fest, danach ließ sich die Seite dahinter nicht mehr ziehen
+        e.preventDefault();
+        drag = { x: e.clientX, y: e.clientY, moved: false, was: state.collapsed, id: e.pointerId };
         grip.setPointerCapture(e.pointerId);
         dialog.classList.add("uD-dragging");
     });
@@ -246,15 +250,22 @@ export function sheet(dialog, { min, max, key = null, onChange = () => {} } = {}
         if (!state.collapsed) state.size[vertical() ? "v" : "h"] = Math.min(maxSize(), Math.max(minSize(), want));
         apply();
     });
-    const end = () => {
+    const end = (e) => {
         if (!drag) return;
-        dialog.classList.remove("uD-dragging");
-        if (!drag.moved) state.collapsed = !state.collapsed;
+        const d = drag;
         drag = null;
+        // Ausdrücklich freigeben: WebKit (GNOME Web, Safari) gab den Zeiger nach
+        // dem Loslassen nicht immer frei – alle weiteren Mausbewegungen landeten
+        // beim Griff, die Karte dahinter reagierte nicht mehr
+        if (grip.hasPointerCapture?.(d.id)) grip.releasePointerCapture(d.id);
+        dialog.classList.remove("uD-dragging");
+        if (!d.moved && e.type === "pointerup") state.collapsed = !state.collapsed;
+        getSelection?.()?.removeAllRanges();
         changed();
     };
     grip.addEventListener("pointerup", end);
     grip.addEventListener("pointercancel", end);
+    grip.addEventListener("lostpointercapture", end);
     grip.addEventListener("keydown", (e) => {
         const grow = { left: "ArrowRight", right: "ArrowLeft", bottom: "ArrowUp", top: "ArrowDown" }[side()];
         const shrink = { left: "ArrowLeft", right: "ArrowRight", bottom: "ArrowDown", top: "ArrowUp" }[side()];
