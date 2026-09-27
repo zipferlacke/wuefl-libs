@@ -65,7 +65,7 @@
         }
 
         
-        form{
+        & > form{
             display: grid;
             grid-template-columns: 1fr;
             grid-template-rows: 1fr min-content;
@@ -140,7 +140,7 @@
             --dialog-gap: clamp(0.5rem, 2vh, 3rem);
             border-top: calc(var(--dialog-gap)*2) solid var(--clr-info-type);
             
-            & form{
+            & > form{
                 max-height:calc(90dvh  - 2rem - var(--dialog-gap)*2);
                 .content{
                     grid-template-columns: 20% calc(80% - var(--dialog-gap));
@@ -164,7 +164,7 @@
             @media screen and (max-width:700px) {
                 max-width: 90vw;
                 width: 90vw;
-                & form .content{
+                & > form .content{
                     font-size: 0.9rem;
                     grid-template-rows:  max-content min-content min-content;
                     grid-template-areas: "img img"

@@ -148,7 +148,8 @@
           "Leiste oben: links Zurück (onBack), rechts Schließen – beide Knöpfe frei belegbar (barLeft, barRight)",
           "modal: false – die Seite dahinter bleibt bedienbar",
           "Seitenleiste zum Ziehen (sheet): Griff über die ganze Kante, Größe ziehen, unter dem Minimum einklappen, Zustand merken",
-          "BugFix: eigene <dialog class=\"userDialog\"> ohne Typ bekamen die Hinweis-Gestaltung (farbiger Rand, 90 % Breite am Handy)"
+          "BugFix: eigene <dialog class=\"userDialog\"> ohne Typ bekamen die Hinweis-Gestaltung (farbiger Rand, 90 % Breite am Handy)",
+          "BugFix: Formulare im Inhalt (z. B. ein Suchfeld) wurden wie das Dialog-Formular gestreckt (Raster, volle Höhe) – die Regeln gelten nur noch für das Formular des Dialogs selbst"
         ]
       },
       {
@@ -364,7 +365,8 @@
       "version": "2.6.0",
       "date": "2026-09-27",
       "changes": [
-        "1. userDialog: Positionen für Rechner und Handy, Leiste mit Zurück/Schließen, nicht-modal, Seitenleiste zum Ziehen und Einklappen"
+        "1. userDialog: Positionen für Rechner und Handy, Leiste mit Zurück/Schließen, nicht-modal, Seitenleiste zum Ziehen und Einklappen",
+        "2. userDialog: Formulare im Inhalt werden nicht mehr gestreckt"
       ]
     },
     {
