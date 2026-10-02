@@ -280,6 +280,14 @@
     ],
     "diagramm": [
       {
+        "version": "1.6.1",
+        "date": "2026-10-02",
+        "changes": [
+          "Fix: Design Darkmode – Gitter und Achsen sind in hell und dunkel dasselbe leichte Grau (`--dg-grid`, neu `--dg-axis`). Vorher standen nach einem Wechsel des Themas die hellen Linien weiß auf dunklem Grund",
+          "Fix: Wechselt das Thema (hell ↔ dunkel), zeichnet das Diagramm neu – die Beschriftung der Achsen behielt sonst die alte Farbe"
+        ]
+      },
+      {
         "version": "1.6.0",
         "date": "2026-09-26",
         "changes": [
@@ -362,6 +370,13 @@
     ]
   },
   "changelog": [
+    {
+      "version": "2.6.1",
+      "date": "2026-10-02",
+      "changes": [
+        "1. Fix: Diagramm – Design Darkmode: Gitter und Achsen leicht grau in hell und dunkel, neu zeichnen beim Wechsel des Themas"
+      ]
+    },
     {
       "version": "2.6.0",
       "date": "2026-09-27",
