@@ -95,6 +95,8 @@
                     .uD-title { min-width: 0; }
                     .uD-bar-btn { width: 2.5rem; height: 2.5rem; flex-shrink: 0; .msr { font-size: 1.5rem; } }
                     .uD-bar-space { width: 0; }
+                    /* Mehrere Knöpfe auf einer Seite stehen nebeneinander. */
+                    .uD-bar-group { display: flex; align-items: center; gap: 0.25rem; }
                     &:has(.uD-bar-left) .uD-title { text-align: center; }
                 }
                 
@@ -207,9 +209,16 @@
 @keyframes inp-fade-in    { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
 
 /*
- * Seitenleiste zum Ziehen (sheet() in userDialog.js): kein Hintergrund, die
- * Seite dahinter bleibt bedienbar. Der Griff liegt über die ganze Kante;
- * eingeklappt bleibt nur er stehen. Größe über --uD-sheet-size (setzt das JS).
+ * Der Griff zum Ziehen (sheet() in userDialog.js).
+ *
+ * Jeder Dialog, der an einer Kante sitzt, bekommt ihn — am Handy also
+ * praktisch immer, am Rechner bei data-pos left/right/top/bottom. Ein
+ * zentrierter Dialog hat keinen; dort versteckt das JS ihn.
+ *
+ * Ziehen ändert Breite bzw. Höhe (--uD-sheet-size setzt das JS). Einklappen
+ * gibt es nur bei Dialogen, die die Seite dahinter nicht blockieren —
+ * sonst stünde die Seite still hinter einem Griff. Die blockierenden
+ * tragen `uD-sheet-modal` und behalten ihren Hintergrund.
  */
 @layer components {
     .userDialog.uD-sheet {
@@ -217,7 +226,8 @@
         overflow: hidden;
         transition: translate .25s ease;
         &.uD-dragging { transition: none; user-select: none; }
-        &::backdrop { display: none; }
+        /* Ohne Hintergrund nur, wo die Seite dahinter bedienbar bleibt. */
+        &:not(.uD-sheet-modal)::backdrop { display: none; }
     }
     .uD-grip {
         position: absolute; z-index: 5;
@@ -227,12 +237,27 @@
         span { border-radius: 999px; background: var(--clr-neutral-400, #9aa0a6); transition: background .15s, transform .15s; }
         &:hover span, &:focus-visible span { background: var(--clr-primary-400, #1a73e8); }
     }
+    /* `hidden` allein genügt nicht — `display: grid` oben gewönne. */
+    .uD-grip[hidden] { display: none; }
+
+    /* Links und rechts: Breite ziehen. */
+    .userDialog.uD-sheet:is([data-pos="left"], [data-pos="right"]),
+    .userDialog.uD-sheet:is([data-pos-mobile="left"], [data-pos-mobile="right"]) {
+        width: var(--uD-sheet-size, var(--uD-width));
+        min-width: 0; max-width: none;
+        .uD-grip { top: 0; bottom: 0; width: var(--uD-grip); cursor: ew-resize; span { width: .3rem; height: 3.5rem; } }
+    }
+    /* Oben und unten: Höhe ziehen. Ohne eigene Größe bleibt es bei der
+       Höchsthöhe des Dialogs — sonst liefe langer Inhalt aus dem Bild. */
+    .userDialog.uD-sheet:is([data-pos="top"], [data-pos="bottom"]),
+    .userDialog.uD-sheet:is(:not([data-pos-mobile]), [data-pos-mobile="top"], [data-pos-mobile="bottom"]) {
+        --uD-grip: 1.5rem;
+        height: var(--uD-sheet-size, var(--uD-height));
+        max-height: var(--uD-sheet-size, var(--uD-max-height));
+        .uD-grip { left: 0; right: 0; height: var(--uD-grip); cursor: ns-resize; span { width: 2.8rem; height: .3rem; } }
+    }
+
     @media screen and (min-width: 701px) {
-        .userDialog.uD-sheet:is([data-pos="left"], [data-pos="right"]) {
-            width: var(--uD-sheet-size, var(--uD-width));
-            min-width: 0; max-width: none;
-            .uD-grip { top: 0; bottom: 0; width: var(--uD-grip); cursor: ew-resize; span { width: .3rem; height: 3.5rem; } }
-        }
         .userDialog.uD-sheet[data-pos="left"] {
             padding-right: calc(var(--uD-grip) + .25rem);
             .uD-grip { right: 0; }
@@ -243,15 +268,38 @@
             .uD-grip { left: 0; }
             &.uD-collapsed { translate: calc(100% - var(--uD-grip)) 0; }
         }
+        .userDialog.uD-sheet[data-pos="bottom"] {
+            padding-top: var(--uD-grip);
+            .uD-grip { top: 0; }
+            &.uD-collapsed { translate: 0 calc(100% - var(--uD-grip)); }
+        }
+        .userDialog.uD-sheet[data-pos="top"] {
+            padding-bottom: var(--uD-grip);
+            .uD-grip { bottom: 0; }
+            &.uD-collapsed { translate: 0 calc(-100% + var(--uD-grip)); }
+        }
     }
+
     @media screen and (max-width: 700px) {
         .userDialog.uD-sheet:is(:not([data-pos-mobile]), [data-pos-mobile="bottom"]) {
-            --uD-grip: 1.5rem;
-            height: var(--uD-sheet-size, var(--uD-height));
-            max-height: none;
             padding-top: var(--uD-grip);
-            .uD-grip { left: 0; right: 0; top: 0; height: var(--uD-grip); cursor: ns-resize; span { width: 2.8rem; height: .3rem; } }
+            .uD-grip { top: 0; }
             &.uD-collapsed { translate: 0 calc(100% - var(--uD-grip)); }
+        }
+        .userDialog.uD-sheet[data-pos-mobile="top"] {
+            padding-bottom: var(--uD-grip);
+            .uD-grip { bottom: 0; }
+            &.uD-collapsed { translate: 0 calc(-100% + var(--uD-grip)); }
+        }
+        .userDialog.uD-sheet[data-pos-mobile="left"] {
+            padding-right: calc(var(--uD-grip) + .25rem);
+            .uD-grip { right: 0; }
+            &.uD-collapsed { translate: calc(-100% + var(--uD-grip)) 0; }
+        }
+        .userDialog.uD-sheet[data-pos-mobile="right"] {
+            padding-left: calc(var(--uD-grip) + .25rem);
+            .uD-grip { left: 0; }
+            &.uD-collapsed { translate: calc(100% - var(--uD-grip)) 0; }
         }
     }
 }

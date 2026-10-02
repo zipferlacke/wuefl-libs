@@ -141,6 +141,17 @@
     ],
     "userDialog": [
       {
+        "version": "1.3.0",
+        "date": "2026-10-02",
+        "changes": [
+          "Abbrechen steht an genau einer Stelle: Mit Fußzeile unten neben dem Bestätigen, ohne Fußzeile oben rechts als „×“. Der Aufruf bleibt derselbe — alte Skripte bekommen den neuen Look, ohne dass sich etwas ändert",
+          "`barLeft` und `barRight` nehmen auch eine Liste von Knöpfen: mehrere Icons nebeneinander, jedes mit eigener Aktion oder eigener Funktion",
+          "Neu am Dialog-Element: `uDFinish(action)` schließt den Dialog von außen und löst das Versprechen auf — für Knöpfe oben mit eigenem `onClick`, die erst nach einer Rückfrage schließen wollen",
+          "Griff und Blockieren sind getrennt: `modal` entscheidet allein, ob die Seite dahinter bedienbar bleibt. Der Griff (`sheet`) ist aus, solange man ihn nicht anschaltet — ein Dialog ist ein Dialog. Für Seitenleisten gibt es `sheet()` weiterhin einzeln",
+          "Der Griff sitzt jetzt auch oben und unten richtig, nicht nur links und rechts, und ein blockierender Dialog lässt sich ziehen, aber nicht wegklappen"
+        ]
+      },
+      {
         "version": "1.2.0",
         "date": "2026-09-27",
         "changes": [
@@ -370,6 +381,15 @@
     ]
   },
   "changelog": [
+    {
+      "version": "2.7.0",
+      "date": "2026-10-02",
+      "changes": [
+        "1. userDialog: Abbrechen steht an genau einer Stelle — unten in der Fußzeile, oder oben rechts als „×“, wenn es keine Fußzeile gibt",
+        "2. userDialog: Oben links und rechts gehen mehrere Icon-Knöpfe nebeneinander (`barLeft`/`barRight` als Liste), und `uDFinish(action)` schließt einen Dialog von außen",
+        "3. userDialog: Der Griff zum Ziehen (`sheet`) kommt nur noch auf Wunsch; `modal` entscheidet allein über das Blockieren"
+      ]
+    },
     {
       "version": "2.6.1",
       "date": "2026-10-02",

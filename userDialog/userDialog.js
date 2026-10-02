@@ -11,6 +11,9 @@
  * @property {string} [title] - Tooltip / Beschriftung für Screenreader
  * @property {string} [action] - Dialog schließt mit dieser Aktion (result.action)
  * @property {Function} [onClick] - Statt zu schließen: eigene Funktion (dialog) => void
+ *
+ * Wo ein BarButton steht, geht auch eine Liste davon — dann stehen mehrere
+ * Knöpfe nebeneinander, in der angegebenen Reihenfolge.
  */
 
 /** Positionen: 'center' | 'top' | 'bottom' | 'left' | 'right' */
@@ -31,10 +34,18 @@ const POSITIONS = ['center', 'top', 'bottom', 'left', 'right'];
  * @param {Function} [o.onSubmit] - Funktion bei erfolgreicher Abgabe ausgeführt (bevor der Dialog geschlossen ist).
  * @param {{desktop?:string, mobile?:string}|string} [o.position] - Wo der Dialog erscheint; Standard: Rechner 'center', Handy 'bottom'. Ein String gilt für beide.
  * @param {boolean} [o.modal = true] - false: Seite dahinter bleibt bedienbar (z. B. Seitenleiste neben einer Karte).
- * @param {BarButton|null} [o.barLeft] - Knopf oben links; Standard: 'Zurück', wenn o.onBack gesetzt ist.
- * @param {BarButton|null} [o.barRight] - Knopf oben rechts; Standard: 'Schließen' (Aktion 'cancel'), außer bei onlyConfirm.
+ * @param {BarButton|BarButton[]|null} [o.barLeft] - Knopf oder Knöpfe oben links; Standard: 'Zurück', wenn o.onBack gesetzt ist.
+ * @param {BarButton|BarButton[]|null} [o.barRight] - Knopf oder Knöpfe oben rechts. Ohne Angabe steht dort ein „×",
+ *   das den Dialog abbricht (Aktion 'cancel') — aber nur, wenn es unten keine Fußzeile gibt. Steht unten schon ein
+ *   Knopf, steht das Abbrechen dort; zwei Wege zum selben Ziel wären einer zu viel.
  * @param {Function} [o.onBack] - Zurück oben links: (dialog) => void – der Dialog bleibt offen.
- * @param {boolean|SheetOptions} [o.sheet] - Als Seitenleiste zum Ziehen (siehe `sheet()`); schaltet `modal` aus.
+ * @param {boolean|SheetOptions} [o.sheet = false] - Griff zum Ziehen (siehe `sheet()`). Standard: aus — ein Dialog
+ *   ist ein Dialog. `true` schaltet ihn an, sobald der Dialog an einer Kante sitzt (am Handy also immer, am
+ *   Rechner bei data-pos left/right/top/bottom); ein Objekt setzt dazu `min`, `max`, `key`. Für Seitenleisten,
+ *   die dauerhaft stehen, gibt es `sheet()` auch einzeln.
+ * Am Dialog-Element hängt `uDFinish(action)`: schließt den Dialog von außen und löst das Versprechen auf —
+ * für Knöpfe mit eigenem `onClick`, die erst nach einer Rückfrage schließen wollen.
+ *
  * @returns {Promise<{submit:boolean, data:Object}>} `boolean`, wenn die `detailReturn=false`, `Object, detailReturn=true`. 
  */
 
@@ -52,14 +63,25 @@ export function userDialog({
     position = {},
     modal = true,
     onBack = null,
-    sheet: sheetOpts = null,
+    sheet: sheetOpts = false,
     barLeft = onBack ? { icon: "arrow_back", title: "Zurück", onClick: onBack } : null,
-    barRight = onlyConfirm ? null : { icon: "close", title: cancelText, action: "cancel" },
+    barRight = (confirmText || onlyConfirm) ? null : { icon: "close", title: cancelText, action: "cancel" },
 }) {
     injectCss();
     const pos = typeof position === "string" ? { desktop: position, mobile: position } : position;
     const posAttr = (k, attr) => POSITIONS.includes(pos[k]) ? ` ${attr}="${pos[k]}"` : "";
-    const barButton = (b, side) => b ? `<button type="button" class="button uD-bar-btn uD-bar-${side}" data-shape="round no-background" title="${b.title ?? ""}" aria-label="${b.title ?? b.icon}"><span class="msr">${b.icon}</span></button>` : `<span class="uD-bar-space"></span>`;
+    // Je Seite ein Knopf oder mehrere. Die Seitenklasse bleibt an jedem
+    // Knopf, damit `querySelector(".uD-bar-right")` weiterhin einen Knopf
+    // findet und nicht eine Hülle darum.
+    const liste = (b) => (Array.isArray(b) ? b : [b]).filter(Boolean);
+    const barButton = (b, side) => {
+        const knoepfe = liste(b);
+        if (!knoepfe.length) return `<span class="uD-bar-space"></span>`;
+        const einzeln = knoepfe.map((k, i) =>
+            `<button type="button" class="button uD-bar-btn uD-bar-${side}" data-bar="${side}:${i}" data-shape="round no-background" title="${k.title ?? ""}" aria-label="${k.title ?? k.icon}"><span class="msr">${k.icon}</span></button>`
+        ).join("");
+        return knoepfe.length === 1 ? einzeln : `<span class="uD-bar-group uD-bar-group-${side}">${einzeln}</span>`;
+    };
 
 
     // ===
@@ -111,8 +133,14 @@ ${confirmText ? `            <footer class="uD-footer">
     // ===
     // Dialog wird für den Nutzer sichtbar geschalten 
     // ===
-    if (sheetOpts) sheet(dialog, sheetOpts === true ? {} : sheetOpts);
-    if (modal && !sheetOpts) dialog.showModal(); else dialog.show();
+    // Der Griff kommt nur auf Wunsch. Er hängt an der Lage, das Blockieren
+    // an `modal` — zwei Fragen, zwei Antworten. Ein blockierender Dialog
+    // lässt sich ziehen, aber nicht wegklappen: Sonst stünde die Seite
+    // still hinter einem Griff.
+    if (sheetOpts) {
+        sheet(dialog, { ...(sheetOpts === true ? {} : sheetOpts), collapsible: !modal });
+    }
+    if (modal) dialog.showModal(); else dialog.show();
     
     
     return new Promise((resolve) => {
@@ -121,6 +149,10 @@ ${confirmText ? `            <footer class="uD-footer">
             dialog.remove();
             detailReturn ? resolve({submit:false, data:{}, action}) : resolve(false);
         };
+        // Schließen von außen: Wer einen Knopf oben mit `onClick` belegt hat,
+        // entscheidet selbst, wann Schluss ist (z. B. erst nach einer
+        // Rückfrage). Ohne das bliebe das Versprechen für immer offen.
+        dialog.uDFinish = finish;
         if (dialog.querySelector(".dialog_close") != null) {
             dialog.querySelector(".dialog_close").addEventListener("click", function (e) {
                 e.preventDefault();
@@ -128,8 +160,12 @@ ${confirmText ? `            <footer class="uD-footer">
             });
         }
         // Knöpfe oben: eigene Funktion (Dialog bleibt offen) oder schließen mit Aktion
-        [[barLeft, ".uD-bar-left"], [barRight, ".uD-bar-right"]].forEach(([b, sel]) => {
-            dialog.querySelector(sel)?.addEventListener("click", (e) => {
+        const seiten = { left: liste(barLeft), right: liste(barRight) };
+        dialog.querySelectorAll("[data-bar]").forEach((btn) => {
+            const [seite, i] = btn.dataset.bar.split(":");
+            const b = seiten[seite]?.[Number(i)];
+            if (!b) return;
+            btn.addEventListener("click", (e) => {
                 e.preventDefault();
                 if (typeof b.onClick === "function") b.onClick(dialog);
                 else finish(b.action ?? "cancel");
@@ -174,6 +210,7 @@ ${confirmText ? `            <footer class="uD-footer">
  * @property {number} [max] - größte Breite in px (Standard 70 % der Fensterbreite, am Handy 92 % der Höhe)
  * @property {string} [key] - Name, unter dem sich der Browser Größe und Zustand merkt
  * @property {(state:{collapsed:boolean, size:number, side:string}) => void} [onChange] - nach jeder Änderung
+ * @property {boolean} [collapsible=true] - false: Ziehen ja, Einklappen nein (für blockierende Dialoge)
  */
 
 /**
@@ -192,10 +229,9 @@ ${confirmText ? `            <footer class="uD-footer">
  * @param {SheetOptions} [o]
  * @returns {{collapse:(on:boolean)=>void, readonly collapsed:boolean, readonly size:number}}
  */
-export function sheet(dialog, { min, max, key = null, onChange = () => {} } = {}) {
+export function sheet(dialog, { min, max, key = null, onChange = () => {}, collapsible = true } = {}) {
     injectCss();
     if (dialog._uDSheet) return dialog._uDSheet;
-    dialog.classList.add("uD-sheet");
     const grip = document.createElement("div");
     grip.className = "uD-grip";
     grip.tabIndex = 0;
@@ -204,7 +240,11 @@ export function sheet(dialog, { min, max, key = null, onChange = () => {} } = {}
     dialog.prepend(grip);
 
     const mobile = matchMedia("(max-width: 700px)");
-    const side = () => mobile.matches ? (dialog.dataset.posMobile || "bottom") : (dialog.dataset.pos || "left");
+    // Ohne Angabe sitzt der Dialog am Rechner in der Mitte und am Handy
+    // unten — genau wie im CSS. „center" heißt: an keiner Kante, also kein
+    // Griff; beim Wechsel der Fensterbreite kann sich das ändern.
+    const side = () => mobile.matches ? (dialog.dataset.posMobile || "bottom") : (dialog.dataset.pos || "center");
+    const amRand = () => side() !== "center";
     const vertical = () => ["top", "bottom"].includes(side());
     const minSize = () => min ?? (vertical() ? 160 : 300);
     const maxSize = () => max ?? (vertical() ? innerHeight * 0.92 : innerWidth * 0.7);
@@ -213,13 +253,26 @@ export function sheet(dialog, { min, max, key = null, onChange = () => {} } = {}
     let state = { collapsed: !!saved.collapsed, size: { h: saved.h ?? null, v: saved.v ?? null } };
 
     const apply = () => {
+        // Zentriert: kein Griff, keine Sheet-Maße.
+        dialog.classList.toggle("uD-sheet", amRand());
+        // Blockierende Dialoge behalten ihren Hintergrund (siehe CSS).
+        dialog.classList.toggle("uD-sheet-modal", !collapsible);
+        grip.hidden = !amRand();
+        if (!amRand()) {
+            dialog.style.removeProperty("--uD-sheet-size");
+            dialog.classList.remove("uD-collapsed");
+            return;
+        }
+
         const s = state.size[vertical() ? "v" : "h"];
         if (s) dialog.style.setProperty("--uD-sheet-size", `${Math.round(Math.min(maxSize(), Math.max(minSize(), s)))}px`);
         else dialog.style.removeProperty("--uD-sheet-size");
         dialog.classList.toggle("uD-collapsed", state.collapsed);
         grip.setAttribute("aria-orientation", vertical() ? "horizontal" : "vertical");
         grip.setAttribute("aria-expanded", String(!state.collapsed));
-        grip.title = state.collapsed ? "Aufklappen" : "Ziehen: Größe ändern · Antippen: einklappen";
+        grip.title = state.collapsed
+            ? "Aufklappen"
+            : collapsible ? "Ziehen: Größe ändern · Antippen: einklappen" : "Ziehen: Größe ändern";
     };
     const changed = () => {
         apply();
@@ -245,8 +298,9 @@ export function sheet(dialog, { min, max, key = null, onChange = () => {} } = {}
         if (!drag.moved && Math.hypot(e.clientX - drag.x, e.clientY - drag.y) < 6) return;
         drag.moved = true;
         const want = sizeAt(e);
-        // Unter das Minimum gezogen: gleich zeigen, dass es gleich zuklappt
-        state.collapsed = want < minSize() * 0.6;
+        // Unter das Minimum gezogen: gleich zeigen, dass es gleich zuklappt.
+        // Bei einem blockierenden Dialog bleibt es beim Minimum.
+        state.collapsed = collapsible && want < minSize() * 0.6;
         if (!state.collapsed) state.size[vertical() ? "v" : "h"] = Math.min(maxSize(), Math.max(minSize(), want));
         apply();
     });
@@ -259,7 +313,7 @@ export function sheet(dialog, { min, max, key = null, onChange = () => {} } = {}
         // beim Griff, die Karte dahinter reagierte nicht mehr
         if (grip.hasPointerCapture?.(d.id)) grip.releasePointerCapture(d.id);
         dialog.classList.remove("uD-dragging");
-        if (!d.moved && e.type === "pointerup") state.collapsed = !state.collapsed;
+        if (!d.moved && e.type === "pointerup" && collapsible) state.collapsed = !state.collapsed;
         getSelection?.()?.removeAllRanges();
         changed();
     };
@@ -271,9 +325,12 @@ export function sheet(dialog, { min, max, key = null, onChange = () => {} } = {}
         const shrink = { left: "ArrowLeft", right: "ArrowRight", bottom: "ArrowDown", top: "ArrowUp" }[side()];
         const k = vertical() ? "v" : "h";
         const now = state.size[k] ?? (vertical() ? dialog.offsetHeight : dialog.offsetWidth);
-        if (e.key === "Enter" || e.key === " ") state.collapsed = !state.collapsed;
+        if (e.key === "Enter" || e.key === " ") { if (!collapsible) return; state.collapsed = !state.collapsed; }
         else if (e.key === grow) { state.collapsed = false; state.size[k] = Math.min(maxSize(), now + 40); }
-        else if (e.key === shrink) { if (now - 40 < minSize()) state.collapsed = true; else state.size[k] = now - 40; }
+        else if (e.key === shrink) {
+            if (now - 40 < minSize()) { if (!collapsible) return; state.collapsed = true; }
+            else state.size[k] = now - 40;
+        }
         else return;
         e.preventDefault();
         changed();
@@ -283,7 +340,7 @@ export function sheet(dialog, { min, max, key = null, onChange = () => {} } = {}
     apply();
 
     dialog._uDSheet = {
-        collapse(on) { state.collapsed = !!on; changed(); },
+        collapse(on) { if (!collapsible) return; state.collapsed = !!on; changed(); },
         get collapsed() { return state.collapsed; },
         get size() { return vertical() ? dialog.offsetHeight : dialog.offsetWidth; },
     };

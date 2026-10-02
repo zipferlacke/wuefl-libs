@@ -50,11 +50,33 @@ if (result.submit) {
 | `o.position` | `{desktop, mobile}` \| `string` | Rechner `center`, Handy `bottom` | Wo der Dialog erscheint: `center`, `top`, `bottom`, `left`, `right`. Ein String gilt für beide. |
 | `o.modal` | `boolean` | `true` | `false` → die Seite dahinter bleibt bedienbar (z. B. Seitenleiste links, Karte rechts). |
 | `o.onBack` | `(dialog) => void` | — | Zeigt oben links „Zurück“; der Dialog bleibt offen (z. B. von der Detail- zur Listenansicht). |
-| `o.barLeft` | `BarButton \| null` | Zurück, wenn `onBack` | Knopf oben links. |
-| `o.barRight` | `BarButton \| null` | Schließen (`cancel`), außer bei `onlyConfirm` | Knopf oben rechts. |
+| `o.barLeft` | `BarButton \| BarButton[] \| null` | Zurück, wenn `onBack` | Knopf oder Knöpfe oben links. |
+| `o.barRight` | `BarButton \| BarButton[] \| null` | „×“ (`cancel`), wenn es keine Fußzeile gibt | Knopf oder Knöpfe oben rechts; `null` nimmt es weg. |
+| `o.sheet` | `boolean \| SheetOptions` | `false` | Griff zum Ziehen — siehe unten. `true` oder ein Objekt schaltet ihn an. |
 
 `BarButton`: `{ icon, title, action }` schließt den Dialog mit `result.action = action`; `{ icon, title, onClick }` ruft `onClick(dialog)` auf und lässt ihn offen.
-Ohne `confirmText` entfällt die Fußleiste – z. B. für Listen oder Detailansichten.
+Statt eines Knopfes geht auch eine Liste — dann stehen mehrere Icons nebeneinander:
+
+```js
+barRight: [
+  { icon: "download", title: "Herunterladen", onClick: speichern },
+  { icon: "edit",     title: "Bearbeiten",    onClick: bearbeiten },
+  { icon: "close",    title: "Schließen",     action: "cancel" },
+]
+```
+
+**Zwei Bauformen, eine Funktion:** Mit `confirmText` bekommt der Dialog die Fußleiste mit Abbrechen und Bestätigen — oben rechts bleibt dann leer. Ohne `confirmText` entfällt die Fußleiste; dann steht oben rechts ein „×“, das wie Abbrechen wirkt. Für Listen und Detailansichten ist das die richtige Form. Abgebrochen wird also immer an genau einer Stelle. Wer es anders will, setzt `barRight` selbst.
+
+**Der Aufruf bleibt der alte:** `title`, `content`, `confirmText`, `cancelText`, `onlyConfirm`, `type`, `onInsert`, `onSubmit`, `detailReturn` wirken wie immer. Alles Neue — Position, Leistenknöpfe, `onBack`, `modal`, `sheet` — kommt dazu und hat eine Voreinstellung. Ein Skript von vorher ruft unverändert auf und bekommt den neuen Look.
+
+**Selbst schließen:** Am Dialog-Element hängt `uDFinish(action)`. Ein Knopf oben mit eigenem `onClick` bleibt offen — wer erst fragen und dann schließen will, ruft es selbst auf:
+
+```js
+barRight: {
+  icon: "close", title: "Schließen",
+  onClick: async (dlg) => { if (await wirklich()) dlg.uDFinish("cancel"); },
+}
+```
 
 **Rückgabewert:** `Promise<{submit: boolean, data: Object, action: string}>` (oder `Promise<boolean>` bei `detailReturn: false`). `action` ist `submit`, `cancel` oder die Aktion eines Leisten-Knopfs.
 
@@ -95,11 +117,22 @@ const result = await userDialog({
 // result.data → { user: { name: "...", email: "..." } }
 ```
 
-## Seitenleiste zum Ziehen (`sheet`)
+## Griff zum Ziehen (`sheet`)
 
-Ein Dialog am Rand, hinter dem die Seite bedienbar bleibt – etwa eine Liste
-neben einer Karte. Am Rechner links oder rechts in voller Höhe (`data-pos`),
-am Handy von unten (`data-pos-mobile`). Ein Griff läuft über die ganze Kante:
+**Jeder Dialog an einer Kante hat einen Griff** — am Handy also praktisch
+jeder (Standard dort: von unten), am Rechner bei `data-pos` left, right, top
+oder bottom. Ein zentrierter Dialog bekommt keinen; wechselt die
+Fensterbreite, erscheint oder verschwindet er von selbst. `sheet: false`
+schaltet ihn ganz ab.
+
+**Griff und Blockieren sind zwei Dinge.** `modal` bleibt an: Die Seite
+dahinter ist gesperrt, der Hintergrund liegt davor, die Größe lässt sich
+trotzdem ziehen. Erst `modal: false` macht daraus die Seitenleiste, hinter
+der weitergearbeitet wird — etwa eine Liste neben einer Karte. Nur dort
+lässt sich der Dialog auch wegklappen; bei einem blockierenden Dialog wäre
+hinter dem Griff eine stillstehende Seite.
+
+Der Griff läuft über die ganze Kante:
 
 - **ziehen** ändert Breite bzw. Höhe zwischen `min` und `max`
 - **weiter als `min`** gezogen → eingeklappt, nur der Griff bleibt stehen
@@ -107,8 +140,9 @@ am Handy von unten (`data-pos-mobile`). Ein Griff läuft über die ganze Kante:
 - **Pfeiltasten** auf dem Griff → größer/kleiner
 
 ```js
-// als Dialog …
+// Seitenleiste neben der Karte: nicht blockierend, Größe gemerkt
 userDialog({ title: 'Liste', content, position: { desktop: 'left', mobile: 'bottom' },
+  modal: false,
   sheet: { min: 300, key: 'liste', onChange: ({ collapsed, size, side }) => { /* Karte anpassen */ } } });
 
 // … oder für einen eigenen <dialog class="userDialog" data-pos="left" data-pos-mobile="bottom">
@@ -125,6 +159,7 @@ dialog.addEventListener('uD-sheet', (e) => console.log(e.detail));   // { collap
 | `max` | 70 % der Breite (Handy: 92 % der Höhe) | größte Breite/Höhe |
 | `key` | – | Größe und Zustand im Browser merken |
 | `onChange` | – | `({ collapsed, size, side }) => …` nach jeder Änderung |
+| `collapsible` | `true` (bei `modal: false`) | Einklappen erlauben; blockierende Dialoge setzen das selbst auf `false` |
 
 Eigene Größe per CSS: `--uD-sheet-size` (setzt das JS), `--uD-grip` (Breite des Griffs).
 
