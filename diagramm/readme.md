@@ -360,8 +360,9 @@ Alles hängt an CSS-Variablen auf `.dg`:
   --dg-text: light-dark(#000, #fff);     /* Titel, Legende */
   --dg-text-soft: light-dark(#5f6368, #a5a8ad);  /* Achsen, Hinweise */
   --dg-bg: light-dark(#fff, #1c1f24);
-  --dg-line: light-dark(#d4d6d9, #3a3f46);       /* Ränder, Achsenlinien */
-  --dg-grid: light-dark(#e8eaed, #2c3036);       /* Gitter im Diagramm */
+  --dg-line: light-dark(#d4d6d9, #3a3f46);       /* Ränder, Trennlinien */
+  --dg-grid: rgb(128 128 128 / .22);             /* Gitter im Diagramm – hell und dunkel gleich */
+  --dg-axis: rgb(128 128 128 / .5);              /* Achsenlinien – hell und dunkel gleich */
 
   --dg-title-size: 1.25rem;  --dg-chip-size: .875rem;
   --dg-legend-size: .75rem;  --dg-min-height: 180px;

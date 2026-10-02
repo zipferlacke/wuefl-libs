@@ -569,8 +569,9 @@ export function buildOption(reihen, achsen, start, end, raster, cfg, host, zusta
   });
 
   const textFarbe = tokenFarbe(host, '--dg-text-soft', '#5f6368');
-  const achsenFarbe = tokenFarbe(host, '--dg-line', '#e0e0e0');
-  const gitterFarbe = tokenFarbe(host, '--dg-grid', '#e8eaed');
+  // Gitter und Achsen: dasselbe durchscheinende Grau in hell und dunkel (diagramm.css)
+  const achsenFarbe = tokenFarbe(host, '--dg-axis', 'rgba(128, 128, 128, 0.5)');
+  const gitterFarbe = tokenFarbe(host, '--dg-grid', 'rgba(128, 128, 128, 0.22)');
   const ueberJahre = !xWert && start.getFullYear() !== end.getFullYear();
 
   return {
@@ -709,6 +710,7 @@ export class Diagramm {
   #cfg = {}; #reihen = []; #aus = new Set(); #seq = 0; #ro = null; #fs = null; #heimat = null;
   #voll = false; #zoomAn = false; #ausserhalb = null;
   #pickerAb = null; #pickerRange = null; #picker = null;
+  #schema = null; #schemaNeu = null;
 
   /**
    * @param {Element} host      Element, in das gezeichnet wird
@@ -761,6 +763,12 @@ export class Diagramm {
       if (e?.contentRect?.height > 0) this.#renderer.resize?.(this.#griff);
     });
     this.#ro.observe(this.#els.plot);
+
+    // Hell ↔ dunkel: Die Zeichenfläche kennt nur feste Farben (Beschriftung der
+    // Achsen) – wechselt das Thema, neu zeichnen, sonst bleiben die alten stehen.
+    this.#schema = typeof matchMedia === 'function' ? matchMedia('(prefers-color-scheme: dark)') : null;
+    this.#schemaNeu = () => { if (this.#cfg?.series?.length) this.refresh(); };
+    this.#schema?.addEventListener?.('change', this.#schemaNeu);
   }
 
   /* ── Öffentliche Schnittstelle ──────────────────────────────────────────── */
@@ -873,6 +881,7 @@ export class Diagramm {
   destroy() {
     this.#seq += 1;
     this.#ro?.disconnect();
+    this.#schema?.removeEventListener?.('change', this.#schemaNeu);
     if (this.#ausserhalb) window.removeEventListener('pointerdown', this.#ausserhalb);
     this.#picker?.meldeReihen?.(this, null);
     this.#pickerAb?.();
