@@ -35,14 +35,14 @@ const POSITIONS = ['center', 'top', 'bottom', 'left', 'right'];
  * @param {{desktop?:string, mobile?:string}|string} [o.position] - Wo der Dialog erscheint; Standard: Rechner 'center', Handy 'bottom'. Ein String gilt für beide.
  * @param {boolean} [o.modal = true] - false: Seite dahinter bleibt bedienbar (z. B. Seitenleiste neben einer Karte).
  * @param {BarButton|BarButton[]|null} [o.barLeft] - Knopf oder Knöpfe oben links; Standard: 'Zurück', wenn o.onBack gesetzt ist.
- * @param {BarButton|BarButton[]|null} [o.barRight] - Knopf oder Knöpfe oben rechts. Ohne Angabe steht dort ein „×",
- *   das den Dialog abbricht (Aktion 'cancel') — aber nur, wenn es unten keine Fußzeile gibt. Steht unten schon ein
- *   Knopf, steht das Abbrechen dort; zwei Wege zum selben Ziel wären einer zu viel.
+ * @param {BarButton|BarButton[]|null} [o.barRight] - Knopf oder Knöpfe oben rechts. Standard: nichts — die Leiste
+ *   oben bleibt leer, bis man etwas hineinsetzt. Ein „×" zum Abbrechen gehört dorthin, wo es unten keine Fußzeile
+ *   gibt: `{ icon: "close", title: "Schließen", action: "cancel" }`.
  * @param {Function} [o.onBack] - Zurück oben links: (dialog) => void – der Dialog bleibt offen.
- * @param {boolean|SheetOptions} [o.sheet = false] - Griff zum Ziehen (siehe `sheet()`). Standard: aus — ein Dialog
- *   ist ein Dialog. `true` schaltet ihn an, sobald der Dialog an einer Kante sitzt (am Handy also immer, am
- *   Rechner bei data-pos left/right/top/bottom); ein Objekt setzt dazu `min`, `max`, `key`. Für Seitenleisten,
- *   die dauerhaft stehen, gibt es `sheet()` auch einzeln.
+ * @param {boolean|SheetOptions} [o.sheet = true] - Griff zum Ziehen. Gehört zum Dialog dazu: Wo er an einer Kante
+ *   sitzt (am Handy also immer, am Rechner bei data-pos left/right/top/bottom), bekommt er den Griff von selbst.
+ *   Ein zentrierter Dialog hat keine Kante und damit keinen Griff. `false` schaltet ihn ab, ein Objekt setzt
+ *   `min`, `max`, `key`. Für Seitenleisten ohne Dialog gibt es `sheet()` auch einzeln.
  * Am Dialog-Element hängt `uDFinish(action)`: schließt den Dialog von außen und löst das Versprechen auf —
  * für Knöpfe mit eigenem `onClick`, die erst nach einer Rückfrage schließen wollen.
  *
@@ -63,9 +63,9 @@ export function userDialog({
     position = {},
     modal = true,
     onBack = null,
-    sheet: sheetOpts = false,
+    sheet: sheetOpts = true,
     barLeft = onBack ? { icon: "arrow_back", title: "Zurück", onClick: onBack } : null,
-    barRight = (confirmText || onlyConfirm) ? null : { icon: "close", title: cancelText, action: "cancel" },
+    barRight = null,
 }) {
     injectCss();
     const pos = typeof position === "string" ? { desktop: position, mobile: position } : position;
@@ -133,8 +133,8 @@ ${confirmText ? `            <footer class="uD-footer">
     // ===
     // Dialog wird für den Nutzer sichtbar geschalten 
     // ===
-    // Der Griff kommt nur auf Wunsch. Er hängt an der Lage, das Blockieren
-    // an `modal` — zwei Fragen, zwei Antworten. Ein blockierender Dialog
+    // Der Griff gehört dazu. Er hängt an der Lage, das Blockieren an
+    // `modal` — zwei Fragen, zwei Antworten. Ein blockierender Dialog
     // lässt sich ziehen, aber nicht wegklappen: Sonst stünde die Seite
     // still hinter einem Griff.
     if (sheetOpts) {

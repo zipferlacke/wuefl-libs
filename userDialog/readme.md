@@ -51,8 +51,8 @@ if (result.submit) {
 | `o.modal` | `boolean` | `true` | `false` → die Seite dahinter bleibt bedienbar (z. B. Seitenleiste links, Karte rechts). |
 | `o.onBack` | `(dialog) => void` | — | Zeigt oben links „Zurück“; der Dialog bleibt offen (z. B. von der Detail- zur Listenansicht). |
 | `o.barLeft` | `BarButton \| BarButton[] \| null` | Zurück, wenn `onBack` | Knopf oder Knöpfe oben links. |
-| `o.barRight` | `BarButton \| BarButton[] \| null` | „×“ (`cancel`), wenn es keine Fußzeile gibt | Knopf oder Knöpfe oben rechts; `null` nimmt es weg. |
-| `o.sheet` | `boolean \| SheetOptions` | `false` | Griff zum Ziehen — siehe unten. `true` oder ein Objekt schaltet ihn an. |
+| `o.barRight` | `BarButton \| BarButton[] \| null` | nichts | Knopf oder Knöpfe oben rechts — die Leiste bleibt leer, bis man etwas hineinsetzt. |
+| `o.sheet` | `boolean \| SheetOptions` | `true` | Griff zum Ziehen — gehört zum Dialog dazu, siehe unten. `false` schaltet ihn ab. |
 
 `BarButton`: `{ icon, title, action }` schließt den Dialog mit `result.action = action`; `{ icon, title, onClick }` ruft `onClick(dialog)` auf und lässt ihn offen.
 Statt eines Knopfes geht auch eine Liste — dann stehen mehrere Icons nebeneinander:
@@ -65,7 +65,12 @@ barRight: [
 ]
 ```
 
-**Zwei Bauformen, eine Funktion:** Mit `confirmText` bekommt der Dialog die Fußleiste mit Abbrechen und Bestätigen — oben rechts bleibt dann leer. Ohne `confirmText` entfällt die Fußleiste; dann steht oben rechts ein „×“, das wie Abbrechen wirkt. Für Listen und Detailansichten ist das die richtige Form. Abgebrochen wird also immer an genau einer Stelle. Wer es anders will, setzt `barRight` selbst.
+**Eine Funktion, die Voreinstellungen machen den Rest:**
+
+* **Wo er sitzt:** am Handy von unten, am Rechner mittig. `position` ändert das je Gerät.
+* **Der Griff** zum Ziehen gehört dazu, sobald der Dialog an einer Kante sitzt — am Handy also immer. Ein zentrierter Dialog hat keine Kante und keinen Griff. Eine zweite Funktion braucht es dafür nicht.
+* **Die Leiste oben** ist leer, bis man etwas hineinsetzt: `onBack` legt links den Pfeil zurück, `barLeft`/`barRight` nehmen eigene Icon-Knöpfe. Ein „×“ zum Abbrechen gehört dorthin, wo es unten nichts gibt.
+* **Die Fußzeile unten** kommt mit `confirmText` — daneben steht das Abbrechen. Ohne `confirmText` gibt es keine Fußzeile.
 
 **Der Aufruf bleibt der alte:** `title`, `content`, `confirmText`, `cancelText`, `onlyConfirm`, `type`, `onInsert`, `onSubmit`, `detailReturn` wirken wie immer. Alles Neue — Position, Leistenknöpfe, `onBack`, `modal`, `sheet` — kommt dazu und hat eine Voreinstellung. Ein Skript von vorher ruft unverändert auf und bekommt den neuen Look.
 
