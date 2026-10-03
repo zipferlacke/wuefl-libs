@@ -46,41 +46,34 @@ if (result.submit) {
 | `o.detailReturn` | `boolean` | `true` | `true` → Objekt `{submit, data}`. `false` → einfacher `boolean`. |
 | `o.onInsert` | `(id) => void` | — | Callback direkt nach dem Einfügen ins DOM, bevor der Dialog sichtbar wird. |
 | `o.onSubmit` | `(id, data) => void` | — | Callback beim erfolgreichen Abschicken, bevor der Dialog schließt. |
+| `o.position` | `string` \| `{small, wide}` | Handy `bottom`, Rechner `center` | Wo der Dialog erscheint: `center`, `top`, `bottom`, `left`, `right`. Ein String gilt für beide, `small` ist das Handy (≤ 700 px), `wide` der Rechner. |
+| `o.backgroundUsage` | `boolean` | `false` | `true` → die Seite dahinter bleibt bedienbar (z. B. Seitenleiste neben einer Karte); der Dialog lässt sich dann bis auf den Griff wegschieben. |
+| `o.barLeft` | `BarSide` | Zurück, wenn `onBack` | Links vom Titel: ein Knopf, eine Liste von Knöpfen oder rohes HTML. |
+| `o.barRight` | `BarSide` | nichts | Rechts vom Titel, genauso. |
+| `o.onBack` | `(dialog) => void` | — | Zeigt oben links den Pfeil zurück; der Dialog bleibt offen. |
 
-| `o.position` | `{desktop, mobile}` \| `string` | Rechner `center`, Handy `bottom` | Wo der Dialog erscheint: `center`, `top`, `bottom`, `left`, `right`. Ein String gilt für beide. |
-| `o.modal` | `boolean` | `true` | `false` → die Seite dahinter bleibt bedienbar (z. B. Seitenleiste links, Karte rechts). |
-| `o.onBack` | `(dialog) => void` | — | Zeigt oben links „Zurück“; der Dialog bleibt offen (z. B. von der Detail- zur Listenansicht). |
-| `o.barLeft` | `BarButton \| BarButton[] \| null` | Zurück, wenn `onBack` | Knopf oder Knöpfe oben links. |
-| `o.barRight` | `BarButton \| BarButton[] \| null` | nichts | Knopf oder Knöpfe oben rechts — die Leiste bleibt leer, bis man etwas hineinsetzt. |
-| `o.sheet` | `boolean \| SheetOptions` | `true` | Griff zum Ziehen — gehört zum Dialog dazu, siehe unten. `false` schaltet ihn ab. |
-
-`BarButton`: `{ icon, title, action }` schließt den Dialog mit `result.action = action`; `{ icon, title, onClick }` ruft `onClick(dialog)` auf und lässt ihn offen.
-Statt eines Knopfes geht auch eine Liste — dann stehen mehrere Icons nebeneinander:
+**Die Leiste oben.** Je Seite eine Liste runder Knöpfe — `{ icon, class, title, action }` schließt den Dialog mit `result.action = action`, `{ icon, class, title, onClick }` ruft `onClick(dialog)` auf und lässt ihn offen. `icon` ist HTML: ein Material-Symbol, ein eigenes Icon oder einfach Text. Oder statt der Liste direkt rohes HTML; darin schließt ein Element mit `data-action="…"` den Dialog mit dieser Aktion, alles andere verdrahtet man selbst (`onInsert`). Eine leere Seite gibt ihren Platz dem Titel — ohne Knöpfe reicht er über die ganze Breite.
 
 ```js
+barLeft: '<button type="button" class="button" data-action="eigen">Eigenes HTML</button>',
 barRight: [
-  { icon: "download", title: "Herunterladen", onClick: speichern },
-  { icon: "edit",     title: "Bearbeiten",    onClick: bearbeiten },
-  { icon: "close",    title: "Schließen",     action: "cancel" },
+  { icon: '<span class="msr">download</span>', title: "Herunterladen", onClick: speichern },
+  { icon: '<span class="mein-icon"></span>', class: "wichtig", title: "Bearbeiten", onClick: bearbeiten },
+  { icon: '<span class="msr">close</span>', title: "Schließen", action: "cancel" },
 ]
 ```
 
-**Eine Funktion, die Voreinstellungen machen den Rest:**
+**Die Fußzeile unten** kommt mit `confirmText`, daneben Abbrechen. Die Knöpfe haben links, dazwischen und rechts gleich viel Raum; ein einzelner steht in der Mitte. Ohne `confirmText` gibt es keine Fußzeile — ein „×“ zum Abbrechen gehört dann in die Leiste oben.
 
-* **Wo er sitzt:** am Handy von unten, am Rechner mittig. `position` ändert das je Gerät.
-* **Wie breit:** fest `min(34rem, 92vw)` — breitere Dialoge setzen `--uD-width` (etwa über ihre `id`). `max-content` rechnete WebKit falsch aus.
-* **Gestenleiste:** `--uD-safe-bottom` hält unten Abstand; liefert `env()` im Webview 0, setzt die App den Wert selbst.
-* **Der Griff** zum Ziehen gehört dazu, sobald der Dialog an einer Kante sitzt — am Handy also immer. Ein zentrierter Dialog hat keine Kante und keinen Griff. Eine zweite Funktion braucht es dafür nicht.
-* **Die Leiste oben** ist leer, bis man etwas hineinsetzt: `onBack` legt links den Pfeil zurück, `barLeft`/`barRight` nehmen eigene Icon-Knöpfe. Ein „×“ zum Abbrechen gehört dorthin, wo es unten nichts gibt.
-* **Die Fußzeile unten** kommt mit `confirmText` — daneben steht das Abbrechen. Ohne `confirmText` gibt es keine Fußzeile.
+**Breite:** fest `min(34rem, 92vw)` — breitere Dialoge setzen `--uD-width` (etwa über ihre `id`). `max-content` rechnete WebKit falsch aus. **Gestenleiste:** `--uD-safe-bottom` hält unten Abstand; liefert `env()` im Webview 0, setzt die App den Wert selbst.
 
-**Der Aufruf bleibt der alte:** `title`, `content`, `confirmText`, `cancelText`, `onlyConfirm`, `type`, `onInsert`, `onSubmit`, `detailReturn` wirken wie immer. Alles Neue — Position, Leistenknöpfe, `onBack`, `modal`, `sheet` — kommt dazu und hat eine Voreinstellung. Ein Skript von vorher ruft unverändert auf und bekommt den neuen Look.
+**Der alte Aufruf bleibt:** `title`, `content`, `confirmText`, `cancelText`, `onlyConfirm`, `type`, `onInsert`, `onSubmit`, `detailReturn` wirken wie immer. Alles Neue hat eine Voreinstellung.
 
 **Selbst schließen:** Am Dialog-Element hängt `uDFinish(action)`. Ein Knopf oben mit eigenem `onClick` bleibt offen — wer erst fragen und dann schließen will, ruft es selbst auf:
 
 ```js
 barRight: {
-  icon: "close", title: "Schließen",
+  icon: '<span class="msr">close</span>', title: "Schließen",
   onClick: async (dlg) => { if (await wirklich()) dlg.uDFinish("cancel"); },
 }
 ```
@@ -90,23 +83,33 @@ barRight: {
 - `submit`: `true` bei Bestätigung, `false` bei Abbruch.
 - `data`: alle Formularfelder aus `content`, automatisch in ein verschachteltes Objekt umgewandelt — Feldnamen wie `user[name]` werden zu `{user: {name: ...}}`.
 
-## Position, Leiste, nicht-modal
+## Position und Hintergrund
 
 ```js
 // Rechner: Seitenleiste links, volle Höhe · Handy: von unten · Karte bleibt bedienbar
 const result = await userDialog({
   title: "Meine Touren",
   content: listHtml,
-  position: { desktop: "left", mobile: "bottom" },
-  modal: false,
-  onBack: (dlg) => showList(dlg),                                  // oben links, bleibt offen
-  barRight: { icon: "close", title: "Schließen", action: "close" }, // oben rechts
+  position: { wide: "left", small: "bottom" },
+  backgroundUsage: true,
+  onBack: (dlg) => showList(dlg),
+  barRight: { icon: '<span class="msr">close</span>', title: "Schließen", action: "close" },
 });
 ```
 
-Die Position geht auch ohne JS als Attribut an jedem `.userDialog`:
-`<dialog class="userDialog" data-pos="right" data-pos-mobile="bottom">`.
-Standard ohne Attribute: am Rechner mittig, am Handy (≤ 700 px) von unten.
+Am Dialog stehen die Angaben als Attribute, das CSS setzt sie um:
+`<dialog class="userDialog" data-pos-small="bottom" data-pos-wide="left" data-background-usage>`.
+
+## Der Griff
+
+Jeder Dialog an einer Kante hat einen Griff, ein mittiger nicht. Er braucht keine Angabe:
+
+- **oben/unten:** kleiner ziehen geht; größer nur, bis der ganze Inhalt dasteht (höchstens bis zur Höhe beim Öffnen)
+- **links/rechts:** Breite zwischen 300 px und drei Vierteln des Fensters
+- **mit `backgroundUsage`:** weiter als das Minimum gezogen oder angetippt → bis auf den Griff weggeschoben; antippen oder herausziehen holt ihn zurück, seitlich mit der kleinsten Breite. Ohne `backgroundUsage` gibt es das nicht — die Seite stünde still hinter einem Griff.
+- **Pfeiltasten** auf dem Griff → größer/kleiner, Enter/Leertaste → ein- bzw. ausklappen
+
+Der Zustand steht am Dialog: `data-resizable`, `data-collapsed`, `data-dragging`, die gezogene Größe in `--uD-size`.
 
 ## Formulare im Dialog
 
@@ -123,52 +126,6 @@ const result = await userDialog({
 });
 // result.data → { user: { name: "...", email: "..." } }
 ```
-
-## Griff zum Ziehen (`sheet`)
-
-**Jeder Dialog an einer Kante hat einen Griff** — am Handy also praktisch
-jeder (Standard dort: von unten), am Rechner bei `data-pos` left, right, top
-oder bottom. Ein zentrierter Dialog bekommt keinen; wechselt die
-Fensterbreite, erscheint oder verschwindet er von selbst. `sheet: false`
-schaltet ihn ganz ab.
-
-**Griff und Blockieren sind zwei Dinge.** `modal` bleibt an: Die Seite
-dahinter ist gesperrt, der Hintergrund liegt davor, die Größe lässt sich
-trotzdem ziehen. Erst `modal: false` macht daraus die Seitenleiste, hinter
-der weitergearbeitet wird — etwa eine Liste neben einer Karte. Nur dort
-lässt sich der Dialog auch wegklappen; bei einem blockierenden Dialog wäre
-hinter dem Griff eine stillstehende Seite.
-
-Der Griff läuft über die ganze Kante:
-
-- **ziehen** ändert Breite bzw. Höhe zwischen `min` und `max`
-- **weiter als `min`** gezogen → eingeklappt, nur der Griff bleibt stehen
-- **antippen** (oder Enter/Leertaste auf dem Griff) → ein- bzw. ausklappen
-- **Pfeiltasten** auf dem Griff → größer/kleiner
-
-```js
-// Seitenleiste neben der Karte: nicht blockierend, Größe gemerkt
-userDialog({ title: 'Liste', content, position: { desktop: 'left', mobile: 'bottom' },
-  modal: false,
-  sheet: { min: 300, key: 'liste', onChange: ({ collapsed, size, side }) => { /* Karte anpassen */ } } });
-
-// … oder für einen eigenen <dialog class="userDialog" data-pos="left" data-pos-mobile="bottom">
-import { sheet } from './userDialog.js';
-const s = sheet(document.querySelector('dialog'), { min: 300, key: 'liste' });
-dialog.show();                 // nicht showModal – kein Hintergrund
-s.collapse(true);              // von außen ein-/ausklappen; s.collapsed, s.size
-dialog.addEventListener('uD-sheet', (e) => console.log(e.detail));   // { collapsed, size, side }
-```
-
-| Option | Standard | |
-|---|---|---|
-| `min` | 300 px (Handy: 160 px) | kleinste Breite/Höhe |
-| `max` | 70 % der Breite (Handy: 92 % der Höhe) | größte Breite/Höhe |
-| `key` | – | Größe und Zustand im Browser merken |
-| `onChange` | – | `({ collapsed, size, side }) => …` nach jeder Änderung |
-| `collapsible` | `true` (bei `modal: false`) | Einklappen erlauben; blockierende Dialoge setzen das selbst auf `false` |
-
-Eigene Größe per CSS: `--uD-sheet-size` (setzt das JS), `--uD-grip` (Breite des Griffs).
 
 ## Datei-Upload-Erweiterung
 
@@ -197,7 +154,7 @@ const formData = await userDialogUpload(
 | `--clr-info-300` / `--clr-warning-300` / `--clr-danger-300` | Akzentfarben je `type` |
 | `--fs-300` / `--fs-800` | Schriftgrößen (Inhalt / Titel) |
 | `--uD-margin`, `--uD-radius`, `--uD-width`, `--uD-height`, `--uD-max-height` | Lage und Größe – setzen die Positionen; eigene Werte überschreiben sie |
-| `--uD-sheet-size`, `--uD-grip` | Seitenleiste: aktuelle Größe, Breite des Griffs |
+| `--uD-size`, `--uD-grip`, `--uD-safe-bottom` | gezogene Größe (setzt das JS), Breite des Griffs, Abstand zur Gestenleiste |
 
 Diese Variablen sind Teil des globalen Designsystems (`css/import.css`).
 

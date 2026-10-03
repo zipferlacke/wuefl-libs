@@ -10,7 +10,8 @@
       <button class="btn-dl outline" data-pos="right">Rechts</button>
       <button class="btn-dl outline" data-pos="top">Oben</button>
       <button class="btn-dl outline" data-pos="bottom">Unten</button>
-      <button class="btn-dl outline" id="dlg-sheet">Seitenleiste zum Ziehen</button>
+      <button class="btn-dl outline" id="dlg-side">Seitenleiste, Seite bedienbar</button>
+      <button class="btn-dl outline" id="dlg-bar">Leiste: Knöpfe und rohes HTML</button>
     </div>
     <div class="log" id="dlg-log" style="margin-top:1rem;">— Noch keine Aktion —</div>
   </div>
@@ -43,24 +44,38 @@ document.querySelectorAll('[data-pos]').forEach((btn) => btn.addEventListener('c
   const result = await userDialog({
     title: `Position „${pos}“`,
     content: `<p>Oben links geht es zurück (bleibt offen), oben rechts schließt.</p><p class="step">Schritt ${step}</p>`,
-    position: { desktop: pos, mobile: pos === 'left' || pos === 'right' ? 'bottom' : pos },
-    modal: pos === 'center',
+    position: { wide: pos, small: pos === 'left' || pos === 'right' ? 'bottom' : pos },
     onBack: (dlg) => { step += 1; dlg.querySelector('.step').textContent = `Zurück gedrückt (${step})`; },
     confirmText: pos === 'bottom' ? 'Übernehmen' : undefined,
   });
   log(`${pos}: ${result.action}`);
 }));
 
-document.getElementById('dlg-sheet').addEventListener('click', async () => {
+document.getElementById('dlg-side').addEventListener('click', async () => {
   const result = await userDialog({
     title: 'Seitenleiste',
     content: `<p>Am Rechner links in voller Höhe, am Handy unten. Den Griff an der Kante ziehen
-      ändert die Größe; weiter als das Minimum klappt sie ein – antippen klappt sie wieder auf.
+      ändert die Größe; weiter als das Minimum klappt sie ein – antippen holt sie zurück.
       Die Seite dahinter bleibt bedienbar.</p>${'<p>Inhalt …</p>'.repeat(12)}`,
-    position: { desktop: 'left', mobile: 'bottom' },
-    sheet: { min: 280, key: 'demo', onChange: (s) => log(`Seitenleiste: ${s.collapsed ? 'eingeklappt' : `${Math.round(s.size)} px`}`) },
+    position: { wide: 'left', small: 'bottom' },
+    backgroundUsage: true,
+    barRight: { icon: '<span class="msr">close</span>', title: 'Schließen', action: 'cancel' },
   });
   log(`Seitenleiste: ${result.action}`);
+});
+
+document.getElementById('dlg-bar').addEventListener('click', async () => {
+  const result = await userDialog({
+    title: 'Leiste oben',
+    content: '<p>Links rohes HTML, rechts eine Liste runder Knöpfe — Icon, Text oder eigene Klasse.</p>',
+    barLeft: '<button type="button" class="button" data-action="eigen">Eigenes HTML</button>',
+    barRight: [
+      { icon: '<span class="msr">share</span>', title: 'Teilen', onClick: () => log('Teilen gedrückt – Dialog bleibt offen') },
+      { icon: 'OK', title: 'Fertig', action: 'fertig' },
+      { icon: '<span class="msr">close</span>', class: 'mein-zu', title: 'Schließen', action: 'cancel' },
+    ],
+  });
+  log(`Leiste: ${result.action}`);
 });
 
 document.getElementById('dlg-upload').addEventListener('click', async () => {

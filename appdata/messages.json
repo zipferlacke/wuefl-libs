@@ -141,18 +141,19 @@
     ],
     "userDialog": [
       {
-        "version": "1.3.0",
-        "date": "2026-10-02",
+        "version": "2.0.0",
+        "date": "2026-10-03",
         "changes": [
-          "Eine Funktion für alles: Der Griff zum Ziehen gehört jetzt zum Dialog selbst (am Handy von unten, am Rechner nur an einer Kante). `sheet()` bleibt für Seitenleisten ohne Dialog erhalten",
-          "Die Leiste oben ist leer, bis man etwas hineinsetzt — `onBack` für den Pfeil zurück, `barLeft`/`barRight` für eigene Icon-Knöpfe, auch mehrere nebeneinander",
-          "Unten kommt die Fußzeile mit Abbrechen und Bestätigen, sobald `confirmText` gesetzt ist",
-          "Neu am Dialog-Element: `uDFinish(action)` schließt den Dialog von außen und löst das Versprechen auf — für Knöpfe oben mit eigenem `onClick`, die erst nach einer Rückfrage schließen wollen",
-          "Griff und Blockieren sind getrennt: `modal` entscheidet allein über das Blockieren. Der Griff sitzt jetzt auch oben und unten richtig",
-          "Der Aufruf bleibt der alte — alte Skripte rufen unverändert auf und bekommen den neuen Look",
-          "Feste Breite statt „max-content“ (`--uD-width`, Standard `min(34rem, 92vw)`): WebKit rechnete die Höhe sonst mit ganz schmalem Text aus, der Dialog wurde riesig. Gelernt in wmap",
-          "Knöpfe der Fußzeile rechtsbündig mit festem Abstand statt auseinandergezogen",
-          "Am Handy: höherer Griff bei Fingerbedienung, Inhalt beginnt unter dem Griff, unten Platz für die Gestenleiste (`--uD-safe-bottom`, überschreibbar). Gelernt in wmap"
+          "Position: `position` als String für Handy und Rechner oder `{ small, wide }` je eins davon (center, top, bottom, left, right). Ohne Angabe: Handy von unten, Rechner mittig. Am Dialog steht es als `data-pos-small` / `data-pos-wide`, das CSS setzt es um",
+          "`backgroundUsage` (Standard `false`): die Seite dahinter bleibt bedienbar und scrollbar – am Dialog `data-background-usage`",
+          "Griff gehört zum Dialog: jeder Dialog an einer Kante hat ihn. Oben und unten geht kleiner ziehen, größer nur, bis der ganze Inhalt dasteht; links und rechts die Breite bis drei Viertel des Fensters. Bis auf den Griff wegschieben nur mit `backgroundUsage`, antippen oder herausziehen holt ihn zurück. Zustand in `data-resizable`, `data-collapsed`, `data-dragging`",
+          "Leiste oben: `barLeft` / `barRight` nehmen einen runden Knopf, eine Liste davon (`{ icon, class, title, action | onClick }`, `icon` als HTML: Material-Symbol, eigenes Icon oder Text) oder rohes HTML – darin schließt `data-action` den Dialog. Eine leere Seite gibt ihren Platz dem Titel",
+          "Unten kommt die Fußzeile mit Abbrechen und Bestätigen, sobald `confirmText` gesetzt ist; die Knöpfe stehen gleichmäßig verteilt, ein einzelner in der Mitte",
+          "Neu am Dialog-Element: `uDFinish(action)` schließt den Dialog von außen und löst das Versprechen auf – für Knöpfe oben mit eigenem `onClick`, die erst nach einer Rückfrage schließen wollen",
+          "Feste Breite statt „max-content“ (`--uD-width`, Standard `min(34rem, 92vw)`): WebKit rechnete die Höhe sonst mit ganz schmalem Text aus. Am Handy Platz für die Gestenleiste (`--uD-safe-bottom`). Gelernt in wmap",
+          "Entfernt: `sheet()`, die Optionen `sheet` und `modal`, `position: { desktop, mobile }` und die Attribute `data-pos` / `data-pos-mobile` – wer sie nutzt, stellt auf `position` und `backgroundUsage` um",
+          "Der Aufruf von vor 1.2 bleibt: `title`, `content`, `confirmText`, `cancelText`, `onlyConfirm`, `type`, `onInsert`, `onSubmit`, `detailReturn` wirken wie immer",
+          "BugFix: Beim Schließen bleiben keine Listener mehr am Fenster hängen"
         ]
       },
       {
@@ -387,11 +388,12 @@
   "changelog": [
     {
       "version": "2.7.0",
-      "date": "2026-10-02",
+      "date": "2026-10-03",
       "changes": [
-        "1. userDialog: Eine Funktion, drei Voreinstellungen — Handy unten, Rechner mittig, Griff zum Ziehen an jeder Kante",
-        "2. userDialog: Die Leiste oben bleibt leer, bis man Knöpfe hineinsetzt; unten erscheint die Fußzeile mit `confirmText`",
-        "3. userDialog: `barLeft`/`barRight` nehmen mehrere Icon-Knöpfe, `uDFinish(action)` schließt einen Dialog von außen"
+        "1. userDialog 2.0.0: Lage mit `position` (`{ small, wide }`), Seite dahinter bedienbar mit `backgroundUsage` – beides als Data-Attribut am Dialog, das CSS setzt es um",
+        "2. userDialog: Griff an jedem Dialog an einer Kante – kleiner ziehen geht, größer nur so weit, wie der Inhalt braucht; wegschieben nur mit `backgroundUsage`",
+        "3. userDialog: Leiste oben mit `barLeft`/`barRight` als Knopfliste oder rohes HTML, Fußzeile gleichmäßig verteilt, `uDFinish(action)` schließt von außen",
+        "4. userDialog: `sheet()` und `modal` entfallen – Umstellung auf `position` und `backgroundUsage`"
       ]
     },
     {
