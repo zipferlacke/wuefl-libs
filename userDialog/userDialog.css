@@ -5,7 +5,7 @@
 
     /*
      * Position: data-pos-wide (Rechner) und data-pos-small (Handy, ≤ 700px) –
-     * center | top | bottom | left | right. Standard: Rechner mittig, Handy
+     * center | full | top | bottom | left | right (full = ganzer Bildschirm). Standard: Rechner mittig, Handy
      * von unten. Jede Position setzt nur Variablen; unten werden sie benutzt.
      */
     .userDialog{
@@ -30,6 +30,7 @@
         .userDialog[data-pos-wide="bottom"] { --uD-margin: auto auto 0; --uD-radius: 1.5rem 1.5rem 0 0; --uD-anim: uD-from-bottom; }
         .userDialog[data-pos-wide="left"]   { --uD-margin: 0 auto 0 0; --uD-radius: 0 1.5rem 1.5rem 0; --uD-width: min(32rem, 92vw); --uD-min-width: 0; --uD-height: 100dvh; --uD-max-height: 100dvh; --uD-anim: uD-from-left; }
         .userDialog[data-pos-wide="right"]  { --uD-margin: 0 0 0 auto; --uD-radius: 1.5rem 0 0 1.5rem; --uD-width: min(32rem, 92vw); --uD-min-width: 0; --uD-height: 100dvh; --uD-max-height: 100dvh; --uD-anim: uD-from-right; }
+        .userDialog[data-pos-wide="full"]   { --uD-margin: 0; --uD-radius: 0; --uD-width: 100vw; --uD-min-width: 0; --uD-max-width: 100vw; --uD-height: 100dvh; --uD-max-height: 100dvh; }
     }
     @media screen and (max-width: 700px) {
         .userDialog:not([data-pos-small]), .userDialog[data-pos-small="bottom"] {
@@ -39,6 +40,7 @@
         .userDialog[data-pos-small="center"] { --uD-width: 92vw; --uD-min-width: 0; }
         .userDialog[data-pos-small="left"]  { --uD-margin: 0 auto 0 0; --uD-radius: 0 1.5rem 1.5rem 0; --uD-width: 88vw; --uD-min-width: 0; --uD-height: 100dvh; --uD-max-height: 100dvh; --uD-anim: uD-from-left; }
         .userDialog[data-pos-small="right"] { --uD-margin: 0 0 0 auto; --uD-radius: 1.5rem 0 0 1.5rem; --uD-width: 88vw; --uD-min-width: 0; --uD-height: 100dvh; --uD-max-height: 100dvh; --uD-anim: uD-from-right; }
+        .userDialog[data-pos-small="full"]  { --uD-margin: 0; --uD-radius: 0; --uD-width: 100vw; --uD-min-width: 0; --uD-max-width: 100vw; --uD-height: 100dvh; --uD-max-height: 100dvh; }
     }
 
     .userDialog{

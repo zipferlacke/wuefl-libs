@@ -144,7 +144,7 @@
         "version": "2.0.0",
         "date": "2026-10-03",
         "changes": [
-          "Position: `position` als String für Handy und Rechner oder `{ small, wide }` je eins davon (center, top, bottom, left, right). Ohne Angabe: Handy von unten, Rechner mittig. Am Dialog steht es als `data-pos-small` / `data-pos-wide`, das CSS setzt es um",
+          "Position: `position` als String für Handy und Rechner oder `{ small, wide }` je eins davon (center, full, top, bottom, left, right – full füllt den ganzen Bildschirm). Ohne Angabe: Handy von unten, Rechner mittig. Am Dialog steht es als `data-pos-small` / `data-pos-wide`, das CSS setzt es um",
           "`backgroundUsage` (Standard `false`): die Seite dahinter bleibt bedienbar und scrollbar – am Dialog `data-background-usage`",
           "Griff gehört zum Dialog: jeder Dialog an einer Kante hat ihn. Oben und unten geht kleiner ziehen, größer nur, bis der ganze Inhalt dasteht; links und rechts die Breite bis drei Viertel des Fensters. Bis auf den Griff wegschieben nur mit `backgroundUsage`, antippen oder herausziehen holt ihn zurück. Zustand in `data-resizable`, `data-collapsed`, `data-dragging`",
           "Leiste oben: `barLeft` / `barRight` nehmen einen runden Knopf, eine Liste davon (`{ icon, class, title, action | onClick }`, `icon` als HTML: Material-Symbol, eigenes Icon oder Text) oder rohes HTML – darin schließt `data-action` den Dialog. Eine leere Seite gibt ihren Platz dem Titel",

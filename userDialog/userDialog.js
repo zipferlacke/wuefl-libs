@@ -22,8 +22,8 @@
  *   Aktion; alles andere verdrahtet man selbst (z. B. in `onInsert`).
  */
 
-/** Positionen: 'center' | 'top' | 'bottom' | 'left' | 'right' */
-const POSITIONS = ['center', 'top', 'bottom', 'left', 'right'];
+/** Positionen: 'center' | 'full' | 'top' | 'bottom' | 'left' | 'right' — 'full' füllt den ganzen Bildschirm */
+const POSITIONS = ['center', 'full', 'top', 'bottom', 'left', 'right'];
 
 /** Voreinstellung: am Handy von unten, am Rechner mittig. */
 const POS_DEFAULT = { small: 'bottom', wide: 'center' };
@@ -48,8 +48,8 @@ function resolvePosition(position) {
  * @param {boolean} [o.detailReturn = 0] - Boolen oder UserDialog zurückgegeben wird gegeben (deafult:true)
  * @param {Function} [o.onInsert] - Funktion wird nach dem hinzufügen des Dialogs zur DOM ausgeführt (Dialog ist noch nicht sichtbar); 
  * @param {Function} [o.onSubmit] - Funktion bei erfolgreicher Abgabe ausgeführt (bevor der Dialog geschlossen ist).
- * @param {{small?:string, wide?:string}|string} [o.position] - Wo der Dialog erscheint: 'center' | 'top' | 'bottom' |
- *   'left' | 'right'. Ein String gilt für Handy und Rechner, `{ small, wide }` je eins davon. Standard: Handy
+ * @param {{small?:string, wide?:string}|string} [o.position] - Wo der Dialog erscheint: 'center' | 'full' | 'top' |
+ *   'bottom' | 'left' | 'right' ('full' = ganzer Bildschirm). Ein String gilt für Handy und Rechner, `{ small, wide }` je eins davon. Standard: Handy
  *   (≤ 700 px) 'bottom', Rechner 'center'. Am Dialog steht es als `data-pos-small` / `data-pos-wide`.
  * @param {boolean} [o.backgroundUsage = false] - true: die Seite dahinter bleibt bedienbar (z. B. Seitenleiste neben
  *   einer Karte); der Dialog lässt sich dann an seinem Griff auch wegklappen. Am Dialog steht es als
@@ -237,7 +237,7 @@ ${confirmText ? `            <footer class="uD-footer">
 /**
  * Der Griff zum Vergrößern — Teil jedes Dialogs, nicht einzeln aufrufbar.
  *
- * Jeder Dialog an einer Kante hat ihn, ein mittiger nicht. Lage und
+ * Jeder Dialog an einer Kante hat ihn, ein mittiger oder bildschirmfüllender nicht. Lage und
  * Verhalten stehen in `data-pos-small`, `data-pos-wide` und
  * `data-background-usage`:
  *   - oben/unten: kleiner ziehen geht, größer nur bis der ganze Inhalt
@@ -276,7 +276,8 @@ function griff(dialog, einklappbar) {
     // gezogen hat).
     let voll = 0;
     const miss = () => { if (!dialog.style.getPropertyValue("--uD-size")) voll = dialog.offsetHeight; };
-    const ziehbar = () => side() !== "center";
+    // Mittig und im Vollbild gibt es keine freie Kante — also keinen Griff.
+    const ziehbar = () => !["center", "full"].includes(side());
     const minSize = () => vertical() ? Math.min(160, voll || 160) : 300;
     const maxSize = () => vertical() ? (voll || innerHeight * 0.9) : innerWidth * 0.75;
     // Hinausschieben bis auf den Griff nur, wenn die Seite dahinter

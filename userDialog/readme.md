@@ -46,7 +46,7 @@ if (result.submit) {
 | `o.detailReturn` | `boolean` | `true` | `true` → Objekt `{submit, data}`. `false` → einfacher `boolean`. |
 | `o.onInsert` | `(id) => void` | — | Callback direkt nach dem Einfügen ins DOM, bevor der Dialog sichtbar wird. |
 | `o.onSubmit` | `(id, data) => void` | — | Callback beim erfolgreichen Abschicken, bevor der Dialog schließt. |
-| `o.position` | `string` \| `{small, wide}` | Handy `bottom`, Rechner `center` | Wo der Dialog erscheint: `center`, `top`, `bottom`, `left`, `right`. Ein String gilt für beide, `small` ist das Handy (≤ 700 px), `wide` der Rechner. |
+| `o.position` | `string` \| `{small, wide}` | Handy `bottom`, Rechner `center` | Wo der Dialog erscheint: `center`, `full` (ganzer Bildschirm), `top`, `bottom`, `left`, `right`. Ein String gilt für beide, `small` ist das Handy (≤ 700 px), `wide` der Rechner. |
 | `o.backgroundUsage` | `boolean` | `false` | `true` → die Seite dahinter bleibt bedienbar (z. B. Seitenleiste neben einer Karte); der Dialog lässt sich dann bis auf den Griff wegschieben. |
 | `o.barLeft` | `BarSide` | Zurück, wenn `onBack` | Links vom Titel: ein Knopf, eine Liste von Knöpfen oder rohes HTML. |
 | `o.barRight` | `BarSide` | nichts | Rechts vom Titel, genauso. |
@@ -87,6 +87,7 @@ barRight: {
 
 ```js
 // Rechner: Seitenleiste links, volle Höhe · Handy: von unten · Karte bleibt bedienbar
+// (eine Vorschau etwa: position: { small: "full", wide: "right" })
 const result = await userDialog({
   title: "Meine Touren",
   content: listHtml,
@@ -102,7 +103,7 @@ Am Dialog stehen die Angaben als Attribute, das CSS setzt sie um:
 
 ## Der Griff
 
-Jeder Dialog an einer Kante hat einen Griff, ein mittiger nicht. Er braucht keine Angabe:
+Jeder Dialog an einer Kante hat einen Griff, ein mittiger oder bildschirmfüllender (`full`) nicht. Er braucht keine Angabe:
 
 - **oben/unten:** kleiner ziehen geht; größer nur, bis der ganze Inhalt dasteht (höchstens bis zur Höhe beim Öffnen)
 - **links/rechts:** Breite zwischen 300 px und drei Vierteln des Fensters
