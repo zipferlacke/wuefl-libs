@@ -72,6 +72,11 @@
         }
 
         
+        &[open]{
+            display: flex;
+            flex-direction: column;
+        }
+
         & > form{
             display: grid;
             grid-template-columns: 1fr;
@@ -79,7 +84,12 @@
             &.uD-no-footer { grid-template-rows: 1fr; }
             gap: var(--dialog-gap);
             max-height:calc(var(--uD-max-height) - 2em);
-            height: 100%;
+            /* Füllt den Dialog über Flex, nicht über height: 100% — bei
+               einem Dialog mit Inhaltshöhe (fit-content) rechnete WebKit
+               (GNOME Web, Safari, WebKitGTK unter Tauri) daraus 0, der
+               Inhalt verschwand und nur die Fußzeile blieb stehen. */
+            flex: 1 1 auto;
+            min-height: 0;
 
             & .content{
                 display: grid;

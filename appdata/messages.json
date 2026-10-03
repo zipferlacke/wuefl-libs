@@ -153,7 +153,8 @@
           "Feste Breite statt „max-content“ (`--uD-width`, Standard `min(34rem, 92vw)`): WebKit rechnete die Höhe sonst mit ganz schmalem Text aus. Am Handy Platz für die Gestenleiste (`--uD-safe-bottom`). Gelernt in wmap",
           "Entfernt: `sheet()`, die Optionen `sheet` und `modal`, `position: { desktop, mobile }` und die Attribute `data-pos` / `data-pos-mobile` – wer sie nutzt, stellt auf `position` und `backgroundUsage` um",
           "Der Aufruf von vor 1.2 bleibt: `title`, `content`, `confirmText`, `cancelText`, `onlyConfirm`, `type`, `onInsert`, `onSubmit`, `detailReturn` wirken wie immer",
-          "BugFix: Beim Schließen bleiben keine Listener mehr am Fenster hängen"
+          "BugFix: Beim Schließen bleiben keine Listener mehr am Fenster hängen",
+          "BugFix: In WebKit (GNOME Web, Safari, WebKitGTK unter Tauri) fiel der Inhalt eines Dialogs von unten auf 0 Höhe zusammen, nur die Fußzeile blieb – das Formular füllt den Dialog jetzt über Flex statt über height: 100%"
         ]
       },
       {
