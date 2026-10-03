@@ -68,6 +68,8 @@ barRight: [
 **Eine Funktion, die Voreinstellungen machen den Rest:**
 
 * **Wo er sitzt:** am Handy von unten, am Rechner mittig. `position` ändert das je Gerät.
+* **Wie breit:** fest `min(34rem, 92vw)` — breitere Dialoge setzen `--uD-width` (etwa über ihre `id`). `max-content` rechnete WebKit falsch aus.
+* **Gestenleiste:** `--uD-safe-bottom` hält unten Abstand; liefert `env()` im Webview 0, setzt die App den Wert selbst.
 * **Der Griff** zum Ziehen gehört dazu, sobald der Dialog an einer Kante sitzt — am Handy also immer. Ein zentrierter Dialog hat keine Kante und keinen Griff. Eine zweite Funktion braucht es dafür nicht.
 * **Die Leiste oben** ist leer, bis man etwas hineinsetzt: `onBack` legt links den Pfeil zurück, `barLeft`/`barRight` nehmen eigene Icon-Knöpfe. Ein „×“ zum Abbrechen gehört dorthin, wo es unten nichts gibt.
 * **Die Fußzeile unten** kommt mit `confirmText` — daneben steht das Abbrechen. Ohne `confirmText` gibt es keine Fußzeile.

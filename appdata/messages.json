@@ -149,7 +149,10 @@
           "Unten kommt die Fußzeile mit Abbrechen und Bestätigen, sobald `confirmText` gesetzt ist",
           "Neu am Dialog-Element: `uDFinish(action)` schließt den Dialog von außen und löst das Versprechen auf — für Knöpfe oben mit eigenem `onClick`, die erst nach einer Rückfrage schließen wollen",
           "Griff und Blockieren sind getrennt: `modal` entscheidet allein über das Blockieren. Der Griff sitzt jetzt auch oben und unten richtig",
-          "Der Aufruf bleibt der alte — alte Skripte rufen unverändert auf und bekommen den neuen Look"
+          "Der Aufruf bleibt der alte — alte Skripte rufen unverändert auf und bekommen den neuen Look",
+          "Feste Breite statt „max-content“ (`--uD-width`, Standard `min(34rem, 92vw)`): WebKit rechnete die Höhe sonst mit ganz schmalem Text aus, der Dialog wurde riesig. Gelernt in wmap",
+          "Knöpfe der Fußzeile rechtsbündig mit festem Abstand statt auseinandergezogen",
+          "Am Handy: höherer Griff bei Fingerbedienung, Inhalt beginnt unter dem Griff, unten Platz für die Gestenleiste (`--uD-safe-bottom`, überschreibbar). Gelernt in wmap"
         ]
       },
       {

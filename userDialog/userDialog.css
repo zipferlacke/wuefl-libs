@@ -11,8 +11,15 @@
     .userDialog{
         --uD-margin: auto;
         --uD-radius: 1.5rem;
-        --uD-width: max-content;
-        --uD-min-width: min(500px, 90vw);
+        /* Feste Breite statt „max-content": WebKit (GNOME Web, Safari,
+           WebKitGTK unter Tauri) rechnete die Höhe sonst mit ganz schmalem
+           Text aus — der Dialog wurde riesig, die Knöpfe zu Ovalen
+           gestreckt. Gelernt in wmap. Breitere Dialoge setzen --uD-width. */
+        --uD-width: min(34rem, 92vw);
+        --uD-min-width: 0;
+        /* Abstand zur Gestenleiste von Android. env() liefert im Webview oft
+           0 — dann setzt die App den Wert selbst (wmap: --safe-bottom). */
+        --uD-safe-bottom: env(safe-area-inset-bottom, 0px);
         --uD-max-width: min(900px, 100vw);
         --uD-height: fit-content;
         --uD-max-height: 90dvh;
@@ -110,9 +117,14 @@
             }
             
             & footer{
+                /* Rechtsbündig mit festem Abstand — auseinandergezogen
+                   standen Abbrechen und Bestätigen an den Rändern und
+                   gehörten nicht mehr sichtbar zusammen. */
                 display: flex;
-                gap: 1rem;
-                justify-content: space-around;
+                flex-wrap: wrap;
+                gap: 0.5rem;
+                justify-content: flex-end;
+                align-items: center;
                 margin-right: 0.5rem;
                 
                 & .button{
@@ -281,10 +293,15 @@
     }
 
     @media screen and (max-width: 700px) {
+        /* Von unten: Der Inhalt fängt erst unter dem Griff an — der liegt
+           obenauf und schluckte sonst die Knöpfe der Leiste. Unten bleibt
+           Platz für die Gestenleiste, eingeklappt steht der Griff darüber;
+           sonst fängt das System das Hochziehen ab. Gelernt in wmap. */
         .userDialog.uD-sheet:is(:not([data-pos-mobile]), [data-pos-mobile="bottom"]) {
-            padding-top: var(--uD-grip);
+            padding-top: calc(var(--uD-grip) + .25rem);
+            padding-bottom: calc(1rem + var(--uD-safe-bottom));
             .uD-grip { top: 0; }
-            &.uD-collapsed { translate: 0 calc(100% - var(--uD-grip)); }
+            &.uD-collapsed { translate: 0 calc(100% - var(--uD-grip) - var(--uD-safe-bottom)); }
         }
         .userDialog.uD-sheet[data-pos-mobile="top"] {
             padding-bottom: var(--uD-grip);
@@ -300,6 +317,15 @@
             padding-left: calc(var(--uD-grip) + .25rem);
             .uD-grip { left: 0; }
             &.uD-collapsed { translate: calc(100% - var(--uD-grip)) 0; }
+        }
+    }
+}
+
+/* Mit dem Finger: ein höherer Griff, der sich auch treffen lässt. */
+@layer components {
+    @media screen and (max-width: 700px) and (pointer: coarse) {
+        .userDialog.uD-sheet:is(:not([data-pos-mobile]), [data-pos-mobile="bottom"], [data-pos-mobile="top"]) {
+            --uD-grip: 2.2rem;
         }
     }
 }
