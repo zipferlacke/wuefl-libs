@@ -6,15 +6,34 @@
  */
 
 /**
- * @typedef {Object} BarButton
- * @property {string} icon - Material-Symbol (z. B. 'arrow_back', 'close', 'share')
+ * @typedef {Object} BarButton - ein runder Knopf in der Leiste oben
+ * @property {string} icon - Inhalt des Knopfs als HTML: `<span class="msr">close</span>`,
+ *   `<span class="mein-icon"></span>` oder einfach Text
+ * @property {string} [class] - zusätzliche Klasse(n) am Knopf
  * @property {string} [title] - Tooltip / Beschriftung für Screenreader
  * @property {string} [action] - Dialog schließt mit dieser Aktion (result.action)
  * @property {Function} [onClick] - Statt zu schließen: eigene Funktion (dialog) => void
  */
 
-/** Positionen: 'center' | 'top' | 'bottom' | 'left' | 'right' */
-const POSITIONS = ['center', 'top', 'bottom', 'left', 'right'];
+/**
+ * @typedef {BarButton|BarButton[]|string|null} BarSide - eine Seite der Leiste oben:
+ *   ein Knopf, eine Liste davon (nebeneinander, in dieser Reihenfolge) oder rohes HTML.
+ *   Im rohen HTML schließt ein Element mit `data-action="…"` den Dialog mit dieser
+ *   Aktion; alles andere verdrahtet man selbst (z. B. in `onInsert`).
+ */
+
+/** Positionen: 'center' | 'full' | 'top' | 'bottom' | 'left' | 'right' — 'full' füllt den ganzen Bildschirm */
+const POSITIONS = ['center', 'full', 'top', 'bottom', 'left', 'right'];
+
+/** Voreinstellung: am Handy von unten, am Rechner mittig. */
+const POS_DEFAULT = { small: 'bottom', wide: 'center' };
+
+/** Position → { small, wide }. Ein String gilt für beide. */
+function resolvePosition(position) {
+    const p = typeof position === "string" ? { small: position, wide: position } : (position ?? {});
+    const pick = (v, d) => POSITIONS.includes(v) ? v : d;
+    return { small: pick(p.small, POS_DEFAULT.small), wide: pick(p.wide, POS_DEFAULT.wide) };
+}
 
 /**
  * Es wird ein Informationsdialog erstellt.
@@ -29,12 +48,22 @@ const POSITIONS = ['center', 'top', 'bottom', 'left', 'right'];
  * @param {boolean} [o.detailReturn = 0] - Boolen oder UserDialog zurückgegeben wird gegeben (deafult:true)
  * @param {Function} [o.onInsert] - Funktion wird nach dem hinzufügen des Dialogs zur DOM ausgeführt (Dialog ist noch nicht sichtbar); 
  * @param {Function} [o.onSubmit] - Funktion bei erfolgreicher Abgabe ausgeführt (bevor der Dialog geschlossen ist).
- * @param {{desktop?:string, mobile?:string}|string} [o.position] - Wo der Dialog erscheint; Standard: Rechner 'center', Handy 'bottom'. Ein String gilt für beide.
- * @param {boolean} [o.modal = true] - false: Seite dahinter bleibt bedienbar (z. B. Seitenleiste neben einer Karte).
- * @param {BarButton|null} [o.barLeft] - Knopf oben links; Standard: 'Zurück', wenn o.onBack gesetzt ist.
- * @param {BarButton|null} [o.barRight] - Knopf oben rechts; Standard: 'Schließen' (Aktion 'cancel'), außer bei onlyConfirm.
+ * @param {{small?:string, wide?:string}|string} [o.position] - Wo der Dialog erscheint: 'center' | 'full' | 'top' |
+ *   'bottom' | 'left' | 'right' ('full' = ganzer Bildschirm). Ein String gilt für Handy und Rechner, `{ small, wide }` je eins davon. Standard: Handy
+ *   (≤ 700 px) 'bottom', Rechner 'center'. Am Dialog steht es als `data-pos-small` / `data-pos-wide`.
+ * @param {boolean} [o.backgroundUsage = false] - true: die Seite dahinter bleibt bedienbar (z. B. Seitenleiste neben
+ *   einer Karte); der Dialog lässt sich dann an seinem Griff auch wegklappen. Am Dialog steht es als
+ *   `data-background-usage`.
+ * @param {BarSide} [o.barLeft] - links vom Titel; Standard: Pfeil zurück, wenn o.onBack gesetzt ist.
+ * @param {BarSide} [o.barRight] - rechts vom Titel; Standard: nichts. Ein „×" zum Abbrechen gehört dorthin,
+ *   wo es unten keine Fußzeile gibt. Eine leere Seite gibt ihren Platz dem Titel — ohne Knöpfe reicht er über
+ *   die ganze Breite.
  * @param {Function} [o.onBack] - Zurück oben links: (dialog) => void – der Dialog bleibt offen.
- * @param {boolean|SheetOptions} [o.sheet] - Als Seitenleiste zum Ziehen (siehe `sheet()`); schaltet `modal` aus.
+ * Der Griff zum Ziehen gehört dazu und braucht keine Angabe: Jeder Dialog an einer Kante hat ihn. Kleiner geht
+ *   immer, größer nur bis der ganze Inhalt dasteht.
+ * Am Dialog-Element hängt `uDFinish(action)`: schließt den Dialog von außen und löst das Versprechen auf —
+ * für Knöpfe mit eigenem `onClick`, die erst nach einer Rückfrage schließen wollen.
+ *
  * @returns {Promise<{submit:boolean, data:Object}>} `boolean`, wenn die `detailReturn=false`, `Object, detailReturn=true`. 
  */
 
@@ -47,20 +76,36 @@ export function userDialog({
     type = "normal", 
     onlyConfirm = false,
     detailReturn = true,
-    onInsert = (dialog_id) => { }, 
-    onSubmit = (dialog_id, dialogData) => { },
-    position = {},
-    modal = true,
+    onInsert = () => {},
+    onSubmit = () => {},
+    position = POS_DEFAULT,
+    backgroundUsage = false,
     onBack = null,
-    sheet: sheetOpts = null,
-    barLeft = onBack ? { icon: "arrow_back", title: "Zurück", onClick: onBack } : null,
-    barRight = onlyConfirm ? null : { icon: "close", title: cancelText, action: "cancel" },
+    barLeft = onBack ? { icon: `<span class="msr">arrow_back</span>`, title: "Zurück", onClick: onBack } : null,
+    barRight = null,
 }) {
     injectCss();
-    const pos = typeof position === "string" ? { desktop: position, mobile: position } : position;
-    const posAttr = (k, attr) => POSITIONS.includes(pos[k]) ? ` ${attr}="${pos[k]}"` : "";
-    const barButton = (b, side) => b ? `<button type="button" class="button uD-bar-btn uD-bar-${side}" data-shape="round no-background" title="${b.title ?? ""}" aria-label="${b.title ?? b.icon}"><span class="msr">${b.icon}</span></button>` : `<span class="uD-bar-space"></span>`;
+    const pos = resolvePosition(position);
+    const background = !!backgroundUsage;
 
+    // Je Seite: rohes HTML, ein oder mehrere runde Knöpfe — oder nichts,
+    // dann gehört der Platz dem Titel.
+    const liste = (b) => (Array.isArray(b) ? b : [b]).filter(Boolean);
+    const seiten = { left: barLeft, right: barRight };
+    const slot = (side) => {
+        const inhalt = seiten[side];
+        if (typeof inhalt === "string") {
+            return inhalt.trim() ? `<span class="uD-bar-slot uD-bar-raw uD-bar-group-${side}">${inhalt}</span>` : "";
+        }
+        const knoepfe = liste(inhalt);
+        if (!knoepfe.length) return "";
+        // Die Seitenklasse bleibt an jedem Knopf, damit
+        // `querySelector(".uD-bar-right")` weiterhin einen Knopf findet.
+        const einzeln = knoepfe.map((k, i) =>
+            `<button type="button" class="button uD-bar-btn uD-bar-${side}${k.class ? ` ${k.class}` : ""}" data-bar="${side}:${i}" data-shape="round no-background" title="${k.title ?? ""}" aria-label="${k.title ?? ""}">${k.icon ?? ""}</button>`
+        ).join("");
+        return `<span class="uD-bar-slot uD-bar-group uD-bar-group-${side}">${einzeln}</span>`;
+    };
 
     // ===
     // Dialog-Typ wird ausgewertet und ggf. werden Icons hinzugefügt
@@ -84,10 +129,10 @@ export function userDialog({
     // Eigentlicher Dialog wird erstellt und zur DOM hinzugefügt
     // ===
     const markup = `
-    <dialog id="${id}" class="userDialog" data-dialog-type="${type}"${posAttr("desktop", "data-pos")}${posAttr("mobile", "data-pos-mobile")}>
+    <dialog id="${id}" class="userDialog" data-dialog-type="${type}" data-pos-small="${pos.small}" data-pos-wide="${pos.wide}"${background ? " data-background-usage" : ""}>
         <form novalidate class="uD-form${confirmText ? "" : " uD-no-footer"}">
             <div class="content">
-                <header class="uD-header">${barButton(barLeft, "left")}<span class="uD-title">${title}</span>${barButton(barRight, "right")}</header>
+                <header class="uD-header">${slot("left")}<span class="uD-title">${title}</span>${slot("right")}</header>
                 ${image}
                 <main class="uD-main">
                     ${content}
@@ -111,16 +156,29 @@ ${confirmText ? `            <footer class="uD-footer">
     // ===
     // Dialog wird für den Nutzer sichtbar geschalten 
     // ===
-    if (sheetOpts) sheet(dialog, sheetOpts === true ? {} : sheetOpts);
-    if (modal && !sheetOpts) dialog.showModal(); else dialog.show();
-    
-    
+    // Der Griff gehört dazu. Ob er da ist, hängt an Lage und Inhalt, das
+    // Blockieren an `backgroundUsage` — zwei Fragen, zwei Antworten. Ein
+    // blockierender Dialog lässt sich vergrößern, aber nicht wegklappen:
+    // Sonst stünde die Seite still hinter einem Griff.
+    const griffWeg = griff(dialog, background);
+    if (background) dialog.show(); else dialog.showModal();
+
+    // Zu: Listener am Fenster abräumen, Dialog aus dem DOM.
+    const schliessen = () => {
+        griffWeg();
+        dialog.close();
+        dialog.remove();
+    };
+
     return new Promise((resolve) => {
         const finish = (action) => {
-            dialog.close();
-            dialog.remove();
+            schliessen();
             detailReturn ? resolve({submit:false, data:{}, action}) : resolve(false);
         };
+        // Schließen von außen: Wer einen Knopf oben mit `onClick` belegt hat,
+        // entscheidet selbst, wann Schluss ist (z. B. erst nach einer
+        // Rückfrage). Ohne das bliebe das Versprechen für immer offen.
+        dialog.uDFinish = finish;
         if (dialog.querySelector(".dialog_close") != null) {
             dialog.querySelector(".dialog_close").addEventListener("click", function (e) {
                 e.preventDefault();
@@ -128,11 +186,21 @@ ${confirmText ? `            <footer class="uD-footer">
             });
         }
         // Knöpfe oben: eigene Funktion (Dialog bleibt offen) oder schließen mit Aktion
-        [[barLeft, ".uD-bar-left"], [barRight, ".uD-bar-right"]].forEach(([b, sel]) => {
-            dialog.querySelector(sel)?.addEventListener("click", (e) => {
+        dialog.querySelectorAll("[data-bar]").forEach((btn) => {
+            const [seite, i] = btn.dataset.bar.split(":");
+            const b = liste(seiten[seite])[Number(i)];
+            if (!b) return;
+            btn.addEventListener("click", (e) => {
                 e.preventDefault();
                 if (typeof b.onClick === "function") b.onClick(dialog);
                 else finish(b.action ?? "cancel");
+            });
+        });
+        // Rohes HTML in der Leiste: data-action schließt mit dieser Aktion.
+        dialog.querySelectorAll(".uD-bar-raw [data-action]").forEach((el) => {
+            el.addEventListener("click", (e) => {
+                e.preventDefault();
+                finish(el.dataset.action);
             });
         });
         // Esc = Schließen
@@ -146,8 +214,7 @@ ${confirmText ? `            <footer class="uD-footer">
             const dialogData = tryToSubmit(dialog);
             onSubmit(id, dialogData);
             if(dialogData !== null) {
-                dialog.close();
-                dialog.remove();
+                schliessen();
                 detailReturn ? resolve({submit:true, data:dialogData, action:"submit"}) : resolve(true);
             }
         });
@@ -159,8 +226,7 @@ ${confirmText ? `            <footer class="uD-footer">
                 onSubmit(id, dialogData);
  
                 if(dialogData !== null) {
-                    dialog.close();
-                    dialog.remove();
+                    schliessen();
                     detailReturn ? resolve({submit:true, data:dialogData, action:"submit"}) : resolve(true);
                 }
             }
@@ -169,33 +235,28 @@ ${confirmText ? `            <footer class="uD-footer">
 }
 
 /**
- * @typedef {Object} SheetOptions
- * @property {number} [min=300] - kleinste Breite in px (am Handy: Höhe, Standard 160)
- * @property {number} [max] - größte Breite in px (Standard 70 % der Fensterbreite, am Handy 92 % der Höhe)
- * @property {string} [key] - Name, unter dem sich der Browser Größe und Zustand merkt
- * @property {(state:{collapsed:boolean, size:number, side:string}) => void} [onChange] - nach jeder Änderung
- */
-
-/**
- * Seitenleiste zum Ziehen: ein Dialog am Rand, hinter dem die Seite bedienbar
- * bleibt (kein Hintergrund, kein modal) – z. B. eine Liste neben einer Karte.
+ * Der Griff zum Vergrößern — Teil jedes Dialogs, nicht einzeln aufrufbar.
  *
- * Wo er sitzt, sagen `data-pos` (Rechner: left | right, volle Höhe) und
- * `data-pos-mobile` (Handy: bottom). Ein Griff läuft über die ganze Kante:
- *   - ziehen ändert Breite bzw. Höhe zwischen `min` und `max`
- *   - weiter als `min` gezogen → eingeklappt, nur der Griff bleibt sichtbar
- *   - antippen (oder Enter/Leertaste) → ein- bzw. ausklappen
- *   - Pfeiltasten auf dem Griff → größer/kleiner
- * Auf dem Dialog kommt das Ereignis `uD-sheet` mit `{collapsed, size, side}`.
+ * Jeder Dialog an einer Kante hat ihn, ein mittiger oder bildschirmfüllender nicht. Lage und
+ * Verhalten stehen in `data-pos-small`, `data-pos-wide` und
+ * `data-background-usage`:
+ *   - oben/unten: kleiner ziehen geht, größer nur bis der ganze Inhalt
+ *     dasteht (höchstens bis zur Höhe beim Öffnen)
+ *   - links/rechts: Breite zwischen 300 px und drei Vierteln des Fensters
+ *   - mit `data-background-usage` lässt er sich bis auf den Griff
+ *     hinausschieben; antippen oder herausziehen holt ihn zurück, seitlich
+ *     mit der kleinsten Breite. Ohne bliebe die Seite still hinter einem Griff
+ *
+ * Der Griff läuft über die ganze Kante: ziehen ändert die Größe, antippen
+ * klappt ein und aus (nur mit Hintergrund-Nutzung), Pfeiltasten machen
+ * größer und kleiner. Der Zustand steht am Dialog: `data-resizable`,
+ * `data-collapsed`, `data-dragging`, die Größe in `--uD-size`.
  *
  * @param {HTMLDialogElement} dialog
- * @param {SheetOptions} [o]
- * @returns {{collapse:(on:boolean)=>void, readonly collapsed:boolean, readonly size:number}}
+ * @param {boolean} einklappbar - true bei `backgroundUsage`
+ * @returns {() => void} räumt die Listener am Fenster wieder ab
  */
-export function sheet(dialog, { min, max, key = null, onChange = () => {} } = {}) {
-    injectCss();
-    if (dialog._uDSheet) return dialog._uDSheet;
-    dialog.classList.add("uD-sheet");
+function griff(dialog, einklappbar) {
     const grip = document.createElement("div");
     grip.className = "uD-grip";
     grip.tabIndex = 0;
@@ -203,30 +264,46 @@ export function sheet(dialog, { min, max, key = null, onChange = () => {} } = {}
     grip.innerHTML = "<span></span>";
     dialog.prepend(grip);
 
-    const mobile = matchMedia("(max-width: 700px)");
-    const side = () => mobile.matches ? (dialog.dataset.posMobile || "bottom") : (dialog.dataset.pos || "left");
+    const small = matchMedia("(max-width: 700px)");
+    const side = () => small.matches
+        ? (dialog.dataset.posSmall || POS_DEFAULT.small)
+        : (dialog.dataset.posWide || POS_DEFAULT.wide);
     const vertical = () => ["top", "bottom"].includes(side());
-    const minSize = () => min ?? (vertical() ? 160 : 300);
-    const maxSize = () => max ?? (vertical() ? innerHeight * 0.92 : innerWidth * 0.7);
-    const store = key ? `uD-sheet:${key}` : null;
-    const saved = (() => { try { return JSON.parse(localStorage.getItem(store)) ?? {}; } catch { return {}; } })();
-    let state = { collapsed: !!saved.collapsed, size: { h: saved.h ?? null, v: saved.v ?? null } };
+    // Oben und unten: kleiner ziehen geht, größer nur bis zur Höhe beim
+    // Öffnen — dann steht der ganze Inhalt da, oder der Dialog hat seine
+    // Höchsthöhe erreicht. Mehr Platz, als der Inhalt braucht, gibt es nicht.
+    // Wächst der Inhalt, wächst die Grenze mit (gemessen, solange niemand
+    // gezogen hat).
+    let voll = 0;
+    const miss = () => { if (!dialog.style.getPropertyValue("--uD-size")) voll = dialog.offsetHeight; };
+    // Mittig und im Vollbild gibt es keine freie Kante — also keinen Griff.
+    const ziehbar = () => !["center", "full"].includes(side());
+    const minSize = () => vertical() ? Math.min(160, voll || 160) : 300;
+    const maxSize = () => vertical() ? (voll || innerHeight * 0.9) : innerWidth * 0.75;
+    // Hinausschieben bis auf den Griff nur, wenn die Seite dahinter
+    // bedienbar bleibt — sonst stünde sie still hinter einem Griff.
+    const klappbar = () => einklappbar;
+    const state = { collapsed: false, size: { h: null, v: null } };
+    const setze = (name, an) => dialog.toggleAttribute(name, !!an);
 
     const apply = () => {
+        const an = ziehbar();
+        setze("data-resizable", an);
+        grip.hidden = !an;
+        if (!an) {
+            dialog.style.removeProperty("--uD-size");
+            setze("data-collapsed", false);
+            return;
+        }
         const s = state.size[vertical() ? "v" : "h"];
-        if (s) dialog.style.setProperty("--uD-sheet-size", `${Math.round(Math.min(maxSize(), Math.max(minSize(), s)))}px`);
-        else dialog.style.removeProperty("--uD-sheet-size");
-        dialog.classList.toggle("uD-collapsed", state.collapsed);
+        if (s) dialog.style.setProperty("--uD-size", `${Math.round(Math.min(maxSize(), Math.max(minSize(), s)))}px`);
+        else dialog.style.removeProperty("--uD-size");
+        setze("data-collapsed", state.collapsed);
         grip.setAttribute("aria-orientation", vertical() ? "horizontal" : "vertical");
         grip.setAttribute("aria-expanded", String(!state.collapsed));
-        grip.title = state.collapsed ? "Aufklappen" : "Ziehen: Größe ändern · Antippen: einklappen";
-    };
-    const changed = () => {
-        apply();
-        if (store) try { localStorage.setItem(store, JSON.stringify({ collapsed: state.collapsed, h: state.size.h, v: state.size.v })); } catch { /* egal */ }
-        const detail = { collapsed: state.collapsed, size: state.size[vertical() ? "v" : "h"] ?? (vertical() ? dialog.offsetHeight : dialog.offsetWidth), side: side() };
-        onChange(detail);
-        dialog.dispatchEvent(new CustomEvent("uD-sheet", { detail }));
+        grip.title = state.collapsed
+            ? "Aufklappen"
+            : klappbar() ? "Ziehen: Größe ändern · Antippen: einklappen" : "Ziehen: Größe ändern";
     };
     const sizeAt = (e) => ({ left: e.clientX, right: innerWidth - e.clientX, bottom: innerHeight - e.clientY, top: e.clientY }[side()]);
 
@@ -237,16 +314,28 @@ export function sheet(dialog, { min, max, key = null, onChange = () => {} } = {}
         // die Maus fest, danach ließ sich die Seite dahinter nicht mehr ziehen
         e.preventDefault();
         drag = { x: e.clientX, y: e.clientY, moved: false, was: state.collapsed, id: e.pointerId };
-        grip.setPointerCapture(e.pointerId);
-        dialog.classList.add("uD-dragging");
+        // Ohne aktiven Zeiger (etwa ein Ereignis aus einem Skript) wirft das —
+        // gezogen wird trotzdem.
+        try { grip.setPointerCapture(e.pointerId); } catch { /* egal */ }
+        setze("data-dragging", true);
     });
     grip.addEventListener("pointermove", (e) => {
         if (!drag) return;
         if (!drag.moved && Math.hypot(e.clientX - drag.x, e.clientY - drag.y) < 6) return;
         drag.moved = true;
         const want = sizeAt(e);
-        // Unter das Minimum gezogen: gleich zeigen, dass es gleich zuklappt
-        state.collapsed = want < minSize() * 0.6;
+        // Unter das Minimum gezogen: gleich zeigen, dass es gleich zuklappt.
+        // Bei einem blockierenden Dialog bleibt es beim Minimum.
+        // Seitlich eingeklappt und herausgezogen: wieder da, mit der
+        // kleinsten Breite.
+        if (drag.was && !vertical()) {
+            const raus = want > sizeAt({ clientX: drag.x, clientY: drag.y });
+            state.collapsed = !raus;
+            if (raus) state.size.h = minSize();
+            apply();
+            return;
+        }
+        state.collapsed = klappbar() && want < minSize() * 0.6;
         if (!state.collapsed) state.size[vertical() ? "v" : "h"] = Math.min(maxSize(), Math.max(minSize(), want));
         apply();
     });
@@ -256,13 +345,26 @@ export function sheet(dialog, { min, max, key = null, onChange = () => {} } = {}
         drag = null;
         // Ausdrücklich freigeben: WebKit (GNOME Web, Safari) gab den Zeiger nach
         // dem Loslassen nicht immer frei – alle weiteren Mausbewegungen landeten
-        // beim Griff, die Karte dahinter reagierte nicht mehr
+        // beim Griff, die Seite dahinter reagierte nicht mehr
         if (grip.hasPointerCapture?.(d.id)) grip.releasePointerCapture(d.id);
-        dialog.classList.remove("uD-dragging");
-        if (!d.moved && e.type === "pointerup") state.collapsed = !state.collapsed;
+        setze("data-dragging", false);
+        // Gleich nach dem Ziehen kommt oft noch ein click — der ist kein
+        // Antippen. Nicht immer, daher nur kurz sperren.
+        if (d.moved) gezogen = performance.now();
         getSelection?.()?.removeAllRanges();
-        changed();
+        apply();
     };
+    // Antippen klappt ein und aus. Über click statt pointerup, damit es
+    // auch per Tastatur-Hilfen und Screenreader geht. Wieder heraus kommt
+    // er mit der kleinsten Größe; größer zieht man ihn danach selbst.
+    let gezogen = 0;
+    grip.addEventListener("click", () => {
+        if (performance.now() - gezogen < 400) return;
+        if (!klappbar()) return;
+        state.collapsed = !state.collapsed;
+        if (!state.collapsed && !vertical()) state.size.h = minSize();
+        apply();
+    });
     grip.addEventListener("pointerup", end);
     grip.addEventListener("pointercancel", end);
     grip.addEventListener("lostpointercapture", end);
@@ -271,23 +373,38 @@ export function sheet(dialog, { min, max, key = null, onChange = () => {} } = {}
         const shrink = { left: "ArrowLeft", right: "ArrowRight", bottom: "ArrowDown", top: "ArrowUp" }[side()];
         const k = vertical() ? "v" : "h";
         const now = state.size[k] ?? (vertical() ? dialog.offsetHeight : dialog.offsetWidth);
-        if (e.key === "Enter" || e.key === " ") state.collapsed = !state.collapsed;
+        if (e.key === "Enter" || e.key === " ") {
+            if (!klappbar()) return;
+            state.collapsed = !state.collapsed;
+            if (!state.collapsed && !vertical()) state.size.h = minSize();
+        }
         else if (e.key === grow) { state.collapsed = false; state.size[k] = Math.min(maxSize(), now + 40); }
-        else if (e.key === shrink) { if (now - 40 < minSize()) state.collapsed = true; else state.size[k] = now - 40; }
+        else if (e.key === shrink) {
+            if (now - 40 < minSize()) { if (!klappbar()) return; state.collapsed = true; }
+            else state.size[k] = now - 40;
+        }
         else return;
         e.preventDefault();
-        changed();
+        apply();
     });
-    mobile.addEventListener("change", apply);
-    addEventListener("resize", apply);
-    apply();
 
-    dialog._uDSheet = {
-        collapse(on) { state.collapsed = !!on; changed(); },
-        get collapsed() { return state.collapsed; },
-        get size() { return vertical() ? dialog.offsetHeight : dialog.offsetWidth; },
+    const neu = () => { state.size.v = state.size.h = null; apply(); miss(); };
+    small.addEventListener("change", neu);
+    addEventListener("resize", apply);
+    // Wie viel Platz der Inhalt braucht, steht erst fest, wenn der Dialog
+    // sichtbar ist — und ändert sich, wenn Inhalt dazukommt.
+    const ro = typeof ResizeObserver === "function" ? new ResizeObserver(() => { if (!drag) miss(); }) : null;
+    ro?.observe(dialog);
+    const main = dialog.querySelector(".uD-main");
+    if (main) ro?.observe(main);
+    apply();
+    requestAnimationFrame(miss);
+
+    return () => {
+        small.removeEventListener("change", neu);
+        removeEventListener("resize", apply);
+        ro?.disconnect();
     };
-    return dialog._uDSheet;
 }
 
 /**
