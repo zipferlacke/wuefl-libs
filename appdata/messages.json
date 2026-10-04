@@ -297,6 +297,16 @@
     ],
     "diagramm": [
       {
+        "version": "1.6.2",
+        "date": "2026-10-04",
+        "changes": [
+          "Fix: Vollbild ging nach dem ersten Schließen auf und im selben Klick wieder zu",
+          "Fix: `setConfig()` im Vollbild stellte den Knopf zurück auf „öffnen“",
+          "Fix: Beim Wechsel ins Vollbild und zurück wird neu gezeichnet – Zoomen und der Tooltip am Zeiger galten sonst erst nach dem nächsten Laden",
+          "`zoom: 'fullscreen'` – Zoomen nur im Vollbild"
+        ]
+      },
+      {
         "version": "1.6.1",
         "date": "2026-10-02",
         "changes": [
@@ -387,6 +397,13 @@
     ]
   },
   "changelog": [
+    {
+      "version": "2.7.1",
+      "date": "2026-10-04",
+      "changes": [
+        "1. Diagramm 1.6.2: Vollbild lässt sich wiederholt öffnen, Knopf stimmt nach `setConfig()`, `zoom: 'fullscreen'`"
+      ]
+    },
     {
       "version": "2.7.0",
       "date": "2026-10-03",

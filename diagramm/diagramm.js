@@ -915,13 +915,31 @@ export class Diagramm {
       const btn = document.createElement('button');
       btn.type = 'button';
       btn.className = 'dg_btn dg_fsbtn';
-      btn.title = 'Vollbild';
-      btn.setAttribute('aria-label', 'Diagramm im Vollbild öffnen');
-      btn.innerHTML = `<span class="dg_glyph" data-dg-ico="fullscreen">${ICO.fullscreen}</span>`;
-      btn.addEventListener('click', () => this.toggleFullscreen(true));
+      btn.innerHTML = '<span class="dg_glyph" data-dg-ico="fullscreen"></span>';
       this.#els.tools.appendChild(btn);
+      // setConfig() baut den Kopf auch im Vollbild neu – der Knopf zeigt den Zustand von jetzt
+      this.#fsKnopf();
     }
     this.#els.head.hidden = !cfg.title && !this.#els.tools.children.length;
+  }
+
+  /**
+   * Vollbild-Knopf auf den Zustand stellen: öffnen oder verlassen.
+   *
+   * Nur `onclick`, kein addEventListener: Mit beidem liefen nach dem ersten
+   * Schließen zwei Handler im selben Klick – das Vollbild ging auf und
+   * sofort wieder zu.
+   */
+  #fsKnopf() {
+    const btn = this.#els.tools.querySelector('.dg_fsbtn');
+    if (!btn) return;
+    const voll = this.#voll, ico = voll ? 'fullscreenExit' : 'fullscreen';
+    btn.title = voll ? 'Vollbild verlassen' : 'Vollbild';
+    btn.setAttribute('aria-label', voll ? 'Vollbild verlassen' : 'Diagramm im Vollbild öffnen');
+    const glyph = btn.querySelector('[data-dg-ico]');
+    glyph.dataset.dgIco = ico;
+    glyph.innerHTML = ICO[ico];
+    btn.onclick = () => this.toggleFullscreen(!voll);
   }
 
   /** `chips: [...]`, `chip: {...}` – beides erlaubt, beliebig viele. */
@@ -1053,18 +1071,12 @@ export class Diagramm {
     this.#heimat = { eltern: this.#host.parentNode, platz, vor: this.#host.nextSibling };
     this.#heimat.eltern?.insertBefore(platz, this.#host);
 
-    const btn = this.#els.tools.querySelector('.dg_fsbtn');
-    if (btn) {
-      btn.title = 'Vollbild verlassen';
-      btn.setAttribute('aria-label', 'Vollbild verlassen');
-      btn.querySelector('[data-dg-ico]').dataset.dgIco = 'fullscreenExit';
-      btn.querySelector('[data-dg-ico]').innerHTML = ICO.fullscreenExit;
-      btn.onclick = () => this.toggleFullscreen(false);
-    }
-
     this.#fs.replaceChildren(this.#host);
     this.#voll = true;
+    this.#fsKnopf();
     this.#fs.showModal();
+    // Neu zeichnen: Im Vollbild gilt anderes (Zoomen, Tooltip folgt dem Zeiger)
+    this.refresh();
     this.#nachmessen();
     this.#fs.requestFullscreen?.().catch(() => {});
   }
@@ -1080,14 +1092,8 @@ export class Diagramm {
     }
     this.#heimat = null;
     if (this.#fs?.open) this.#fs.close();
-    const btn = this.#els.tools.querySelector('.dg_fsbtn');
-    if (btn) {
-      btn.title = 'Vollbild';
-      btn.setAttribute('aria-label', 'Diagramm im Vollbild öffnen');
-      btn.querySelector('[data-dg-ico]').dataset.dgIco = 'fullscreen';
-      btn.querySelector('[data-dg-ico]').innerHTML = ICO.fullscreen;
-      btn.onclick = () => this.toggleFullscreen(true);
-    }
+    this.#fsKnopf();
+    this.refresh();
     this.#nachmessen();
   }
 
@@ -1103,13 +1109,14 @@ export class Diagramm {
   /**
    * Darf gerade gezoomt werden?
    *
-   * `zoom: false` schaltet es ganz ab, `zoom: true` immer an. Ohne Angabe
-   * erst nach einem Klick ins Diagramm – im Vollbild sofort, da ist die
-   * Geste eindeutig.
+   * `zoom: false` schaltet es ganz ab, `zoom: true` immer an,
+   * `zoom: 'fullscreen'` nur im Vollbild. Ohne Angabe erst nach einem Klick
+   * ins Diagramm – im Vollbild sofort, da ist die Geste eindeutig.
    */
   #zoomBereit() {
     if (this.#cfg.zoom === false) return false;
     if (this.#cfg.zoom === true) return true;
+    if (this.#cfg.zoom === 'fullscreen') return this.#voll;
     return this.#voll || this.#zoomAn;
   }
 

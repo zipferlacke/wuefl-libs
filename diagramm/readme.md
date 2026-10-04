@@ -88,7 +88,7 @@ d.setConfig(yamlText);
   bar_overlap: false,           // Balken nebeneinander statt übereinander
   y_axes: [{ unit: 'kWh', min: 0, max: 50 }],
   legend: { position: 'top-right', hidden: false },
-  zoom: undefined,              // true immer, false nie, sonst nach Klick
+  zoom: undefined,              // true immer, false nie, 'fullscreen' nur im Vollbild, sonst nach Klick
   card: true,                   // false: ohne Hintergrund, Rand und Innenabstand
   chips: [ … ],
   series: [ … ],
@@ -189,7 +189,8 @@ beides nur, wenn der Renderer es kann (`echartsRenderer` kann es).
 Ohne Angabe wird das Zoomen per Geste erst nach einem Klick ins Diagramm scharf –
 sonst bleibt auf dem Handy jede Wischbewegung im Diagramm hängen, statt die Seite zu
 scrollen. Das scharfe Diagramm bekommt die Klasse `dg_aktiv`. Im Vollbild ist es
-sofort aktiv. `zoom: true` schaltet es immer an, `zoom: false` ganz ab.
+sofort aktiv. `zoom: true` schaltet es immer an, `zoom: false` ganz ab,
+`zoom: 'fullscreen'` lässt es nur im Vollbild zu.
 
 ## Vollbild
 
