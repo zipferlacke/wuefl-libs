@@ -303,6 +303,7 @@
           "Fix: Vollbild ging nach dem ersten Schließen auf und im selben Klick wieder zu",
           "Fix: `setConfig()` im Vollbild stellte den Knopf zurück auf „öffnen“",
           "Fix: Beim Wechsel ins Vollbild und zurück wird neu gezeichnet – Zoomen und der Tooltip am Zeiger galten sonst erst nach dem nächsten Laden",
+          "Fix: Tooltip in den Farben der Seite (`--dg-bg`, `--dg-text`, `--dg-line`) – im dunklen Modus war er weiß",
           "`zoom: 'fullscreen'` – Zoomen nur im Vollbild"
         ]
       },
@@ -401,7 +402,7 @@
       "version": "2.7.1",
       "date": "2026-10-04",
       "changes": [
-        "1. Diagramm 1.6.2: Vollbild lässt sich wiederholt öffnen, Knopf stimmt nach `setConfig()`, `zoom: 'fullscreen'`"
+        "1. Diagramm 1.6.2: Vollbild lässt sich wiederholt öffnen, Knopf stimmt nach `setConfig()`, `zoom: 'fullscreen'`, Tooltip im dunklen Modus"
       ]
     },
     {

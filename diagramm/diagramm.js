@@ -572,6 +572,10 @@ export function buildOption(reihen, achsen, start, end, raster, cfg, host, zusta
   // Gitter und Achsen: dasselbe durchscheinende Grau in hell und dunkel (diagramm.css)
   const achsenFarbe = tokenFarbe(host, '--dg-axis', 'rgba(128, 128, 128, 0.5)');
   const gitterFarbe = tokenFarbe(host, '--dg-grid', 'rgba(128, 128, 128, 0.22)');
+  // Tooltip in den Farben der Seite – ECharts zeichnete ihn sonst immer weiß mit dunkler Schrift
+  const tipText = tokenFarbe(host, '--dg-text', '#000000');
+  const tipBg = tokenFarbe(host, '--dg-bg', '#ffffff');
+  const tipLine = tokenFarbe(host, '--dg-line', '#d4d6d9');
   const ueberJahre = !xWert && start.getFullYear() !== end.getFullYear();
 
   return {
@@ -615,6 +619,7 @@ export function buildOption(reihen, achsen, start, end, raster, cfg, host, zusta
     tooltip: {
       trigger: 'axis',
       confine: true,
+      backgroundColor: tipBg, borderColor: tipLine, textStyle: { color: tipText },
       axisPointer: { type: balken ? 'shadow' : 'line' },
       // In einer Karte ist wenig Platz: Der Kasten sitzt an der Linie am
       // oberen oder unteren Rand – auf der Seite, wo der Finger nicht ist.
