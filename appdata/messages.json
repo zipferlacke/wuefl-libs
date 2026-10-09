@@ -297,6 +297,13 @@
     ],
     "diagramm": [
       {
+        "version": "1.6.3",
+        "date": "2026-10-09",
+        "changes": [
+          "Fix: Ein Zeitraum, der bis in die Zukunft reicht (z. B. „heute“), zeigt wieder die feinen Werte. Die Abdeckung zählte bis zum Ende des Zeitraums statt bis jetzt – tagsüber reichte sie nie, und das Diagramm wich auf Tageswerte aus: ein einzelner Punkt statt einer Kurve"
+        ]
+      },
+      {
         "version": "1.6.2",
         "date": "2026-10-04",
         "changes": [
@@ -398,6 +405,13 @@
     ]
   },
   "changelog": [
+    {
+      "version": "2.7.2",
+      "date": "2026-10-09",
+      "changes": [
+        "1. Diagramm 1.6.3: „heute“ und andere laufende Zeiträume zeigen wieder die Kurve statt eines einzelnen Tageswerts"
+      ]
+    },
     {
       "version": "2.7.1",
       "date": "2026-10-04",

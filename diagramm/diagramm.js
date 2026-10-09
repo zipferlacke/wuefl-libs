@@ -182,7 +182,12 @@ const zeitVon = (r) => (typeof r.start === 'number' ? r.start : Date.parse(r.sta
  * Woche liegen für die letzten zwei Tage feine Werte vor und davor nichts.
  * Die Antwort wäre nicht leer, aber fünf Siebtel der Woche fehlten.
  */
-function abdeckung(antwort, start, end, stufeMs) {
+function abdeckung(antwort, start, end, stufeMs, now = Date.now()) {
+  // Nur bis jetzt: Für "heute" um 14 Uhr gibt es noch keine Werte bis
+  // Mitternacht. Gezählt bis Tagesende wären das 58 % – zu wenig, und das
+  // Diagramm wiche auf Tageswerte aus: ein einziger Punkt statt einer Kurve.
+  end = Math.min(+end, Math.max(+start, now));
+  if (+end <= +start) return 1;
   const spanne = Math.max(1, +end - +start);
   let beste = 0;
   for (const zeilen of Object.values(antwort ?? {})) {
