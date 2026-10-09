@@ -81,6 +81,7 @@ d.setConfig(yamlText);
 {
   title: 'Verteilung',          // steht immer oben, auch im Vollbild
   fullscreen: true,             // false blendet den Schalter aus
+  fullscreen_picker: false,     // true: Zeitraum-Auswahl oben im Vollbild (Spiegel des Pickers)
   range: '1w',                  // oder start/end
   start: '2026-01-01', end: '2026-01-31',
   aggregation: '2h',            // Wunschraster: 10min, 2h, 1d, 1m …
@@ -197,6 +198,14 @@ sofort aktiv. `zoom: true` schaltet es immer an, `zoom: false` ganz ab,
 
 `fullscreen: true` zeigt den Schalter; `d.toggleFullscreen()` schaltet von außen,
 `d.fullscreen` fragt den Zustand ab.
+
+`fullscreen_picker: true` zeigt im Vollbild oben die Zeitraum-Auswahl. Hängt das
+Diagramm an einem Picker (`picker`), ist sie dessen Spiegel (`picker.mirror(host)`):
+Sie ruft nur die Funktionen des Haupt-Pickers auf, geladen wird wie immer an einer
+Stelle, und der gewählte Zeitraum gilt nach dem Verlassen des Vollbilds weiter – auch
+für alle anderen Diagramme an diesem Picker. Ein Text statt `true` nimmt einen anderen
+Picker per id; gibt es ihn nicht, bleibt die Auswahl weg. Ohne jeden Picker wählt sie
+den Zeitraum nur für dieses Diagramm.
 
 Im Vollbild wandert **dasselbe** Diagramm in den Dialog und danach zurück – keine
 Kopie. Titel, Chips und Legende sind dort deshalb zwangsläufig dieselben, und die

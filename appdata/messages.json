@@ -300,6 +300,7 @@
         "version": "1.7.0",
         "date": "2026-10-09",
         "changes": [
+          "Neu: `fullscreen_picker` – Zeitraum-Auswahl oben im Vollbild. Sie spiegelt den verknüpften Picker (`picker.mirror(host)`): ruft nur dessen Funktionen auf, geladen wird an einer Stelle, und der Zeitraum gilt nach dem Vollbild weiter",
           "Neu: `padding` getrennt von `card` – `card: false, padding: true` gibt ein Diagramm ohne eigenen Rahmen, aber mit Abstand zum Rand (z. B. in einer fremden Karte). Ohne Angabe folgt der Abstand wie bisher `card`",
           "Fix: Jede Variable im Stilblatt hat ihren Rückfall mit `light-dark()` an Ort und Stelle. Gesetzt werden muss keine; wer sie auf irgendeiner Ebene darüber setzt, gewinnt",
           "Fix: Vollbild war durchsichtig – die Farben hingen nur am Diagramm, nicht am Dialog drumherum. Im Vollbild hat das Diagramm jetzt immer Hintergrund und Abstand, auch mit `card: false`"
@@ -418,7 +419,7 @@
       "version": "2.7.3",
       "date": "2026-10-09",
       "changes": [
-        "1. Diagramm 1.7.0: Rückfallfarben mit light-dark() überall, Vollbild nicht mehr durchsichtig, neue Option `padding` getrennt von `card`"
+        "1. Diagramm 1.7.0: Zeitraum-Auswahl im Vollbild (`fullscreen_picker`, Picker-Spiegel), Rückfallfarben mit light-dark() überall, Vollbild nicht mehr durchsichtig, neue Option `padding` getrennt von `card`"
       ]
     },
     {
