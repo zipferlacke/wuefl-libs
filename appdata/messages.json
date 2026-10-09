@@ -297,6 +297,35 @@
     ],
     "diagramm": [
       {
+        "version": "1.7.0",
+        "date": "2026-10-09",
+        "changes": [
+          "Neu: `fullscreen_picker` – Zeitraum-Auswahl oben im Vollbild. Sie spiegelt den verknüpften Picker (`picker.mirror(host)`): ruft nur dessen Funktionen auf, geladen wird an einer Stelle, und der Zeitraum gilt nach dem Vollbild weiter",
+          "Neu: `padding` getrennt von `card` – `card: false, padding: true` gibt ein Diagramm ohne eigenen Rahmen, aber mit Abstand zum Rand (z. B. in einer fremden Karte). Ohne Angabe folgt der Abstand wie bisher `card`",
+          "Fix: Jede Variable im Stilblatt hat ihren Rückfall mit `light-dark()` an Ort und Stelle. Gesetzt werden muss keine; wer sie auf irgendeiner Ebene darüber setzt, gewinnt",
+          "Fix: Vollbild war durchsichtig – die Farben hingen nur am Diagramm, nicht am Dialog drumherum. Im Vollbild hat das Diagramm jetzt immer Hintergrund und Abstand, auch mit `card: false`",
+          "Fix: Zwei verbundene Picker schaukelten sich gegenseitig auf – das Nachzeichnen der Datumsfelder galt als neue Auswahl. `setRange()` ohne Änderung meldet jetzt nichts"
+        ]
+      },
+      {
+        "version": "1.6.3",
+        "date": "2026-10-09",
+        "changes": [
+          "Fix: Ein Zeitraum, der bis in die Zukunft reicht (z. B. „heute“), zeigt wieder die feinen Werte. Die Abdeckung zählte bis zum Ende des Zeitraums statt bis jetzt – tagsüber reichte sie nie, und das Diagramm wich auf Tageswerte aus: ein einzelner Punkt statt einer Kurve"
+        ]
+      },
+      {
+        "version": "1.6.2",
+        "date": "2026-10-04",
+        "changes": [
+          "Fix: Vollbild ging nach dem ersten Schließen auf und im selben Klick wieder zu",
+          "Fix: `setConfig()` im Vollbild stellte den Knopf zurück auf „öffnen“",
+          "Fix: Beim Wechsel ins Vollbild und zurück wird neu gezeichnet – Zoomen und der Tooltip am Zeiger galten sonst erst nach dem nächsten Laden",
+          "Fix: Tooltip in den Farben der Seite (`--dg-bg`, `--dg-text`, `--dg-line`) – im dunklen Modus war er weiß",
+          "`zoom: 'fullscreen'` – Zoomen nur im Vollbild"
+        ]
+      },
+      {
         "version": "1.6.1",
         "date": "2026-10-02",
         "changes": [
@@ -387,6 +416,27 @@
     ]
   },
   "changelog": [
+    {
+      "version": "2.7.3",
+      "date": "2026-10-09",
+      "changes": [
+        "1. Diagramm 1.7.0: Zeitraum-Auswahl im Vollbild (`fullscreen_picker`, Picker-Spiegel), Rückfallfarben mit light-dark() überall, Vollbild nicht mehr durchsichtig, neue Option `padding` getrennt von `card`"
+      ]
+    },
+    {
+      "version": "2.7.2",
+      "date": "2026-10-09",
+      "changes": [
+        "1. Diagramm 1.6.3: „heute“ und andere laufende Zeiträume zeigen wieder die Kurve statt eines einzelnen Tageswerts"
+      ]
+    },
+    {
+      "version": "2.7.1",
+      "date": "2026-10-04",
+      "changes": [
+        "1. Diagramm 1.6.2: Vollbild lässt sich wiederholt öffnen, Knopf stimmt nach `setConfig()`, `zoom: 'fullscreen'`, Tooltip im dunklen Modus"
+      ]
+    },
     {
       "version": "2.7.0",
       "date": "2026-10-03",

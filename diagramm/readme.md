@@ -81,6 +81,7 @@ d.setConfig(yamlText);
 {
   title: 'Verteilung',          // steht immer oben, auch im Vollbild
   fullscreen: true,             // false blendet den Schalter aus
+  fullscreen_picker: false,     // true: Zeitraum-Auswahl oben im Vollbild (Spiegel des Pickers)
   range: '1w',                  // oder start/end
   start: '2026-01-01', end: '2026-01-31',
   aggregation: '2h',            // Wunschraster: 10min, 2h, 1d, 1m …
@@ -88,8 +89,9 @@ d.setConfig(yamlText);
   bar_overlap: false,           // Balken nebeneinander statt übereinander
   y_axes: [{ unit: 'kWh', min: 0, max: 50 }],
   legend: { position: 'top-right', hidden: false },
-  zoom: undefined,              // true immer, false nie, sonst nach Klick
-  card: true,                   // false: ohne Hintergrund, Rand und Innenabstand
+  zoom: undefined,              // true immer, false nie, 'fullscreen' nur im Vollbild, sonst nach Klick
+  card: true,                   // false: ohne Hintergrund, Rand und Radius
+  padding: true,                // false: ohne Innenabstand (ohne Angabe wie card)
   chips: [ … ],
   series: [ … ],
 }
@@ -189,12 +191,21 @@ beides nur, wenn der Renderer es kann (`echartsRenderer` kann es).
 Ohne Angabe wird das Zoomen per Geste erst nach einem Klick ins Diagramm scharf –
 sonst bleibt auf dem Handy jede Wischbewegung im Diagramm hängen, statt die Seite zu
 scrollen. Das scharfe Diagramm bekommt die Klasse `dg_aktiv`. Im Vollbild ist es
-sofort aktiv. `zoom: true` schaltet es immer an, `zoom: false` ganz ab.
+sofort aktiv. `zoom: true` schaltet es immer an, `zoom: false` ganz ab,
+`zoom: 'fullscreen'` lässt es nur im Vollbild zu.
 
 ## Vollbild
 
 `fullscreen: true` zeigt den Schalter; `d.toggleFullscreen()` schaltet von außen,
 `d.fullscreen` fragt den Zustand ab.
+
+`fullscreen_picker: true` zeigt im Vollbild oben die Zeitraum-Auswahl. Hängt das
+Diagramm an einem Picker (`picker`), ist sie dessen Spiegel (`picker.mirror(host)`):
+Sie ruft nur die Funktionen des Haupt-Pickers auf, geladen wird wie immer an einer
+Stelle, und der gewählte Zeitraum gilt nach dem Verlassen des Vollbilds weiter – auch
+für alle anderen Diagramme an diesem Picker. Ein Text statt `true` nimmt einen anderen
+Picker per id; gibt es ihn nicht, bleibt die Auswahl weg. Ohne jeden Picker wählt sie
+den Zeitraum nur für dieses Diagramm.
 
 Im Vollbild wandert **dasselbe** Diagramm in den Dialog und danach zurück – keine
 Kopie. Titel, Chips und Legende sind dort deshalb zwangsläufig dieselben, und die
@@ -316,10 +327,12 @@ untereinander bündig.
 
 ## Mit oder ohne Kachel
 
-Die Kachel – Hintergrund, Rand, Radius und Innenabstand – zeichnet das Diagramm selbst.
-`card: false` nimmt alles davon weg; es sitzt dann nackt in dem, was es umgibt. Nützlich,
-wenn schon eine Karte drumherum ist oder mehrere Diagramme in einem gemeinsamen Rahmen
-stehen sollen. Die Einstellung gilt je Diagramm.
+Die Kachel – Hintergrund, Rand und Radius – und den Innenabstand zeichnet das Diagramm
+selbst. `card: false` nimmt die Kachel weg, `padding: false` den Abstand. Ohne Angabe
+folgt der Abstand der Kachel: `card: false` allein sitzt also ganz nackt in dem, was es
+umgibt. Steckt das Diagramm in einer fremden Karte (z. B. `ha-card`), will man meist
+`card: false, padding: true` – kein zweiter Rahmen, aber Luft zum Rand. Beides gilt je
+Diagramm. Im Vollbild hat es immer Hintergrund und Abstand.
 
 Ein Rahmen, der trotz `card: false` bleibt, kommt nicht aus dem Paket, sondern aus dem
 Element, in das es gezeichnet wird.
@@ -351,7 +364,10 @@ direkt beim Import wählbar: `./diagramm.js?icons=msr`.
 
 ## Aussehen
 
-Alles hängt an CSS-Variablen auf `.dg`:
+Alles hängt an CSS-Variablen. Gesetzt werden muss keine – die Werte unten sind die
+Rückfälle, die an jeder Stelle im Stilblatt stehen (hell und dunkel über `light-dark()`).
+Setzen lässt man sie auf `.dg` oder auf einem Element darüber; das gilt dann auch für
+Vollbild und Picker:
 
 ```css
 .dg {

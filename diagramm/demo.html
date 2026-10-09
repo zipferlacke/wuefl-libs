@@ -220,7 +220,7 @@ const p1 = new Zeitpicker(document.getElementById('p1'), {
   overview: { renderer: renderer(), source: quelle, height: 80 },
 });
 
-const gemeinsam = { picker: 'oben', group: 'oben', axis_width: 56, aggregation: '2h' };
+const gemeinsam = { picker: 'oben', group: 'oben', axis_width: 56, aggregation: '2h', fullscreen_picker: true };
 const cfgG1 = { ...gemeinsam, title: 'Erzeugung', y_axes: [{ unit: 'kWh' }],
   legend: { hidden: true },
   chips: [{ key: 'pv', label: '☀ Summe', calc: 'sum', unit: 'kWh' }],
