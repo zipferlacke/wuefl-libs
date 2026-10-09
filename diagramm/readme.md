@@ -89,7 +89,8 @@ d.setConfig(yamlText);
   y_axes: [{ unit: 'kWh', min: 0, max: 50 }],
   legend: { position: 'top-right', hidden: false },
   zoom: undefined,              // true immer, false nie, 'fullscreen' nur im Vollbild, sonst nach Klick
-  card: true,                   // false: ohne Hintergrund, Rand und Innenabstand
+  card: true,                   // false: ohne Hintergrund, Rand und Radius
+  padding: true,                // false: ohne Innenabstand (ohne Angabe wie card)
   chips: [ … ],
   series: [ … ],
 }
@@ -317,10 +318,12 @@ untereinander bündig.
 
 ## Mit oder ohne Kachel
 
-Die Kachel – Hintergrund, Rand, Radius und Innenabstand – zeichnet das Diagramm selbst.
-`card: false` nimmt alles davon weg; es sitzt dann nackt in dem, was es umgibt. Nützlich,
-wenn schon eine Karte drumherum ist oder mehrere Diagramme in einem gemeinsamen Rahmen
-stehen sollen. Die Einstellung gilt je Diagramm.
+Die Kachel – Hintergrund, Rand und Radius – und den Innenabstand zeichnet das Diagramm
+selbst. `card: false` nimmt die Kachel weg, `padding: false` den Abstand. Ohne Angabe
+folgt der Abstand der Kachel: `card: false` allein sitzt also ganz nackt in dem, was es
+umgibt. Steckt das Diagramm in einer fremden Karte (z. B. `ha-card`), will man meist
+`card: false, padding: true` – kein zweiter Rahmen, aber Luft zum Rand. Beides gilt je
+Diagramm. Im Vollbild hat es immer Hintergrund und Abstand.
 
 Ein Rahmen, der trotz `card: false` bleibt, kommt nicht aus dem Paket, sondern aus dem
 Element, in das es gezeichnet wird.
@@ -352,7 +355,10 @@ direkt beim Import wählbar: `./diagramm.js?icons=msr`.
 
 ## Aussehen
 
-Alles hängt an CSS-Variablen auf `.dg`:
+Alles hängt an CSS-Variablen. Gesetzt werden muss keine – die Werte unten sind die
+Rückfälle, die an jeder Stelle im Stilblatt stehen (hell und dunkel über `light-dark()`).
+Setzen lässt man sie auf `.dg` oder auf einem Element darüber; das gilt dann auch für
+Vollbild und Picker:
 
 ```css
 .dg {

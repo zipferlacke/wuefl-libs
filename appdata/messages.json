@@ -297,6 +297,15 @@
     ],
     "diagramm": [
       {
+        "version": "1.7.0",
+        "date": "2026-10-09",
+        "changes": [
+          "Neu: `padding` getrennt von `card` – `card: false, padding: true` gibt ein Diagramm ohne eigenen Rahmen, aber mit Abstand zum Rand (z. B. in einer fremden Karte). Ohne Angabe folgt der Abstand wie bisher `card`",
+          "Fix: Jede Variable im Stilblatt hat ihren Rückfall mit `light-dark()` an Ort und Stelle. Gesetzt werden muss keine; wer sie auf irgendeiner Ebene darüber setzt, gewinnt",
+          "Fix: Vollbild war durchsichtig – die Farben hingen nur am Diagramm, nicht am Dialog drumherum. Im Vollbild hat das Diagramm jetzt immer Hintergrund und Abstand, auch mit `card: false`"
+        ]
+      },
+      {
         "version": "1.6.3",
         "date": "2026-10-09",
         "changes": [
@@ -405,6 +414,13 @@
     ]
   },
   "changelog": [
+    {
+      "version": "2.7.3",
+      "date": "2026-10-09",
+      "changes": [
+        "1. Diagramm 1.7.0: Rückfallfarben mit light-dark() überall, Vollbild nicht mehr durchsichtig, neue Option `padding` getrennt von `card`"
+      ]
+    },
     {
       "version": "2.7.2",
       "date": "2026-10-09",
