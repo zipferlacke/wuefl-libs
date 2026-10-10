@@ -42,6 +42,13 @@
     ],
     "datepicker": [
       {
+        "version": "2.1.4",
+        "date": "2026-10-10",
+        "changes": [
+          "Behoben: In einem Shadow-DOM (z. B. in einer Home-Assistant-Karte) öffnete ein einfacher Klick auf den Auslöser den Kalender nicht, erst ein Doppelklick. Der Klick wird jetzt über `composedPath()` erkannt statt über `e.target`"
+        ]
+      },
+      {
         "version": "2.1.3",
         "date": "2026-09-24",
         "changes": [
@@ -416,6 +423,13 @@
     ]
   },
   "changelog": [
+    {
+      "version": "2.7.4",
+      "date": "2026-10-10",
+      "changes": [
+        "1. Datepicker 2.1.4: Kalender öffnet sich auch im Shadow-DOM mit einem einfachen Klick"
+      ]
+    },
     {
       "version": "2.7.3",
       "date": "2026-10-09",
