@@ -304,6 +304,13 @@
     ],
     "diagramm": [
       {
+        "version": "1.7.1",
+        "date": "2026-10-11",
+        "changes": [
+          "Behoben: Ein Chip ohne Wert (keine Daten im Zeitraum) blieb als leere Pille im Kopf stehen – `display: inline-flex` überstimmte das `hidden`-Attribut"
+        ]
+      },
+      {
         "version": "1.7.0",
         "date": "2026-10-09",
         "changes": [
@@ -423,6 +430,13 @@
     ]
   },
   "changelog": [
+    {
+      "version": "2.7.5",
+      "date": "2026-10-11",
+      "changes": [
+        "1. Diagramm 1.7.1: Chips ohne Wert werden wirklich ausgeblendet"
+      ]
+    },
     {
       "version": "2.7.4",
       "date": "2026-10-10",
