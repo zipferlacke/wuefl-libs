@@ -144,6 +144,14 @@ chips: [
 
 `calc`: `sum` (Standard), `mean`, `max`, `min`, `last`.
 
+`calc: 'integral'` rechnet die Fläche unter einer Leistungskurve: Mittelwert mal Dauer
+je Zeile, also die Energie aus genau den Werten, die gezeichnet werden. Lücken zählen
+nicht mit. Umgerechnet wird von der Einheit der Reihe (`W`, `kW` …) mal Stunde in `unit`:
+
+```js
+chips: [{ key: 'ladeleistung', calc: 'integral', unit: 'kWh' }]   // Reihe in W → kWh
+```
+
 `label` wird als **Markup** eingesetzt – ein Icon steckt damit einfach mit drin, als
 UTF-8-Zeichen, als Icon-Schrift oder als eigenes Element. Ein zusätzliches Feld dafür
 gibt es bewusst nicht. Was dort hineingeht, schreibt die Konfiguration; käme es aus den

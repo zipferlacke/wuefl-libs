@@ -304,6 +304,13 @@
     ],
     "diagramm": [
       {
+        "version": "1.7.2",
+        "date": "2026-10-11",
+        "changes": [
+          "Neu: Chips mit `calc: 'integral'` – die Fläche unter einer Leistungskurve (Mittelwert mal Dauer), umgerechnet in die Einheit des Chips, z. B. aus W die kWh des Zeitraums. Rechnet nur mit den vorhandenen Werten, Lücken zählen nicht mit"
+        ]
+      },
+      {
         "version": "1.7.1",
         "date": "2026-10-11",
         "changes": [
@@ -430,6 +437,13 @@
     ]
   },
   "changelog": [
+    {
+      "version": "2.7.6",
+      "date": "2026-10-11",
+      "changes": [
+        "1. Diagramm 1.7.2: Chips mit `calc: 'integral'` (Energie aus einer Leistungskurve)"
+      ]
+    },
     {
       "version": "2.7.5",
       "date": "2026-10-11",
