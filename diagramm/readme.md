@@ -90,6 +90,7 @@ d.setConfig(yamlText);
   y_axes: [{ unit: 'kWh', min: 0, max: 50 }],
   legend: { position: 'top-right', hidden: false },
   zoom: undefined,              // true immer, false nie, 'fullscreen' nur im Vollbild, sonst nach Klick
+  tooltip_outside: false,       // true: Tooltip außerhalb – über/unter dem Diagramm, sonst daneben
   card: true,                   // false: ohne Hintergrund, Rand und Radius
   padding: true,                // false: ohne Innenabstand (ohne Angabe wie card)
   chips: [ … ],
@@ -201,6 +202,18 @@ sonst bleibt auf dem Handy jede Wischbewegung im Diagramm hängen, statt die Sei
 scrollen. Das scharfe Diagramm bekommt die Klasse `dg_aktiv`. Im Vollbild ist es
 sofort aktiv. `zoom: true` schaltet es immer an, `zoom: false` ganz ab,
 `zoom: 'fullscreen'` lässt es nur im Vollbild zu.
+
+## Tooltip außerhalb
+
+`tooltip_outside: true` stellt den Tooltip neben das Diagramm statt darauf – Kurve und
+Werte bleiben zugleich sichtbar:
+
+1. über oder unter dem Diagramm, wo mehr Platz ist (mindestens 60 px); waagrecht folgt er dem Zeiger,
+2. sonst links oder rechts daneben, wo er ganz hinpasst – senkrecht mittig zum Diagramm,
+3. sonst wie ohne die Option im Diagramm am Rand.
+
+Höher als der freie Platz wird er nicht, der Rest lässt sich scrollen. Er hängt am
+`<body>` (sonst schnitte ihn ein Vorfahr mit `overflow` ab). Im Vollbild gilt das nicht.
 
 ## Vollbild
 

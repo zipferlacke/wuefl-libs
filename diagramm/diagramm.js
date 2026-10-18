@@ -626,10 +626,12 @@ export function buildOption(reihen, achsen, start, end, raster, cfg, host, zusta
       confine: true,
       backgroundColor: tipBg, borderColor: tipLine, textStyle: { color: tipText },
       axisPointer: { type: balken ? 'shadow' : 'line' },
+      // `tooltip_outside`: der Kasten außerhalb, damit Kurve und Werte zugleich zu sehen sind (tipDraussen)
+      ...(cfg.tooltip_outside && !voll ? tipDraussen(host) : {}),
       // In einer Karte ist wenig Platz: Der Kasten sitzt an der Linie am
       // oberen oder unteren Rand – auf der Seite, wo der Finger nicht ist.
       // Im Vollbild ist Platz genug, dort folgt er dem Zeiger.
-      ...(voll ? {} : {
+      ...(voll || cfg.tooltip_outside ? {} : {
         position: (punkt, params, dom, rect, groesse) => {
           const [b, h] = groesse.viewSize;
           const [kb, kh] = groesse.contentSize;
@@ -640,6 +642,51 @@ export function buildOption(reihen, achsen, start, end, raster, cfg, host, zusta
       formatter: (params) => tooltip(params, reihen, raster, achsen, xWert),
     },
     series,
+  };
+}
+
+/**
+ * Tooltip außerhalb des Diagramms (`tooltip_outside: true`) – er verdeckt die Kurve nicht:
+ *
+ *   1. über oder unter dem Diagramm, wo mehr Platz ist (mindestens 60 px); waagrecht folgt er dem Zeiger
+ *   2. sonst links oder rechts daneben, wo er ganz hinpasst – senkrecht mittig zum Diagramm
+ *   3. sonst wie bisher im Diagramm am Rand
+ *
+ * Höher als der freie Platz wird er nicht – der Rest lässt sich scrollen (dafür `enterable`). Er hängt am
+ * <body>, sonst schnitte ihn ein Vorfahr mit `overflow` ab.
+ */
+const TIP_ABSTAND = 6, TIP_MIN = 60;
+function tipDraussen(host) {
+  return {
+    confine: false,
+    appendTo: () => document.body,
+    enterable: true,
+    extraCssText: 'overflow-y:auto;overscroll-behavior:contain;',
+    position: (punkt, params, dom, rect, groesse) => {
+      const r = host.getBoundingClientRect();
+      const vw = innerWidth, vh = innerHeight;
+      const [b, h] = groesse.viewSize;
+      const kb = groesse.contentSize[0];
+      // Inhalt ohne Höhenbegrenzung messen, dann begrenzen
+      dom.style.maxHeight = '';
+      const kh = dom.scrollHeight;
+      const oben = r.top - TIP_ABSTAND, unten = vh - r.bottom - TIP_ABSTAND;
+      const x = Math.min(Math.max(punkt[0] - kb / 2, -r.left), vw - r.left - kb);
+      if (Math.max(oben, unten) >= Math.min(kh, TIP_MIN)) {
+        const platz = Math.max(oben, unten), hoch = Math.min(kh, platz);
+        dom.style.maxHeight = `${Math.floor(platz)}px`;
+        return oben >= unten ? [x, -hoch - TIP_ABSTAND] : [x, h + TIP_ABSTAND];
+      }
+      const links = r.left - TIP_ABSTAND, rechts = vw - r.right - TIP_ABSTAND;
+      if (Math.max(links, rechts) >= kb) {
+        const hoch = Math.min(kh, vh - 2 * TIP_ABSTAND);
+        dom.style.maxHeight = `${Math.floor(hoch)}px`;
+        const y = Math.min(Math.max(h / 2 - hoch / 2, TIP_ABSTAND - r.top), vh - r.top - hoch - TIP_ABSTAND);
+        return [rechts >= kb ? b + TIP_ABSTAND : -kb - TIP_ABSTAND, y];
+      }
+      dom.style.maxHeight = `${Math.floor(h)}px`;
+      return [Math.min(Math.max(punkt[0] - kb / 2, 0), Math.max(0, b - kb)), punkt[1] > h / 2 ? 0 : Math.max(0, h - Math.min(kh, h))];
+    },
   };
 }
 
