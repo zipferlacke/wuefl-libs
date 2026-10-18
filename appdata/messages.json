@@ -42,6 +42,13 @@
     ],
     "datepicker": [
       {
+        "version": "2.1.4",
+        "date": "2026-10-10",
+        "changes": [
+          "Behoben: In einem Shadow-DOM (z. B. in einer Home-Assistant-Karte) öffnete ein einfacher Klick auf den Auslöser den Kalender nicht, erst ein Doppelklick. Der Klick wird jetzt über `composedPath()` erkannt statt über `e.target`"
+        ]
+      },
+      {
         "version": "2.1.3",
         "date": "2026-09-24",
         "changes": [
@@ -297,6 +304,27 @@
     ],
     "diagramm": [
       {
+        "version": "1.8.0",
+        "date": "2026-10-18",
+        "changes": [
+          "Tooltip außerhalb ist jetzt Voreinstellung: über oder unter dem Diagramm (sonst daneben), folgt waagrecht dem Zeiger, höchstens so hoch wie der freie Platz, Rest scrollbar – `tooltip_outside: false` setzt ihn wie früher ins Diagramm"
+        ]
+      },
+      {
+        "version": "1.7.2",
+        "date": "2026-10-11",
+        "changes": [
+          "Neu: Chips mit `calc: 'integral'` – die Fläche unter einer Leistungskurve (Mittelwert mal Dauer), umgerechnet in die Einheit des Chips, z. B. aus W die kWh des Zeitraums. Rechnet nur mit den vorhandenen Werten, Lücken zählen nicht mit"
+        ]
+      },
+      {
+        "version": "1.7.1",
+        "date": "2026-10-11",
+        "changes": [
+          "Behoben: Ein Chip ohne Wert (keine Daten im Zeitraum) blieb als leere Pille im Kopf stehen – `display: inline-flex` überstimmte das `hidden`-Attribut"
+        ]
+      },
+      {
         "version": "1.7.0",
         "date": "2026-10-09",
         "changes": [
@@ -416,6 +444,34 @@
     ]
   },
   "changelog": [
+    {
+      "version": "2.8.0",
+      "date": "2026-10-18",
+      "changes": [
+        "1. Diagramm 1.8.0: Tooltip außerhalb des Diagramms als Voreinstellung (`tooltip_outside: false` schaltet ab)"
+      ]
+    },
+    {
+      "version": "2.7.6",
+      "date": "2026-10-11",
+      "changes": [
+        "1. Diagramm 1.7.2: Chips mit `calc: 'integral'` (Energie aus einer Leistungskurve)"
+      ]
+    },
+    {
+      "version": "2.7.5",
+      "date": "2026-10-11",
+      "changes": [
+        "1. Diagramm 1.7.1: Chips ohne Wert werden wirklich ausgeblendet"
+      ]
+    },
+    {
+      "version": "2.7.4",
+      "date": "2026-10-10",
+      "changes": [
+        "1. Datepicker 2.1.4: Kalender öffnet sich auch im Shadow-DOM mit einem einfachen Klick"
+      ]
+    },
     {
       "version": "2.7.3",
       "date": "2026-10-09",
