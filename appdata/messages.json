@@ -307,7 +307,7 @@
         "version": "1.8.0",
         "date": "2026-10-18",
         "changes": [
-          "Neu: `tooltip_outside: true` – der Tooltip steht über oder unter dem Diagramm (sonst daneben), folgt waagrecht dem Zeiger, höchstens so hoch wie der freie Platz, Rest scrollbar"
+          "Tooltip außerhalb ist jetzt Voreinstellung: über oder unter dem Diagramm (sonst daneben), folgt waagrecht dem Zeiger, höchstens so hoch wie der freie Platz, Rest scrollbar – `tooltip_outside: false` setzt ihn wie früher ins Diagramm"
         ]
       },
       {
@@ -448,7 +448,7 @@
       "version": "2.8.0",
       "date": "2026-10-18",
       "changes": [
-        "1. Diagramm 1.8.0: Tooltip außerhalb des Diagramms (`tooltip_outside`)"
+        "1. Diagramm 1.8.0: Tooltip außerhalb des Diagramms als Voreinstellung (`tooltip_outside: false` schaltet ab)"
       ]
     },
     {

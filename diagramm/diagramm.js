@@ -521,6 +521,7 @@ const nf = (v, stellen = 2) => Number(v).toLocaleString(undefined, { maximumFrac
  */
 export function buildOption(reihen, achsen, start, end, raster, cfg, host, zustand = {}) {
   const { voll = false, zoom = false } = zustand;
+  const draussen = cfg?.tooltip_outside !== false && !!host;   // Tooltip außerhalb – Voreinstellung
   const xWert = wertAchse(cfg);
   const gesamt = reihen.length;
   const balken = reihen.some((s) => (s.type || cfg.type || 'line') === 'bar');
@@ -626,12 +627,13 @@ export function buildOption(reihen, achsen, start, end, raster, cfg, host, zusta
       confine: true,
       backgroundColor: tipBg, borderColor: tipLine, textStyle: { color: tipText },
       axisPointer: { type: balken ? 'shadow' : 'line' },
-      // `tooltip_outside`: der Kasten außerhalb, damit Kurve und Werte zugleich zu sehen sind (tipDraussen)
-      ...(cfg.tooltip_outside && !voll ? tipDraussen(host) : {}),
+      // Der Kasten außerhalb (Voreinstellung), damit Kurve und Werte zugleich zu sehen sind (tipDraussen);
+      // `tooltip_outside: false`: wie früher im Diagramm
+      ...(draussen && !voll ? tipDraussen(host) : {}),
       // In einer Karte ist wenig Platz: Der Kasten sitzt an der Linie am
       // oberen oder unteren Rand – auf der Seite, wo der Finger nicht ist.
       // Im Vollbild ist Platz genug, dort folgt er dem Zeiger.
-      ...(voll || cfg.tooltip_outside ? {} : {
+      ...(voll || draussen ? {} : {
         position: (punkt, params, dom, rect, groesse) => {
           const [b, h] = groesse.viewSize;
           const [kb, kh] = groesse.contentSize;
@@ -646,7 +648,7 @@ export function buildOption(reihen, achsen, start, end, raster, cfg, host, zusta
 }
 
 /**
- * Tooltip außerhalb des Diagramms (`tooltip_outside: true`) – er verdeckt die Kurve nicht:
+ * Tooltip außerhalb des Diagramms (Voreinstellung, `tooltip_outside: false` schaltet ab) – er verdeckt die Kurve nicht:
  *
  *   1. über oder unter dem Diagramm, wo mehr Platz ist (mindestens 60 px); waagrecht folgt er dem Zeiger
  *   2. sonst links oder rechts daneben, wo er ganz hinpasst – senkrecht mittig zum Diagramm

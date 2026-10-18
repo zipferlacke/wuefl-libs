@@ -90,7 +90,7 @@ d.setConfig(yamlText);
   y_axes: [{ unit: 'kWh', min: 0, max: 50 }],
   legend: { position: 'top-right', hidden: false },
   zoom: undefined,              // true immer, false nie, 'fullscreen' nur im Vollbild, sonst nach Klick
-  tooltip_outside: false,       // true: Tooltip außerhalb – über/unter dem Diagramm, sonst daneben
+  tooltip_outside: true,        // Tooltip außerhalb – über/unter dem Diagramm, sonst daneben; false: im Diagramm
   card: true,                   // false: ohne Hintergrund, Rand und Radius
   padding: true,                // false: ohne Innenabstand (ohne Angabe wie card)
   chips: [ … ],
@@ -205,8 +205,8 @@ sofort aktiv. `zoom: true` schaltet es immer an, `zoom: false` ganz ab,
 
 ## Tooltip außerhalb
 
-`tooltip_outside: true` stellt den Tooltip neben das Diagramm statt darauf – Kurve und
-Werte bleiben zugleich sichtbar:
+Der Tooltip steht neben dem Diagramm statt darauf (Voreinstellung; `tooltip_outside: false`
+setzt ihn wie früher ins Diagramm) – Kurve und Werte bleiben zugleich sichtbar:
 
 1. über oder unter dem Diagramm, wo mehr Platz ist (mindestens 60 px); waagrecht folgt er dem Zeiger,
 2. sonst links oder rechts daneben, wo er ganz hinpasst – senkrecht mittig zum Diagramm,
