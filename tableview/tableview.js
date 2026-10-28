@@ -15,6 +15,11 @@
  *                       Gruppe darüber (nach deren Untergruppen) – wie Dateien
  *                       neben Unterordnern. Default: "group"
  *
+ * ── Attribute auf Datenzeilen (<tr>) ─────────────────────────────────────────
+ *   t-placeholder       Platzhalter: legt nur die Gruppen an, in die die Zeile
+ *                       gehört (etwa einen leeren Ordner), wird selbst nicht
+ *                       gezeigt und nicht gezählt
+ *
  * ── Attribute auf den Zellen der ersten Zeile (<th> oder <td>) ───────────────
  *   t-sort              Spalte sortierbar
  *   t-sort="asc|desc"   aktive Sortierung (nur eine Spalte gleichzeitig)
@@ -759,7 +764,7 @@ function render(table) {
             const text = tr.textContent.toLowerCase();
             ok = tokens.every(t => text.includes(t));
         }
-        return { tr, idx: +tr.dataset.tvIdx, hidden: !ok };
+        return { tr, idx: +tr.dataset.tvIdx, hidden: !ok, placeholder: tr.hasAttribute('t-placeholder') };
     });
 
     // ── 4. Gruppierte Spalten ausblenden ────────────────────────────────────
@@ -1042,7 +1047,12 @@ export function toggleBranch(table, path, want) {
     renderTable(table);
 }
 
-const leafOf = rows => ({ leaf: true, rows, visible: rows.filter(d => !d.hidden).length });
+// Platzhalter (t-placeholder) tragen nur die Gruppe: Sie zählen nicht und
+// werden nicht ausgegeben, halten die Gruppe aber sichtbar (`alive`).
+const leafOf = rows => {
+    const real = rows.filter(d => !d.placeholder);
+    return { leaf: true, rows: real, visible: real.filter(d => !d.hidden).length, alive: rows.some(d => !d.hidden) };
+};
 
 // `level` ist die Anzeigetiefe. Sie weicht von `depth` ab, wenn Zeilen ohne
 // Wert (t-group-empty="inline") eine Ebene überspringen: Ihre Untergruppen
@@ -1085,8 +1095,9 @@ function buildTree(data, groups, depth, parentPath, meta, inline = false, level 
             // trail = Kette aus [Spalte, Wert]; bei zusammengefalteten
             // Einzelkind-Ketten stehen hier mehrere Einträge.
             trail:   [{ col, key }],
-            count:   sub.length,
+            count:   sub.filter(d => !d.placeholder).length,
             visible: children.reduce((s, c) => s + (c.visible || 0), 0),
+            alive:   children.some(c => c.alive),
             rows:    uniqueRows(children),
             children
         });
@@ -1128,6 +1139,7 @@ function collapseChains(nodes) {
             node.path     = child.path;
             node.count    = child.count;
             node.visible  = child.visible;
+            node.alive    = child.alive;
             node.rows     = child.rows;
             node.children = child.children;
         }
@@ -1294,7 +1306,7 @@ function flatten(node, frag, ctx) {
     tr.dataset.groupPath = node.path;
     tr.dataset.depth     = node.depth;
     tr.style.setProperty('--tv-d', node.depth);
-    tr.classList.toggle('tv-hidden', ctx.hidden || node.visible === 0);
+    tr.classList.toggle('tv-hidden', ctx.hidden || !node.alive);
 
     const last  = node.trail[node.trail.length - 1];
     const cols  = node.trail.map(t => t.col);

@@ -244,6 +244,13 @@
     ],
     "tableview": [
       {
+        "version": "2.2.0",
+        "date": "2026-10-28",
+        "changes": [
+          "1. Neues Attribut `t-placeholder` auf Datenzeilen: Die Zeile legt nur die Gruppen an, in die sie gehört (etwa einen leeren Ordner), wird selbst nicht gezeigt und nicht gezählt."
+        ]
+      },
+      {
         "version": "2.1.1",
         "date": "2026-09-19",
         "changes": [
@@ -444,6 +451,13 @@
     ]
   },
   "changelog": [
+    {
+      "version": "2.9.0",
+      "date": "2026-10-28",
+      "changes": [
+        "1. Tableview 2.2.0: Platzhalterzeilen (`t-placeholder`) – eine Gruppe ohne sichtbare Zeile, etwa ein leerer Ordner"
+      ]
+    },
     {
       "version": "2.8.0",
       "date": "2026-10-18",

@@ -251,6 +251,14 @@ Damit lassen sich Ordnerpfade abbilden: je Ebene eine gruppierte Spalte, tiefere
 
 Ohne das Attribut (oder mit `"group"`) bleibt es bei der Gruppe „—“.
 
+### `t-placeholder`
+
+Eine Gruppe entsteht nur aus Zeilen. Soll eine Gruppe auch ohne Zeilen dastehen — etwa ein frisch angelegter, noch leerer Ordner —, trägt eine Platzhalterzeile mit `t-placeholder` ihre Gruppenwerte. Sie wird nicht gezeigt und nicht gezählt (der Zähler steht dann auf 0), und sie fließt in keine Summe ein.
+
+```html
+<tr t-placeholder><td>Bank</td><td>Neu</td><td></td></tr>  <!-- leerer Ordner „Bank › Neu“ -->
+```
+
 ### `t-sticky`
 
 Beim Scrollen bleiben die Gruppenköpfe stehen, jede Ebene rastet unter der darüberliegenden ein. Abschalten mit `t-sticky="false"`. Sitzt die Tabelle unter einem eigenen fixierten Header, verschiebt `--tv-sticky-offset` den Einrastpunkt.
