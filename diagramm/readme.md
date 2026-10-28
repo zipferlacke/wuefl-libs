@@ -91,6 +91,7 @@ d.setConfig(yamlText);
   legend: { position: 'top-right', hidden: false },
   zoom: undefined,              // true immer, false nie, 'fullscreen' nur im Vollbild, sonst nach Klick
   tooltip_outside: true,        // Tooltip außerhalb – über/unter dem Diagramm, sonst daneben; false: im Diagramm
+  tooltip_around: el,           // Element(e) daneben, die der Tooltip außerhalb auch frei lässt (Element, Liste, Funktion)
   card: true,                   // false: ohne Hintergrund, Rand und Radius
   padding: true,                // false: ohne Innenabstand (ohne Angabe wie card)
   chips: [ … ],
@@ -208,11 +209,15 @@ sofort aktiv. `zoom: true` schaltet es immer an, `zoom: false` ganz ab,
 Der Tooltip steht neben dem Diagramm statt darauf (Voreinstellung; `tooltip_outside: false`
 setzt ihn wie früher ins Diagramm) – Kurve und Werte bleiben zugleich sichtbar:
 
-1. über oder unter dem Diagramm, wo mehr Platz ist (mindestens 60 px); waagrecht folgt er dem Zeiger,
+1. über oder unter dem Diagramm, wo mehr Platz ist (mindestens 60 px); waagrecht folgt er dem Zeiger.
+   Gemeint ist der ganze Kasten mit Kopf, Chips und Legende, nicht nur die Zeichenfläche. Stehen eigene
+   Bedienelemente direkt daneben (etwa Umschalter über dem Diagramm), lässt `tooltip_around` sie mit frei:
+   ein Element, eine Liste oder eine Funktion, die eins liefert,
 2. sonst links oder rechts daneben, wo er ganz hinpasst – senkrecht mittig zum Diagramm,
 3. sonst wie ohne die Option im Diagramm am Rand.
 
-Höher als der freie Platz wird er nicht, der Rest lässt sich scrollen. Er hängt am
+Höher als der freie Platz wird er nicht, der Rest lässt sich scrollen; breiter als der Bildschirm
+auch nicht (die Seite ließe sich sonst seitlich schieben). Er hängt am
 `<body>` (sonst schnitte ihn ein Vorfahr mit `overflow` ab). Im Vollbild gilt das nicht.
 
 ## Vollbild

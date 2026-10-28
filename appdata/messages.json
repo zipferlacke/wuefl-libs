@@ -311,6 +311,15 @@
     ],
     "diagramm": [
       {
+        "version": "1.9.0",
+        "date": "2026-10-28",
+        "changes": [
+          "Tooltip außerhalb hält den ganzen Kasten frei – Kopf, Chips und Legende, nicht nur die Zeichenfläche (bisher lag er über den Chips)",
+          "Neu: `tooltip_around` – Elemente daneben, die der Tooltip außerhalb mit frei lässt (Element, Liste oder Funktion), etwa eigene Umschalter über dem Diagramm",
+          "Tooltip nie breiter als der Bildschirm – am Handy ließ sich die Seite sonst seitlich schieben"
+        ]
+      },
+      {
         "version": "1.8.0",
         "date": "2026-10-18",
         "changes": [
@@ -451,6 +460,13 @@
     ]
   },
   "changelog": [
+    {
+      "version": "2.10.0",
+      "date": "2026-10-28",
+      "changes": [
+        "1. Diagramm 1.9.0: Tooltip außerhalb hält den ganzen Kasten frei, neue Option `tooltip_around`, nie breiter als der Bildschirm"
+      ]
+    },
     {
       "version": "2.9.0",
       "date": "2026-10-28",
