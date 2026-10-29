@@ -44,6 +44,8 @@ Jedes `<select>` mit `data-sp-picker` wird automatisch zum SelectPicker. Der Wer
 | `data-sp-controls` | Reset- und Close-Button im Header anzeigen. |
 | `data-sp-group="<name>"` | Style-Gruppe zuweisen (siehe Style-Gruppen). |
 | `data-sp-jsposition` | JS-Positionierung erzwingen, auch wenn der Browser CSS Anchor Positioning unterstützt. |
+| `data-sp-summary="{n} Touren"` | Multiselect: statt eines Chips je gewählter Option nur eine Zeile, `{n}` = Anzahl – für lange Auswahlen (40 gewählte wären 40 Chips). |
+| `data-search="…"` (auf `<option>`) | Zusätzlicher Suchtext, nicht angezeigt – z. B. Tags oder Kategorie. Die Suche findet Text **oder** diesen. |
 | `data-default='["a","b"]'` | JSON-Array mit Reset-Werten. Wenn gesetzt, erscheint der Reset-Button. |
 | `min` / `max` | Bei Multiselect: Mindest- und Höchstanzahl ausgewählter Optionen. |
 | `multiple` | Standard-HTML-Attribut — aktiviert Multiselect. |
@@ -100,6 +102,21 @@ Jede `<option>` kann ein Icon erhalten — entweder als Material-Symbol-Ligaturn
   <option value="x" data-icon='<svg viewBox="0 0 24 24">...</svg>'>SVG-Icon</option>
 </select>
 ```
+
+## Lange Auswahlen
+
+Für viele Optionen mit vielen gewählten (z. B. 40 von 300 Touren): der Trigger zählt nur, aufgeklappt stehen die
+gewählten oben (in ihrer Reihenfolge), die Suche geht auch über `data-search`. Ein Klick hakt nur diese Zeile an
+oder ab – Suche und Reihenfolge bleiben, bis man speichert.
+
+```html
+<select data-sp-picker="Touren im Vergleich" multiple data-sp-save data-sp-summary="{n} Touren">
+  <option value="a" selected data-search="wettkampf laufen">18.10.2026 · Morgenrunde</option>
+  …
+</select>
+```
+
+Texte der Optionen werden als Text gesetzt (escaped) – Namen aus Dateien oder Eingaben können kein HTML einschleusen.
 
 ## Min / Max bei Multiselect
 
@@ -159,6 +176,7 @@ const instance = sp.create(document.getElementById('mySelect'), {
 | `saveButton` | `boolean` | `false` | Speichern-Button im Footer. |
 | `showControls` | `boolean` | `false` | Reset- und Close-Button im Header. |
 | `forceJsPosition` | `boolean` | `false` | JS-Positionierung erzwingen statt CSS-Anchor. |
+| `summary` | `string \| (n, options) => string` | – | Multiselect: Zählung statt Chips (`"{n} Touren"`). |
 
 ### Instanz-API
 
