@@ -5,6 +5,16 @@
   "modules": {
     "selectpicker": [
       {
+        "version": "2.1.0",
+        "date": "2026-10-29",
+        "changes": [
+          "1. `data-sp-summary=\"{n} Touren\"` (Option `summary`): Multiselect zählt im Trigger statt eines Chips je Wahl",
+          "2. `data-search` auf `<option>`: zusätzlicher Suchtext (Tags, Kategorie), nicht angezeigt",
+          "3. Multiselect: ein Klick schaltet nur die Zeile um – Suche und Reihenfolge bleiben; gewählte oben in ihrer Reihenfolge (vorher umgedreht)",
+          "4. Texte der Optionen escaped (Trigger und Liste) – kein HTML aus Namen"
+        ]
+      },
+      {
         "version": "2.0.1",
         "date": "2026-08-08",
         "changes": [
@@ -311,6 +321,15 @@
     ],
     "diagramm": [
       {
+        "version": "1.9.0",
+        "date": "2026-10-28",
+        "changes": [
+          "Tooltip außerhalb hält den ganzen Kasten frei – Kopf, Chips und Legende, nicht nur die Zeichenfläche (bisher lag er über den Chips)",
+          "Neu: `tooltip_around` – Elemente daneben, die der Tooltip außerhalb mit frei lässt (Element, Liste oder Funktion), etwa eigene Umschalter über dem Diagramm",
+          "Tooltip nie breiter als der Bildschirm – am Handy ließ sich die Seite sonst seitlich schieben"
+        ]
+      },
+      {
         "version": "1.8.0",
         "date": "2026-10-18",
         "changes": [
@@ -451,6 +470,20 @@
     ]
   },
   "changelog": [
+    {
+      "version": "2.11.0",
+      "date": "2026-10-29",
+      "changes": [
+        "1. Selectpicker 2.1.0: Zählung statt Chips (`data-sp-summary`), Suchtext je Option (`data-search`), Anhaken ohne Neuaufbau, Texte escaped"
+      ]
+    },
+    {
+      "version": "2.10.0",
+      "date": "2026-10-28",
+      "changes": [
+        "1. Diagramm 1.9.0: Tooltip außerhalb hält den ganzen Kasten frei, neue Option `tooltip_around`, nie breiter als der Bildschirm"
+      ]
+    },
     {
       "version": "2.9.0",
       "date": "2026-10-28",

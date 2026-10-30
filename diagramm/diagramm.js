@@ -629,7 +629,7 @@ export function buildOption(reihen, achsen, start, end, raster, cfg, host, zusta
       axisPointer: { type: balken ? 'shadow' : 'line' },
       // Der Kasten außerhalb (Voreinstellung), damit Kurve und Werte zugleich zu sehen sind (tipDraussen);
       // `tooltip_outside: false`: wie früher im Diagramm
-      ...(draussen && !voll ? tipDraussen(host) : {}),
+      ...(draussen && !voll ? tipDraussen(host, cfg.tooltip_around) : {}),
       // In einer Karte ist wenig Platz: Der Kasten sitzt an der Linie am
       // oberen oder unteren Rand – auf der Seite, wo der Finger nicht ist.
       // Im Vollbild ist Platz genug, dort folgt er dem Zeiger.
@@ -650,41 +650,60 @@ export function buildOption(reihen, achsen, start, end, raster, cfg, host, zusta
 /**
  * Tooltip außerhalb des Diagramms (Voreinstellung, `tooltip_outside: false` schaltet ab) – er verdeckt die Kurve nicht:
  *
- *   1. über oder unter dem Diagramm, wo mehr Platz ist (mindestens 60 px); waagrecht folgt er dem Zeiger
+ *   1. über oder unter dem Diagramm, wo mehr Platz ist (mindestens 60 px); waagrecht folgt er dem Zeiger.
+ *      „Das Diagramm“ ist der ganze Kasten samt Kopf, Chips und Legende – nicht nur die Zeichenfläche –, dazu die
+ *      Elemente aus `tooltip_around` (ein Element, eine Liste oder eine Funktion, die eins liefert)
  *   2. sonst links oder rechts daneben, wo er ganz hinpasst – senkrecht mittig zum Diagramm
  *   3. sonst wie bisher im Diagramm am Rand
  *
- * Höher als der freie Platz wird er nicht – der Rest lässt sich scrollen (dafür `enterable`). Er hängt am
- * <body>, sonst schnitte ihn ein Vorfahr mit `overflow` ab.
+ * Höher als der freie Platz wird er nicht – der Rest lässt sich scrollen (dafür `enterable`), breiter als der
+ * Bildschirm auch nicht (die Seite ließe sich sonst seitlich schieben). Er hängt am <body>, sonst schnitte ihn ein
+ * Vorfahr mit `overflow` ab.
  */
 const TIP_ABSTAND = 6, TIP_MIN = 60;
-function tipDraussen(host) {
+function tipDraussen(host, around) {
+  // Kasten, der frei bleibt: das Diagramm samt `tooltip_around` (Elemente daneben, etwa eigene Umschalter darüber)
+  const kasten = () => {
+    let r = host.getBoundingClientRect();
+    const extra = typeof around === 'function' ? around() : around;
+    for (const el of [extra].flat()) {
+      const e = el?.isConnected ? el.getBoundingClientRect() : null;
+      if (!e || (!e.width && !e.height)) continue;
+      const top = Math.min(r.top, e.top), left = Math.min(r.left, e.left);
+      r = { top, left, bottom: Math.max(r.bottom, e.bottom), right: Math.max(r.right, e.right) };
+    }
+    return r;
+  };
   return {
     confine: false,
     appendTo: () => document.body,
     enterable: true,
-    extraCssText: 'overflow-y:auto;overscroll-behavior:contain;',
+    // Nie breiter als der Bildschirm – sonst ließe sich die ganze Seite seitlich schieben
+    extraCssText: `overflow-y:auto;overscroll-behavior:contain;max-width:calc(100vw - ${2 * TIP_ABSTAND}px);box-sizing:border-box;white-space:normal;`,
     position: (punkt, params, dom, rect, groesse) => {
-      const r = host.getBoundingClientRect();
-      const vw = innerWidth, vh = innerHeight;
+      // Platz rund um den ganzen Kasten (Kopf, Chips, Legende) – die Lage selbst rechnet ECharts ab der Zeichenfläche
+      const r = kasten();
+      const c = (host.querySelector('.dg_canvas') ?? host).getBoundingClientRect();
+      const vw = document.documentElement.clientWidth, vh = innerHeight;
       const [b, h] = groesse.viewSize;
-      const kb = groesse.contentSize[0];
       // Inhalt ohne Höhenbegrenzung messen, dann begrenzen
       dom.style.maxHeight = '';
+      const kb = Math.min(groesse.contentSize[0], dom.offsetWidth || groesse.contentSize[0], vw - 2 * TIP_ABSTAND);
       const kh = dom.scrollHeight;
       const oben = r.top - TIP_ABSTAND, unten = vh - r.bottom - TIP_ABSTAND;
-      const x = Math.min(Math.max(punkt[0] - kb / 2, -r.left), vw - r.left - kb);
+      const x = Math.min(Math.max(punkt[0] - kb / 2, TIP_ABSTAND - c.left), vw - c.left - kb - TIP_ABSTAND);
       if (Math.max(oben, unten) >= Math.min(kh, TIP_MIN)) {
         const platz = Math.max(oben, unten), hoch = Math.min(kh, platz);
         dom.style.maxHeight = `${Math.floor(platz)}px`;
-        return oben >= unten ? [x, -hoch - TIP_ABSTAND] : [x, h + TIP_ABSTAND];
+        return oben >= unten ? [x, r.top - c.top - hoch - TIP_ABSTAND] : [x, r.bottom - c.top + TIP_ABSTAND];
       }
       const links = r.left - TIP_ABSTAND, rechts = vw - r.right - TIP_ABSTAND;
       if (Math.max(links, rechts) >= kb) {
         const hoch = Math.min(kh, vh - 2 * TIP_ABSTAND);
         dom.style.maxHeight = `${Math.floor(hoch)}px`;
-        const y = Math.min(Math.max(h / 2 - hoch / 2, TIP_ABSTAND - r.top), vh - r.top - hoch - TIP_ABSTAND);
-        return [rechts >= kb ? b + TIP_ABSTAND : -kb - TIP_ABSTAND, y];
+        const mitte = (r.top + r.bottom) / 2 - c.top - hoch / 2;
+        const y = Math.min(Math.max(mitte, TIP_ABSTAND - c.top), vh - c.top - hoch - TIP_ABSTAND);
+        return [rechts >= kb ? r.right - c.left + TIP_ABSTAND : r.left - c.left - kb - TIP_ABSTAND, y];
       }
       dom.style.maxHeight = `${Math.floor(h)}px`;
       return [Math.min(Math.max(punkt[0] - kb / 2, 0), Math.max(0, b - kb)), punkt[1] > h / 2 ? 0 : Math.max(0, h - Math.min(kh, h))];

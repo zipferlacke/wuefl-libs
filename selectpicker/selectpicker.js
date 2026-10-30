@@ -10,6 +10,9 @@
  * @property {Object.<string, TranslationSet>} [translations] - Eigene Übersetzungen für Buttons etc.
  */
 
+/** Text sicher in HTML (Namen aus Dateien, Eingaben) */
+const esc = (v) => String(v).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
+
 /**
  * BASIS KLASSE
  * Verwaltet Styles, Sprachen und allgemeine Popover-Mechaniken.
@@ -61,6 +64,8 @@ class PickerBase {
  * @property {boolean} [saveButton=false]      - Speichern-Knopf (für Multi).
  * @property {boolean} [showControls=false]    - Close/Reset Buttons im Header.
  * @property {boolean} [forceJsPosition=false] - JS-Positionierung erzwingen.
+ * @property {string|Function} [summary]       - Multi: statt eines Chips je Wahl nur eine Zeile, z. B. "{n} Touren"
+ *                                               ({n} = Anzahl) oder (n, options) => Text.
  */
 
 /**
@@ -96,6 +101,8 @@ class PickerBase {
  *   <select data-sp-picker data-sp-save>          → Speichern-Button
  *   <select data-sp-picker data-sp-controls>      → Header-Controls
  *   <select data-sp-picker data-sp-group="dark">  → Style-Gruppe
+ *   <select data-sp-picker multiple data-sp-summary="{n} Touren"> → Zählung statt Chips
+ *   <option data-search="lauf wettkampf">         → zusätzlicher Suchtext (nicht angezeigt)
  *
  * Manuell: sp.create(selectElement, { title: '...', search: false })
  */
@@ -164,6 +171,9 @@ export class SelectPicker extends PickerBase {
         // JS-Positionierung
         if (el.hasAttribute('data-sp-jsposition')) options.forceJsPosition = true;
 
+        // Zählung statt Chips (Multi)
+        if (el.dataset.spSummary) options.summary = el.dataset.spSummary;
+
         this.create(el, options);
     }
 
@@ -230,6 +240,7 @@ export class SelectPicker extends PickerBase {
             _searchMode:      searchMode,
             _title:           title,
             _showControls:    showControls,
+            _summary:         options.summary,
 
             open:         () => this.openPicker(instance),
             close:        () => this.closePicker(instance),
@@ -363,21 +374,23 @@ export class SelectPicker extends PickerBase {
     #renderOptions(instance) {
         const list = instance.popover.querySelector('.sp_content');
         list.innerHTML = '';
+        let firstFree = null;
 
         Array.from(instance.originalSelect.options).forEach(opt => {
             if (opt.disabled && opt.value === '') return; // Placeholder überspringen
             const icon     = opt.dataset.icon;
             const selected = instance.tempValue.includes(opt.value);
+            const label    = `${opt.text} ${opt.dataset.search || ''}`.toLocaleLowerCase();
             const html = `
                 <li class="sp_option ${selected ? 'sp_selected' : ''}"
-                    data-value="${opt.value}"
-                    data-label="${opt.text.toLocaleLowerCase()}">
+                    data-value="${esc(opt.value)}"
+                    data-label="${esc(label)}">
                     ${icon
                         ? (icon.trim().startsWith('<')
                             ? icon
                             : `<span class="sp_msr" style="font-size:20px;">${icon}</span>`)
                         : ''}
-                    <span>${opt.text}</span>
+                    <span>${esc(opt.text)}</span>
                     ${selected ? '<span class="sp_msr sp_checkmark">check</span>' : ''}
                 </li>
             `;
@@ -391,14 +404,20 @@ export class SelectPicker extends PickerBase {
                         if(instance.tempValue.length + 1 > instance.max) return;
                         instance.tempValue.push(opt.value);
                     }
-                    this.#renderOptions(instance);
+                    // nur diese Zeile umschalten: Reihenfolge und Suche bleiben (bei vielen Einträgen wichtig)
+                    const on = instance.tempValue.includes(opt.value);
+                    li.classList.toggle('sp_selected', on);
+                    li.querySelector('.sp_checkmark')?.remove();
+                    if (on) li.insertAdjacentHTML('beforeend', '<span class="sp_msr sp_checkmark">check</span>');
                 } else {
                     instance.tempValue = [opt.value];
                     this.#renderOptions(instance);
                     setTimeout(() => instance.saveAndClose(), 100);
                 }
             });
-            selected ? list.insertAdjacentElement('afterbegin', li) :list.appendChild(li);
+            // Gewählte nach oben – in ihrer Reihenfolge
+            if (selected) list.insertBefore(li, firstFree);
+            else { list.appendChild(li); firstFree ??= li; }
         });
 
         list.insertAdjacentHTML("beforeend", `
@@ -444,13 +463,18 @@ export class SelectPicker extends PickerBase {
             return;
         }
 
-        if (instance.isMulti) {
+        if (instance.isMulti && instance._summary) {
+            const text = typeof instance._summary === 'function'
+                ? instance._summary(selectedOptions.length, selectedOptions)
+                : instance._summary.replace('{n}', selectedOptions.length);
+            instance.triggerElm.insertAdjacentHTML("beforeend", `<div class="sp_single_value"><span>${esc(text)}</span></div>`);
+        } else if (instance.isMulti) {
             selectedOptions.forEach(opt => {
                 const icon = opt.dataset.icon;
                 instance.triggerElm.insertAdjacentHTML("beforeend", `
                     <div class="sp_chip">
                         ${icon ? `<span class="sp_msr" style="font-size:20px;">${icon}</span>` : ''}
-                        <span>${opt.text}</span>
+                        <span>${esc(opt.text)}</span>
                     </div>
                 `);
             });
@@ -460,7 +484,7 @@ export class SelectPicker extends PickerBase {
             instance.triggerElm.insertAdjacentHTML("beforeend", `
                 <div class="sp_single_value">
                     ${icon ? `<span class="sp_msr" style="font-size:20px;">${icon}</span>` : ''}
-                    <span>${opt.text}</span>
+                    <span>${esc(opt.text)}</span>
                 </div>
             `);
         }
